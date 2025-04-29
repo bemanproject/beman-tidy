@@ -15,7 +15,7 @@ EOF
 
 # Newer gcc/ llvm is needed to avoid ASAN Stalling, which is turned on by default across beman projects.
 # See: https://github.com/google/sanitizers/issues/1614
-# Minimal vesion: clang-18.1.3, gcc-13.2
+# Minimal version: clang-18.1.3, gcc-13.2
 ARG compiler_kind=gnu
 ARG compiler_version=14
 
