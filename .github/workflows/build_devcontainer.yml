@@ -4,9 +4,14 @@ name: Publish Beman Containers
 
 on:
   push:
+    branches:
+      - "main"
     paths:
       - ".github/workflows/build_devcontainer.yml"
       - "containers/**"
+  pull_request:
+    branches:
+      - "main"
   workflow_dispatch:
 
 env:
