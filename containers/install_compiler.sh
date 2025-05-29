@@ -14,7 +14,7 @@ if [ "$TOOL" = "gcc" ]; then
     sudo apt-get install -y gcc-"$VERSION" g++-"$VERSION" lcov
 
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-"$VERSION" 10
-    sudo update-alternatives --install /usr/bin/gcc g++ /usr/bin/g++-"$VERSION" 10
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-"$VERSION" 10
 
     sudo update-alternatives --config gcc
     sudo update-alternatives --config g++
