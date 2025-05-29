@@ -10,16 +10,13 @@ echo "Install ${TOOL} at: ${VERSION}"
 
 shopt -s nocasematch
 if [ "$TOOL" = "gcc" ]; then
-    sudo apt-get remove -y gcc-"$VERSION" g++-"$VERSION" gcc g++
     sudo apt-get install -y gcc-"$VERSION" g++-"$VERSION" lcov
 
-    sudo rm -f /usr/bin/gcc
-    sudo rm -f /usr/bin/g++
-    sudo rm -f /usr/bin/gcov
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-"$VERSION" 10
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-"$VERSION" 10
 
-    sudo ln -s "$(which gcc-"$VERSION")" /usr/bin/gcc
-    sudo ln -s "$(which g++-"$VERSION")" /usr/bin/g++
-    sudo ln -s "$(which gcov-"$VERSION")" /usr/bin/gcov
+    sudo update-alternatives --config gcc
+    sudo update-alternatives --config g++
 
     gcc --version
 else
@@ -29,11 +26,11 @@ else
     sudo bash llvm.sh "${VERSION}"
     sudo apt-get install -y libc++-"$VERSION"-dev lcov
 
-    sudo rm -f /usr/bin/clang
-    sudo rm -f /usr/bin/clang++
+    sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-"$VERSION" 10
+    sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-"$VERSION" 10
 
-    sudo ln -s "$(which clang-"$VERSION")" /usr/bin/clang
-    sudo ln -s "$(which clang++-"$VERSION")" /usr/bin/clang++
+    sudo update-alternatives --config clang
+    sudo update-alternatives --config clang++
 
     clang --version
 fi
