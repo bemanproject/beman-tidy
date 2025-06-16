@@ -6,7 +6,7 @@ from pathlib import Path
 
 from tests.utils.file_testcase_runners import file_testcases_run_valid, file_testcases_run_invalid, file_testcases_run_fix_invalid
 # Actual tested checks.
-from lib.checks.beman_standard.readme import ReadmeTitleCheck, ReadmeBadgesCheck
+from lib.checks.beman_standard.readme import ReadmeTitleCheck, ReadmeBadgesCheck, ReadmeLibraryStatusCheck
 
 
 def test__README_TITLE__valid(repo_info, beman_standard_check_config):
@@ -82,4 +82,36 @@ def test__README_BADGES__invalid(repo_info, beman_standard_check_config, invalid
 @pytest.mark.skip(reason="NOT implemented")
 def test__README_BADGES__fix_invalid(repo_info, beman_standard_check_config, invalid_readme_path, valid_readme_path):
     """Test that the fix method corrects an invalid README.md badges"""
+    pass
+
+
+def test__README_LIBRARY_STATUS__valid(repo_info, beman_standard_check_config, valid_readme_path):
+    """Test that a valid README.md library status passes the check"""
+    valid_readme_paths = [
+        Path("tests/beman_standard/readme/data/valid/README-v1.md"),
+        Path("tests/beman_standard/readme/data/valid/README-v2.md"),
+        Path("tests/beman_standard/readme/data/valid/README-v3.md"),
+        Path("tests/beman_standard/readme/data/valid/README-v4.md"),
+    ]
+
+    file_testcases_run_valid(valid_readme_paths, ReadmeLibraryStatusCheck,
+                             repo_info, beman_standard_check_config)
+
+
+def test__README_LIBRARY_STATUS__invalid(repo_info, beman_standard_check_config):
+    """Test that an invalid README.md library status fails the check"""
+    invalid_readme_paths = [
+        Path("tests/beman_standard/readme/data/invalid/invalid.md"),
+        Path("tests/beman_standard/readme/data/invalid/invalid-status-line-v1.md"),
+        Path("tests/beman_standard/readme/data/invalid/invalid-status-line-v2.md"),
+        Path("tests/beman_standard/readme/data/invalid/invalid-status-line-v3.md"),
+    ]
+
+    file_testcases_run_invalid(invalid_readme_paths, ReadmeLibraryStatusCheck,
+                               repo_info, beman_standard_check_config)
+
+
+@pytest.mark.skip(reason="NOT implemented")
+def test__README_LIBRARY_STATUS__fix_invalid(repo_info, beman_standard_check_config, invalid_readme_path, valid_readme_path):
+    """Test that the fix method corrects an invalid README.md library status"""
     pass

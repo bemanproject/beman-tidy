@@ -72,3 +72,28 @@ class ReadmeBadgesCheck(ReadmeBaseCheck):
 
 
 # TODO README.LIBRARY_STATUS
+@register_beman_standard_check("README.LIBRARY_STATUS")
+class ReadmeLibraryStatusCheck(ReadmeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def check(self):
+        """
+        self.config["values"] contains a fixed set of Beman library statuses.
+        """
+        statuses = self.config["values"]
+        assert len(statuses) == len(self.beman_library_maturity_model)
+
+        # Check if at least one of the required status values is present.
+        status_count = len(
+            [status for status in statuses if self.has_content(status)])
+        if status_count != 1:
+            self.log(
+                f"The file '{self.path}' does not contain exactly one of the required statuses from {statuses}")
+            return False
+
+        return True
+
+    def fix(self):
+        # TODO: Implement the fix.
+        pass
