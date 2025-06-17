@@ -1,7 +1,7 @@
 - id: beman-tidy
-  name: "beman-tidy: bemanification your repo"
-  entry: ./tools/beman-tidy/beman-tidy
-  language: script
+  name: "beman-tidy: The Codebase Bemanification Tool"
+  entry: bash -c 'cd tools/beman-tidy && uv run beman-tidy "$@"' --
+  language: system
   pass_filenames: false
   always_run: true
   args: [".", "--verbose"]
