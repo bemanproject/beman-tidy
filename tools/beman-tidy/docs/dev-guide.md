@@ -36,21 +36,11 @@ Limitations:
 
 ## Adding a new check
 
-* `[mandatory]` Make sure `beman_tidy/.beman-standard.yml` reflects your check metadata (latest status from [BEMAN_STANDARD.md](https://github.com/bemanproject/beman/blob/main/docs/BEMAN_STANDARD.md).
-  * `[optional]` New syntax / keys from yml config can be added in [infra/tools/beman-tidy/beman_tidy/lib/utils
-/git.py:load_beman_standard_config()](https://github.com/bemanproject/infra/blob/main/tools/beman-tidy/beman_tidy/lib/utils/git.py#L68) if not already implemented. Checks for TODOs in `load_beman_standard_config()`.
-* `[mandatory]` Add the check to the `beman_tidy/lib/checks/beman_standard/` directory.
-   *  `[mandatory]` E.g., `README.*` checks will most likely go to a path similar to `beman_tidy/lib/checks/beman_standard/readme.py`.
-   *  `[mandatory]` Use an appropiate base class - e.g., defaults like `FileBaseCheck` / `DirectoryBaseCheck` or create specializations for reusing code - e.g.,  `ReadmeBaseCheck(FileBaseCheck)` / `CmakeBaseCheck(FileBaseCheck)` / `CppBaseCheck(FileBaseCheck)` etc.
-   *  `[mandatory]` Register the new check via `@register_beman_standard_check` decorator - e.g.,
-     ```python
-     @register_beman_standard_check("README.TITLE")
-     class ReadmeTitleCheck(ReadmeBaseCheck):
-     ```
-* `[mandatory]` Import the check to the `beman_tidy/lib/pipeline.py` file (e.g., `from .checks.beman_standard.readme import ReadmeTitleCheck`).
-* `[mandatory]` Add tests for the check to the `tests/beman_standard/` directory. More in [Writing Tests](#writing-tests).
-* `[optional]` Updates docs if needed in `README.md` and `docs/dev-guide.md` files. 
-* `[optional]` Update the `beman_tidy/cli.py` file if the public API has changed.
+* Add the check to the `beman_tidy/lib/checks/beman_standard/` directory (e.g., `README.*` checks will most likely go to a path similar to `beman_tidy/lib/checks/beman_standard/readme.py`).
+* Import the check to the `beman_tidy/lib/pipeline.py` file (e.g., `from .checks.beman_standard.readme import ReadmeTitleCheck`).
+* Add tests for the check to the `tests/beman_standard/` directory (e.g., `README.*` checks tests will most likely go to a path similar to `tests/lib/checks/beman_standard/readme/test_readme.py`).
+* Updates docs if needed in `README.md` and `docs/dev-guide.md` files.
+* Update the `beman_tidy/cli.py` file if the public API has changed.
 
 Check this PR example: [beman-tidy: add check - README.LIBRARY_STATUS](https://github.com/bemanproject/infra/pull/35).
 
@@ -90,14 +80,14 @@ tests/beman_standard/readme/test_readme.py::test__README_BADGES__fix_invalid SKI
 
 ### Writing Tests
 
-* `tests/lib/checks/beman_standard/<check_category>/test_<check_category>.py`: The test file for the `<check_category>` check.
-  * e.g., for `check_category = "readme"` the test file is `tests/lib/checks/beman_standard/readme/test_readme.py`.
+* `tests/beman_standard/<check_category>/test_<check_category>.py`: The test file for the `<check_category>` check.
+  * e.g., for `check_category = "readme"` the test file is `tests/beman_standard/readme/test_readme.py`.
 * `test__<check_category>__<test_case_name>()` function inside the test file.
   * e.g., for `check_category = "readme"` and `test_case_name = "valid"` the function is `test__README_TITLE__valid()`.
   * e.g., for `check_category = "readme"` and `test_case_name = "invalid"` the function is `test__README_TITLE__invalid()`.
 * `tests/beman_standard/<check_category>/data/`: The data for the tests (e.g., files, directories, etc.).
-  * e.g., for `check_category = "readme"` and `test_case_name = "valid"` the data is in `tests/lib/checks/beman_standard/readme/data/valid/`.
-  * e.g., for `check_category = "readme"` and `test_case_name = "invalid"` the data is in `tests/lib/checks/beman_standard/readme/data/invalid/`.
+  * e.g., for `check_category = "readme"` and `test_case_name = "valid"` the data is in `tests/beman_standard/readme/data/valid/`.
+  * e.g., for `check_category = "readme"` and `test_case_name = "invalid"` the data is in `tests/beman_standard/readme/data/invalid/`.
   * e.g., for `check_category = "readme"` and `test_case_name = "fix_invalid"` the data may use both `valid` and `invalid` files. It is recommended to not change these files and use temporary copies having suffix `.delete_me` (which are not tracked by git).
 * Default setup / mocks:
   * `repo_info`: The repository information (e.g., path, name, etc.). Mocked with hardcoded values of `beman.exemplar`.
