@@ -44,7 +44,7 @@ RELEASE.GODBOLT_TRUNK_VERSION:
 # TOP LEVEL
 TOPLEVEL.CMAKE:
     - type: REQUIREMENT
-    - file_name: CMakeLists.txt
+    - value: CMakeLists.txt
 TOPLEVEL.LICENSE:
     - type: REQUIREMENT
     - file_name: LICENSE
