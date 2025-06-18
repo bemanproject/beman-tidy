@@ -36,7 +36,14 @@ Limitations:
 
 ## Adding a new check
 
-* Add the check to the `beman_tidy/lib/checks/beman_standard/` directory (e.g., `README.*` checks will most likely go to a path similar to `beman_tidy/lib/checks/beman_standard/readme.py`). Use a base class (e.g., `FileBaseCheck`/`DirectoryBaseCheck`. or `BSGenericReadmeCheck`) and register the new check via `@register_beman_standard_check` decorator.
+* Add the check to the `beman_tidy/lib/checks/beman_standard/` directory.
+   *  E.g., `README.*` checks will most likely go to a path similar to `beman_tidy/lib/checks/beman_standard/readme.py`.
+   *  Use an appropiate base class - e.g., defaults like `FileBaseCheck` / `DirectoryBaseCheck` or create specializations for reusing code - e.g.,  `ReadmeBaseCheck(FileBaseCheck)` / `CmakeBaseCheck(FileBaseCheck)` / `CppBaseCheck(FileBaseCheck)` etc.
+   *  Register the new check via `@register_beman_standard_check` decorator - e.g.,
+     ```python
+     @register_beman_standard_check("README.TITLE")
+     class ReadmeTitleCheck(ReadmeBaseCheck):
+     ```
 * Import the check to the `beman_tidy/lib/pipeline.py` file (e.g., `from .checks.beman_standard.readme import ReadmeTitleCheck`).
 * Add tests for the check to the `tests/beman_standard/` directory (e.g., `README.*` checks tests will most likely go to a path similar to `tests/lib/checks/beman_standard/readme/test_readme.py`).
 * Updates docs if needed in `README.md` and `docs/dev-guide.md` files.
