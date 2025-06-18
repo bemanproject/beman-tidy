@@ -36,10 +36,10 @@ Limitations:
 
 ## Adding a new check
 
-* Make sure `beman_tidy/.beman-standard.yml` reflects your check metadata (latest status from [BEMAN_STANDARD.md](https://github.com/bemanproject/beman/blob/main/docs/BEMAN_STANDARD.md).
-  * Note: New syntax / keys from yml config can be added in [infra/tools/beman-tidy/beman_tidy/lib/utils
+* `[mandatory]` Make sure `beman_tidy/.beman-standard.yml` reflects your check metadata (latest status from [BEMAN_STANDARD.md](https://github.com/bemanproject/beman/blob/main/docs/BEMAN_STANDARD.md).
+  * `[optional]` New syntax / keys from yml config can be added in [infra/tools/beman-tidy/beman_tidy/lib/utils
 /git.py:load_beman_standard_config()](https://github.com/bemanproject/infra/blob/main/tools/beman-tidy/beman_tidy/lib/utils/git.py#L68) if not already implemented. Checks for TODOs in `load_beman_standard_config()`.
-* Add the check to the `beman_tidy/lib/checks/beman_standard/` directory.
+* `[mandatory]` Add the check to the `beman_tidy/lib/checks/beman_standard/` directory.
    *  E.g., `README.*` checks will most likely go to a path similar to `beman_tidy/lib/checks/beman_standard/readme.py`.
    *  Use an appropiate base class - e.g., defaults like `FileBaseCheck` / `DirectoryBaseCheck` or create specializations for reusing code - e.g.,  `ReadmeBaseCheck(FileBaseCheck)` / `CmakeBaseCheck(FileBaseCheck)` / `CppBaseCheck(FileBaseCheck)` etc.
    *  Register the new check via `@register_beman_standard_check` decorator - e.g.,
@@ -47,10 +47,10 @@ Limitations:
      @register_beman_standard_check("README.TITLE")
      class ReadmeTitleCheck(ReadmeBaseCheck):
      ```
-* Import the check to the `beman_tidy/lib/pipeline.py` file (e.g., `from .checks.beman_standard.readme import ReadmeTitleCheck`).
-* Add tests for the check to the `tests/beman_standard/` directory (e.g., `README.*` checks tests will most likely go to a path similar to `tests/lib/checks/beman_standard/readme/test_readme.py`).
-* Updates docs if needed in `README.md` and `docs/dev-guide.md` files.
-* Update the `beman_tidy/cli.py` file if the public API has changed.
+* `[mandatory]` Import the check to the `beman_tidy/lib/pipeline.py` file (e.g., `from .checks.beman_standard.readme import ReadmeTitleCheck`).
+* `[mandatory]` Add tests for the check to the `tests/beman_standard/` directory (e.g., `README.*` checks tests will most likely go to a path similar to `tests/lib/checks/beman_standard/readme/test_readme.py`).
+* `[optional]` Updates docs if needed in `README.md` and `docs/dev-guide.md` files. More in [Writing Tests](#writing-tests).
+* `[optional]` Update the `beman_tidy/cli.py` file if the public API has changed.
 
 Check this PR example: [beman-tidy: add check - README.LIBRARY_STATUS](https://github.com/bemanproject/infra/pull/35).
 
