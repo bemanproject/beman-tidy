@@ -6,10 +6,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 ## Description
 
-`beman-tidy` is a tool used to check and apply [The Beman Standard](https://github.com/bemanproject/beman/blob/main/docs/BEMAN_STANDARD.md).
+`beman-tidy` is a tool used to check and apply
+[The Beman Standard](https://github.com/bemanproject/beman/blob/main/docs/BEMAN_STANDARD.md).
 
 Purpose: The tool is used to `check` (`--dry-run`) and `apply` (`--fix-inplace`) the Beman Standard to a repository.
-Note: `2025-06-07`: In order to make the best and quickly use of the tool in the entire organization, most of the checks will not support the `--fix-inplace` flag in the first iteration.
+Note: `2025-06-07`: In order to make the best and quickly use of the tool in the entire organization, most of the
+checks will not support the `--fix-inplace` flag in the first iteration.
 
 ## Installation
 
@@ -18,8 +20,8 @@ Note: `2025-06-07`: In order to make the best and quickly use of the tool in the
 - You can use beman-tidy as a pre-commit hook or install it on your system using `pipx`
 
 ```shell
-$ uv build
-$ pipx install path/to/wheel
+uv build
+pipx install path/to/wheel
 ```
 
 <details>
@@ -49,7 +51,7 @@ usage: beman-tidy [-h] [--fix-inplace | --no-fix-inplace] [--verbose | --no-verb
 
 ## Usage
 
-* Display help:
+- Display help:
 
 ```shell
 $ uv run beman-tidy --help
@@ -69,8 +71,7 @@ options:
   --checks CHECKS       array of checks to run
 ```
 
-* Run beman-tidy on the exemplar repository **(default: dry-run mode)**
-
+- Run beman-tidy on the exemplar repository **(default: dry-run mode)**
 
 ```shell
 # dry-run, require-all, non-verbose
@@ -92,23 +93,24 @@ Note: RECOMMENDATIONs are not included (--require-all NOT set).
 ```
 
 or verbose mode:
+
 ```shell
 # dry-run, require-all, verbose mode - no errors
 $ uv run beman-tidy /path/to/exemplar --require-all --verbose
 beman-tidy pipeline started ...
 
 Running check [RECOMMENDATION][README.TITLE] ...
-	check [RECOMMENDATION][README.TITLE] ... PASSED
+    check [RECOMMENDATION][README.TITLE] ... PASSED
 
 Running check [REQUIREMENT][README.BADGES] ...
-	check [REQUIREMENT][README.BADGES] ... PASSED
+    check [REQUIREMENT][README.BADGES] ... PASSED
 
 Running check [RECOMMENDATION][README.LIBRARY_STATUS] ...
-	check [RECOMMENDATION][README.LIBRARY_STATUS] ... PASSED
+    check [RECOMMENDATION][README.LIBRARY_STATUS] ... PASSED
 
 Running check [RECOMMENDATION][DIRECTORY.SOURCES] ...
 [WARNING        ][DIRECTORY.SOURCES        ]: The directory '/Users/dariusn/dev/dn/git/Beman/exemplar/src/beman/exemplar' does not exist.
-	check [RECOMMENDATION][DIRECTORY.SOURCES] ... FAILED
+    check [RECOMMENDATION][DIRECTORY.SOURCES] ... FAILED
 
 
 beman-tidy pipeline finished.
@@ -120,21 +122,22 @@ Coverage    REQUIREMENT: 100.0% (1/1 checks passed).
 Coverage RECOMMENDATION: 66.67% (2/3 checks passed).
 ```
 
+```shell
 # dry-run, require-all, verbose mode - no errors
 $ uv run beman-tidy /path/to/exemplar --require-all --verbose
 beman-tidy pipeline started ...
 
 Running check [RECOMMENDATION][README.TITLE] ...
-	check [RECOMMENDATION][README.TITLE] ... PASSED
+    check [RECOMMENDATION][README.TITLE] ... PASSED
 
 Running check [REQUIREMENT][README.BADGES] ...
-	check [REQUIREMENT][README.BADGES] ... PASSED
+    check [REQUIREMENT][README.BADGES] ... PASSED
 
 Running check [RECOMMENDATION][README.LIBRARY_STATUS] ...
-	check [RECOMMENDATION][README.LIBRARY_STATUS] ... PASSED
+    check [RECOMMENDATION][README.LIBRARY_STATUS] ... PASSED
 
 Running check [RECOMMENDATION][DIRECTORY.SOURCES] ...
-	check [RECOMMENDATION][DIRECTORY.SOURCES] ... PASSED
+    check [RECOMMENDATION][DIRECTORY.SOURCES] ... PASSED
 
 
 beman-tidy pipeline finished.
@@ -146,10 +149,10 @@ Coverage    REQUIREMENT: 100.0% (1/1 checks passed).
 Coverage RECOMMENDATION: 100.0% (3/3 checks passed).
 ```
 
-* Run beman-tidy on the exemplar repository (fix issues in-place):
+- Run beman-tidy on the exemplar repository (fix issues in-place):
 
 ```shell
-$ uv run beman-tidy path/to/exemplar --fix-inplace --verbose
+uv run beman-tidy path/to/exemplar --fix-inplace --verbose
 ```
 
 ## beman-tidy Development

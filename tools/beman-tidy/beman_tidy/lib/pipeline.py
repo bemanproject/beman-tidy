@@ -73,7 +73,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
 
         implemented_checks = get_registered_beman_standard_checks()
         all_checks = beman_standard_check_config
-        
+
         cnt_passed = {
             "REQUIREMENT": 0,
             "RECOMMENDATION": 0,

@@ -47,7 +47,7 @@ def parse_beman_submodule_file(path):
         fail()
     return BemanSubmodule(
         Path(path).resolve().parent,
-        config['beman_submodule']['remote'], 
+        config['beman_submodule']['remote'],
         config['beman_submodule']['commit_hash'])
 
 def get_beman_submodule(path: str | Path):
