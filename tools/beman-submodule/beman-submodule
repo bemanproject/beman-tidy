@@ -105,6 +105,9 @@ def beman_submodule_status(beman_submodule):
 def beman_submodule_update(beman_submodule, remote):
     tmpdir = clone_beman_submodule_into_tmpdir(beman_submodule, remote)
     tmp_path = Path(tmpdir.name)
+    sha_process = subprocess.run(
+        ['git', 'rev-parse', 'HEAD'], capture_output=True, check=True, text=True,
+        cwd=tmp_path)
 
     shutil.rmtree(beman_submodule.dirpath)
 
@@ -112,7 +115,7 @@ def beman_submodule_update(beman_submodule, remote):
     with open(submodule_path, 'w') as f:
         f.write('[beman_submodule]\n')
         f.write(f'remote={beman_submodule.remote}\n')
-        f.write(f'commit_hash={beman_submodule.commit_hash}\n')
+        f.write(f'commit_hash={sha_process.stdout.strip()}\n')
     shutil.rmtree(tmp_path / '.git')
     shutil.copytree(tmp_path, beman_submodule.dirpath)
 

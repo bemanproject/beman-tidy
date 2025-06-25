@@ -202,20 +202,50 @@ def test_update_command_no_paths():
     tmpdir2 = create_test_git_repository()
     original_cwd = Path.cwd()
     os.chdir(tmpdir2.name)
-    beman_submodule.add_command(tmpdir.name, 'foo')
-    beman_submodule.add_command(tmpdir.name, 'bar')
-    sha_process = subprocess.run(
+    orig_sha_process = subprocess.run(
+        ['git', 'rev-parse', 'HEAD'], capture_output=True, check=True, text=True,
+        cwd=tmpdir.name)
+    orig_sha = orig_sha_process.stdout.strip()
+    parent_sha_process = subprocess.run(
         ['git', 'rev-parse', 'HEAD^'], capture_output=True, check=True, text=True,
         cwd=tmpdir.name)
-    sha = sha_process.stdout.strip()
+    parent_sha = parent_sha_process.stdout.strip()
+    parent_parent_sha_process = subprocess.run(
+        ['git', 'rev-parse', 'HEAD^'], capture_output=True, check=True, text=True,
+        cwd=tmpdir.name)
+    parent_parent_sha = parent_parent_sha_process.stdout.strip()
     subprocess.run(
-        ['git', 'reset', '--hard', sha], capture_output=True, check=True,
+        ['git', 'reset', '--hard', parent_parent_sha], capture_output=True, check=True,
+        cwd=tmpdir.name)
+    beman_submodule.add_command(tmpdir.name, 'foo')
+    beman_submodule.add_command(tmpdir.name, 'bar')
+    subprocess.run(
+        ['git', 'reset', '--hard', orig_sha], capture_output=True, check=True,
         cwd=tmpdir.name)
     with open(Path(tmpdir2.name) / 'foo' / '.beman_submodule', 'w') as f:
-        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={sha}\n')
+        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n')
     with open(Path(tmpdir2.name) / 'bar' / '.beman_submodule', 'w') as f:
-        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={sha}\n')
-    beman_submodule.update_command(tmpdir.name, None)
+        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n')
+    beman_submodule.update_command(False, None)
+    with open(Path(tmpdir2.name) / 'foo' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n'
+    with open(Path(tmpdir2.name) / 'bar' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n'
+    subprocess.run(
+        ['git', 'reset', '--hard', parent_sha], capture_output=True, check=True,
+        cwd=tmpdir.name)
+    assert beman_submodule.directory_compare(
+        tmpdir.name, Path(tmpdir2.name) / 'foo', ['.git', '.beman_submodule'])
+    assert beman_submodule.directory_compare(
+        tmpdir.name, Path(tmpdir2.name) / 'bar', ['.git', '.beman_submodule'])
+    subprocess.run(
+        ['git', 'reset', '--hard', orig_sha], capture_output=True, check=True,
+        cwd=tmpdir.name)
+    beman_submodule.update_command(True, None)
+    with open(Path(tmpdir2.name) / 'foo' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={orig_sha}\n'
+    with open(Path(tmpdir2.name) / 'bar' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={orig_sha}\n'
     assert beman_submodule.directory_compare(
         tmpdir.name, Path(tmpdir2.name) / 'foo', ['.git', '.beman_submodule'])
     assert beman_submodule.directory_compare(
@@ -225,28 +255,58 @@ def test_update_command_no_paths():
 def test_update_command_with_path():
     tmpdir = create_test_git_repository()
     tmpdir2 = create_test_git_repository()
-    tmpdir_copy1 = tempfile.TemporaryDirectory()
-    shutil.copytree(tmpdir.name, tmpdir_copy1.name, dirs_exist_ok=True)
     original_cwd = Path.cwd()
     os.chdir(tmpdir2.name)
-    beman_submodule.add_command(tmpdir.name, 'foo')
-    beman_submodule.add_command(tmpdir.name, 'bar')
-    sha_process = subprocess.run(
+    orig_sha_process = subprocess.run(
+        ['git', 'rev-parse', 'HEAD'], capture_output=True, check=True, text=True,
+        cwd=tmpdir.name)
+    orig_sha = orig_sha_process.stdout.strip()
+    parent_sha_process = subprocess.run(
         ['git', 'rev-parse', 'HEAD^'], capture_output=True, check=True, text=True,
         cwd=tmpdir.name)
-    sha = sha_process.stdout.strip()
+    parent_sha = parent_sha_process.stdout.strip()
+    parent_parent_sha_process = subprocess.run(
+        ['git', 'rev-parse', 'HEAD^'], capture_output=True, check=True, text=True,
+        cwd=tmpdir.name)
+    parent_parent_sha = parent_parent_sha_process.stdout.strip()
     subprocess.run(
-        ['git', 'reset', '--hard', sha], capture_output=True, check=True,
+        ['git', 'reset', '--hard', parent_parent_sha], capture_output=True, check=True,
+        cwd=tmpdir.name)
+    tmpdir_parent_parent_copy = tempfile.TemporaryDirectory()
+    shutil.copytree(tmpdir.name, tmpdir_parent_parent_copy.name, dirs_exist_ok=True)
+    beman_submodule.add_command(tmpdir.name, 'foo')
+    beman_submodule.add_command(tmpdir.name, 'bar')
+    subprocess.run(
+        ['git', 'reset', '--hard', orig_sha], capture_output=True, check=True,
         cwd=tmpdir.name)
     with open(Path(tmpdir2.name) / 'foo' / '.beman_submodule', 'w') as f:
-        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={sha}\n')
+        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n')
     with open(Path(tmpdir2.name) / 'bar' / '.beman_submodule', 'w') as f:
-        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={sha}\n')
-    beman_submodule.update_command(tmpdir.name, 'foo')
+        f.write(f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n')
+    beman_submodule.update_command(False, 'foo')
+    with open(Path(tmpdir2.name) / 'foo' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n'
+    with open(Path(tmpdir2.name) / 'bar' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n'
+    subprocess.run(
+        ['git', 'reset', '--hard', parent_sha], capture_output=True, check=True,
+        cwd=tmpdir.name)
     assert beman_submodule.directory_compare(
         tmpdir.name, Path(tmpdir2.name) / 'foo', ['.git', '.beman_submodule'])
     assert beman_submodule.directory_compare(
-        tmpdir_copy1.name, Path(tmpdir2.name) / 'bar', ['.git', '.beman_submodule'])
+        tmpdir_parent_parent_copy.name, Path(tmpdir2.name) / 'bar', ['.git', '.beman_submodule'])
+    subprocess.run(
+        ['git', 'reset', '--hard', orig_sha], capture_output=True, check=True,
+        cwd=tmpdir.name)
+    beman_submodule.update_command(True, 'foo')
+    with open(Path(tmpdir2.name) / 'foo' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={orig_sha}\n'
+    with open(Path(tmpdir2.name) / 'bar' / '.beman_submodule', 'r') as f:
+        assert f.read() == f'[beman_submodule]\nremote={tmpdir.name}\ncommit_hash={parent_sha}\n'
+    assert beman_submodule.directory_compare(
+        tmpdir.name, Path(tmpdir2.name) / 'foo', ['.git', '.beman_submodule'])
+    assert beman_submodule.directory_compare(
+        tmpdir_parent_parent_copy.name, Path(tmpdir2.name) / 'bar', ['.git', '.beman_submodule'])
     os.chdir(original_cwd)
 
 def test_add_command():
