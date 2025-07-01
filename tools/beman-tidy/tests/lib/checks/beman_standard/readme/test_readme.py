@@ -17,7 +17,7 @@ from beman_tidy.lib.checks.beman_standard.readme import (
     ReadmeLibraryStatusCheck,
 )
 
-test_data_prefix = "tests/lib/checks/beman_standard/readme/data"
+test_data_prefix = str(Path(__file__).parent.resolve() / "data")
 valid_prefix = f"{test_data_prefix}/valid"
 invalid_prefix = f"{test_data_prefix}/invalid"
 
