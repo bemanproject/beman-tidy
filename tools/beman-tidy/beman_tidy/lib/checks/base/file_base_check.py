@@ -18,7 +18,7 @@ class FileBaseCheck(BaseCheck):
         # set path - e.g. "README.md"
         self.path = self.repo_path / relative_path
 
-    def pre_check(self):
+    def pre_check(self) -> bool:
         """
         Override.
         Pre-checks if the file exists and is not empty.
@@ -41,14 +41,14 @@ class FileBaseCheck(BaseCheck):
         return True
 
     @abstractmethod
-    def check(self):
+    def check(self) -> bool:
         """
         Override this method, make it abstract because this is style an abstract class.
         """
         pass
 
     @abstractmethod
-    def fix(self):
+    def fix(self) -> bool:
         """
         Override this method, make it abstract because this is style an abstract class.
         """

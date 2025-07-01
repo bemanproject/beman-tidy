@@ -54,6 +54,20 @@ def file_testcase_run_fix_invalid(
     # Delete the temporary file
     os.remove(f"{invalid_file_path}.delete_me")
 
+def file_testcase_run_fix_not_exist(file_path, check_class, repo_info, beman_standard_check_config):
+    check_instance = check_class(repo_info, beman_standard_check_config)
+    check_instance.path = Path(file_path)
+
+    assert check_instance.pre_check() is False
+    assert check_instance.check() is False
+
+    assert check_instance.fix() is True
+
+    assert check_instance.pre_check() is True
+    assert check_instance.check() is True
+
+    os.remove(file_path)
+
 
 def file_testcases_run(
     file_paths, check_class, repo_info, beman_standard_check_config, expected_result
@@ -90,4 +104,12 @@ def file_testcases_run_fix_invalid(
     for invalid_file_path in invalid_file_paths:
         file_testcase_run_fix_invalid(
             invalid_file_path, check_class, repo_info, beman_standard_check_config
+        )
+
+def file_testcases_run_fix_not_exist(
+    file_paths, check_class, repo_info, beman_standard_check_config
+):
+    for file_path in file_paths:
+        file_testcase_run_fix_not_exist(
+            file_path, check_class, repo_info, beman_standard_check_config
         )

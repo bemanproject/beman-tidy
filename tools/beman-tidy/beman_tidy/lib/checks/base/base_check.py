@@ -86,7 +86,7 @@ class BaseCheck(ABC):
         return True
 
     @abstractmethod
-    def check(self):
+    def check(self) -> bool:
         """
         Checks if the Beman Standard check is already applied.
         - If it's applied, this method should return True.
@@ -97,7 +97,7 @@ class BaseCheck(ABC):
         pass
 
     @abstractmethod
-    def fix(self):
+    def fix(self) -> bool:
         """
         Fixes the issue if the Beman Standard is not applied.
         - If check already applied, this method is a no-op and should return True.
