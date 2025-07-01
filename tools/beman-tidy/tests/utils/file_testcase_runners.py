@@ -110,6 +110,7 @@ def file_testcases_run_fix_invalid(
         )
 
 
+
 def file_testcases_run_fix_not_exist(
     file_paths, check_class, repo_info, beman_standard_check_config
 ):
