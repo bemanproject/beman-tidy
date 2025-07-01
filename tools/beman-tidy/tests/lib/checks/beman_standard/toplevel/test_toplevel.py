@@ -19,7 +19,6 @@ valid_prefix = f"{test_data_prefix}/valid"
 invalid_prefix = f"{test_data_prefix}/invalid"
 
 
-
 def test_TOPLEVEL_LICENSE_valid(repo_info, beman_standard_check_config):
     """Test valid cases for the TopLevelLicenseCheck."""
 
