@@ -183,7 +183,7 @@ def add_command(repository, path, allow_untracked_files):
         f.write(f'remote={repository}\n')
         f.write(f'commit_hash={sha_process.stdout.strip()}\n')
         if allow_untracked_files:
-            f.write(f'allow_untracked_files=True')
+            f.write(f'allow_untracked_files=True\n')
     shutil.rmtree(tmpdir_repo /'.git')
     shutil.copytree(tmpdir_repo, path, dirs_exist_ok=True)
 
