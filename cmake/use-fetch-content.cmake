@@ -60,7 +60,7 @@ function(BemanExemplar_provideDependency method package_name)
     endif()
 
     if(BemanExemplar_numDependencies EQUAL 0)
-      return()
+        return()
     endif()
 
     # Loop over each dependency object
