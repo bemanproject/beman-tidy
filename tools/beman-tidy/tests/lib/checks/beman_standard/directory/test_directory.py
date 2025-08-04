@@ -11,6 +11,7 @@ from tests.utils.path_runners import (
 # Actual tested checks.
 from beman_tidy.lib.checks.beman_standard.directory import (
     DirectorySourcesCheck,
+    DirectoryInterfaceHeadersCheck,
     DirectoryDocsCheck,
     DirectoryExamplesCheck,
 )
@@ -20,11 +21,62 @@ valid_prefix = f"{test_data_prefix}/valid"
 invalid_prefix = f"{test_data_prefix}/invalid"
 
 
+def test__DIRECTORY_INTERFACE_HEADERS__valid(repo_info, beman_standard_check_config):
+    """
+    Test that repositories with interface headers reside within include/beman/<short_name>/.
+    """
+    valid_interface_headers_paths = [
+        # exemplar/ repo with include/beman/exemplar/ and a header file.
+        Path(f"{valid_prefix}/repo-exemplar-v1/"),
+        # exemplar/ repo with no include/beman/exemplar/
+        Path(f"{valid_prefix}/repo-exemplar-v2/"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_interface_headers_paths,
+        DirectoryInterfaceHeadersCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__DIRECTORY_INTERFACE_HEADERS__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that repositories with interface headers don't reside within include/beman/<short_name>/.
+    """
+    invalid_interface_headers_paths = [
+        # Headers in include/beman/optional - wrong inner directory.
+        Path(f"{invalid_prefix}/repo-exemplar-v1"),
+        # Headers in include/beman/ - missing 2nd subdirectory.
+        Path(f"{invalid_prefix}/repo-exemplar-v2"),
+        # Headers in include/ - missing 1st and 2nd subdirectories.
+        Path(f"{invalid_prefix}/repo-exemplar-v3"),
+        # Headers in toplevel directory.
+        Path(f"{invalid_prefix}/repo-exemplar-v4"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_interface_headers_paths,
+        DirectoryInterfaceHeadersCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="NOT implemented")
+def test__DIRECTORY_INTERFACE_HEADERS__fix_inplace(
+    repo_info, beman_standard_check_config
+):
+    pass
+
+
 def test__DIRECTORY_SOURCES__valid(repo_info, beman_standard_check_config):
     """
-    Test that repositories with valid CMakeLists.txt.
+    Test that repositories with sources and headers not part of the public interface reside in src/
     """
-    valid_cmake_paths = [
+    valid_source_paths = [
         # exemplar/ repo with src/beman/exemplar/ - valid source tree.
         Path(f"{valid_prefix}/repo-exemplar-v1/"),
         # exemplar/ repo without src/ - no source files (header-only).
@@ -33,7 +85,7 @@ def test__DIRECTORY_SOURCES__valid(repo_info, beman_standard_check_config):
 
     run_check_for_each_path(
         True,
-        valid_cmake_paths,
+        valid_source_paths,
         DirectorySourcesCheck,
         repo_info,
         beman_standard_check_config,
@@ -42,9 +94,9 @@ def test__DIRECTORY_SOURCES__valid(repo_info, beman_standard_check_config):
 
 def test__DIRECTORY_SOURCES__invalid(repo_info, beman_standard_check_config):
     """
-    Test that repositories with invalid CMakeLists.txt.
+    Test that repositories with sources and headers not part of the public interface don't reside in src/
     """
-    invalid_cmake_paths = [
+    invalid_source_paths = [
         # Sources in src/beman/optional - wrong inner directory.
         Path(f"{invalid_prefix}/repo-exemplar-v1"),
         # Sources in src/beman/ - missing 3rd subdirectory.
@@ -63,7 +115,7 @@ def test__DIRECTORY_SOURCES__invalid(repo_info, beman_standard_check_config):
 
     run_check_for_each_path(
         False,
-        invalid_cmake_paths,
+        invalid_source_paths,
         DirectorySourcesCheck,
         repo_info,
         beman_standard_check_config,

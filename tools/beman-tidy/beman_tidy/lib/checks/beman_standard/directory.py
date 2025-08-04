@@ -30,7 +30,56 @@ class BemanTreeDirectoryCheck(DirectoryBaseCheck):
         )
 
 
-# TODO DIRECTORY.INTERFACE_HEADERS
+@register_beman_standard_check("DIRECTORY.INTERFACE_HEADERS")
+class DirectoryInterfaceHeadersCheck(BemanTreeDirectoryCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config, "include")
+
+    def pre_check(self):
+        # Need to override this, because DIRECTORY.INTERFACE_HEADERS is conditional
+        # (a repo without any interface header files is still valid).
+        return True
+
+    def check(self):
+        """
+        Check that all public header files reside within the include/beman/<short_name>/ directory.
+        """
+        # Exclude certain directories.
+        exclude_dirs = ["src"]
+        if self.path.exists():
+            exclude_dirs.append(f"include/beman/{self.repo_name}")
+        if self.repo_name == "exemplar":
+            exclude_dirs.append("cookiecutter")
+
+        # Find all misplaced public header files in the repository.
+        header_extensions = [".hpp", ".hxx", ".h", ".hh"]
+        misplaced_header_files = []
+
+        for extension in header_extensions:
+            for p in self.repo_path.rglob(f"*{extension}"):
+                # Check if any part of the path contains an excluded directory
+                if not any(excluded in str(p) for excluded in exclude_dirs):
+                    misplaced_header_files.append(p)
+
+        if len(misplaced_header_files) > 0:
+            for misplaced_header_file in misplaced_header_files:
+                self.log(f"Misplaced header file found: {misplaced_header_file}")
+
+            self.log(
+                "Please move all public header files within the include/beman/<short_name>/ directory. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/BEMAN_STANDARD.md#directoryinterface_headers for more information."
+            )
+            return False
+
+        # Check passes if the include/beman/<short_name>/ directory does not exist
+        # or all header files are within include/beman/<short_name>/ directory.
+        return True
+
+    def fix(self):
+        self.log(
+            f"Please manually move interface header files to include/beman/{self.repo_name}. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/BEMAN_STANDARD.md#directoryinterface_headers for more information."
+        )
 
 
 # TODO DIRECTORY.IMPLEMENTATION_HEADERS
