@@ -41,7 +41,10 @@ function(beman_install_library name)
     endif()
 
     if(NOT ARGN STREQUAL "")
-        message(FATAL_ERROR "beman_install_library does not accept extra arguments: ${ARGN}")
+        message(
+            FATAL_ERROR
+            "beman_install_library does not accept extra arguments: ${ARGN}"
+        )
     endif()
 
     # Given foo.bar, the component name is bar
@@ -49,7 +52,10 @@ function(beman_install_library name)
     # fail if the name doesn't look like foo.bar
     list(LENGTH name_parts name_parts_length)
     if(NOT name_parts_length EQUAL 2)
-        message(FATAL_ERROR "beman_install_library expects a name of the form 'beman.<name>', got '${name}'")
+        message(
+            FATAL_ERROR
+            "beman_install_library expects a name of the form 'beman.<name>', got '${name}'"
+        )
     endif()
 
     set(target_name "${name}")
@@ -59,8 +65,7 @@ function(beman_install_library name)
     list(GET name_parts -1 component_name)
 
     install(
-        TARGETS "${target_name}"
-        COMPONENT "${install_component_name}"
+        TARGETS "${target_name}" COMPONENT "${install_component_name}"
         EXPORT "${export_name}"
         FILE_SET HEADERS
     )
@@ -76,13 +81,18 @@ function(beman_install_library name)
     string(TOUPPER "${name}" project_prefix)
     string(REPLACE "." "_" project_prefix "${project_prefix}")
 
-    if("${name}" IN_LIST BEMAN_INSTALL_CONFIG_FILE_PACKAGES OR
-         "${project_prefix}_INSTALL_CONFIG_FILE_PACKAGE")
-          set(install_config_package ON)
+    if(
+        "${name}" IN_LIST BEMAN_INSTALL_CONFIG_FILE_PACKAGES
+        OR "${project_prefix}_INSTALL_CONFIG_FILE_PACKAGE"
+    )
+        set(install_config_package ON)
     endif()
 
     if(install_config_package)
-        message(DEBUG "beman-install-library: Installing a config package for '${name}'")
+        message(
+            DEBUG
+            "beman-install-library: Installing a config package for '${name}'"
+        )
 
         include(CMakePackageConfigHelpers)
 
@@ -94,7 +104,9 @@ function(beman_install_library name)
             NO_CACHE
             REQUIRED
         )
-        set(config_package_file "${CMAKE_CURRENT_BINARY_DIR}/${package_name}-config.cmake")
+        set(config_package_file
+            "${CMAKE_CURRENT_BINARY_DIR}/${package_name}-config.cmake"
+        )
         set(package_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${package_name}")
         configure_package_config_file(
             "${config_file_template}"
@@ -103,7 +115,9 @@ function(beman_install_library name)
             PATH_VARS PROJECT_NAME PROJECT_VERSION
         )
 
-        set(config_version_file "${CMAKE_CURRENT_BINARY_DIR}/${package_name}-config-version.cmake")
+        set(config_version_file
+            "${CMAKE_CURRENT_BINARY_DIR}/${package_name}-config-version.cmake"
+        )
         write_basic_package_version_file(
             "${config_version_file}"
             VERSION "${PROJECT_VERSION}"
@@ -111,9 +125,7 @@ function(beman_install_library name)
         )
 
         install(
-            FILES
-                "${config_package_file}"
-                "${config_version_file}"
+            FILES "${config_package_file}" "${config_version_file}"
             DESTINATION "${package_install_dir}"
             COMPONENT "${install_component_name}"
         )
@@ -127,7 +139,9 @@ function(beman_install_library name)
             COMPONENT "${install_component_name}"
         )
     else()
-        message(DEBUG "beman-install-library: Not installing a config package for '${name}'")
+        message(
+            DEBUG
+            "beman-install-library: Not installing a config package for '${name}'"
+        )
     endif()
-
 endfunction()
