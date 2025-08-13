@@ -11,6 +11,7 @@ from tests.utils.path_runners import (
 
 # Actual tested checks.
 from beman_tidy.lib.checks.beman_standard.readme import (
+    ReadmePurposeCheck,
     ReadmeTitleCheck,
     ReadmeBadgesCheck,
     ReadmeImplementsCheck,
@@ -21,6 +22,13 @@ from beman_tidy.lib.checks.beman_standard.readme import (
 test_data_prefix = "tests/lib/checks/beman_standard/readme/data"
 valid_prefix = f"{test_data_prefix}/valid"
 invalid_prefix = f"{test_data_prefix}/invalid"
+
+
+def test__readme_purpose__is_always_skipped(repo_info, beman_standard_check_config):
+    """
+    Test that readme.purpose is always skipped, as it cannot be implemented.
+    """
+    assert ReadmePurposeCheck(repo_info, beman_standard_check_config).should_skip()
 
 
 def test__readme_title__valid(repo_info, beman_standard_check_config):

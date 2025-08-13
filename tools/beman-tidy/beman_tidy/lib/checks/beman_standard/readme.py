@@ -3,7 +3,7 @@
 
 import re
 
-from ..base.file_base_check import FileBaseCheck
+from ..base.file_base_check import FileBaseCheck, BaseCheck
 from ..system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.string import (
     match_apache_license_v2_with_llvm_exceptions,
@@ -19,6 +19,20 @@ from beman_tidy.lib.utils.string import (
 class ReadmeBaseCheck(FileBaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config, "README.md")
+
+
+@register_beman_standard_check("readme.purpose")
+class ReadmePurposeCheck(BaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def should_skip(self):
+        # Cannot actually implement readme.purpose, thus skip it.
+        self.log(
+            "beman-tidy cannot actually check readme.purpose. Please add a one line summary describing the library's purpose."
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#readmepurpose."
+        )
+        return True
 
 
 @register_beman_standard_check("readme.title")
