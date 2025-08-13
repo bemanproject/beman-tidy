@@ -181,3 +181,6 @@ cmake_language(
     SET_DEPENDENCY_PROVIDER BemanExemplar_provideDependency
     SUPPORTED_METHODS FIND_PACKAGE
 )
+
+# Add this dir to the module path so that `find_package(beman-install-library)` works
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_LIST_DIR}")
