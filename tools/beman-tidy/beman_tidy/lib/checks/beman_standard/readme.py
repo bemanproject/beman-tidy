@@ -117,9 +117,10 @@ class ReadmeImplementsCheck(ReadmeBaseCheck):
         # Match the pattern to start with "Implements:" and then have a paper reference and a wg21.link URL.
         # Examples of valid lines:
         # **Implements**: [Standard Library Concepts (P0898R3)](https://wg21.link/P0898R3).
+        # **Implements**: `std::ranges::any_view` proposed in [any_view (P3411)](https://wg21.link/p3411).
         # **Implements**: [Give *std::optional* Range Support (P3168R2)](https://wg21.link/P3168R2) and [`std::optional<T&>` (P2988R5)](https://wg21.link/P2988R5)
         # **Implements**: [.... (PxyzwRr)](https://wg21.link/PxyzwRr), [.... (PabcdRr)](https://wg21.link/PabcdRr), and [.... (PijklRr)](https://wg21.link/PijklRr),
-        regex = r"^\*\*Implements\*\*:\s+.*\bP\d{4}R\d+\b.*wg21\.link/\S+"
+        regex = r"^\*\*Implements\*\*:\s+.*\bP\d{4}R?\d*\b.*wg21\.link/\S+"
 
         # Count how many lines match the regex
         implement_lines = 0
