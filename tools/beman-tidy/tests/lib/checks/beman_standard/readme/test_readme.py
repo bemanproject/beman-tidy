@@ -169,6 +169,7 @@ def test__readme_implements__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v2.md"),
         Path(f"{valid_prefix}/README-v3.md"),
         Path(f"{valid_prefix}/README-v4.md"),
+        Path(f"{valid_prefix}/README-v5.md"),
     ]
 
     run_check_for_each_path(
