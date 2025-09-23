@@ -115,7 +115,7 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
 
     def check(self):
         # Exclude directories that are not part of the tests.
-        exclude_dirs = [".github", "tests"]
+        exclude_dirs = [".github", "tests", ".git"]
         if self.repo_name == "exemplar":
             exclude_dirs.extend(["cookiecutter", "infra"])
 
