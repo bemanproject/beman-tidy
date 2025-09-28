@@ -15,9 +15,6 @@ on:
 jobs:
   run_linter:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tools/beman-tidy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
