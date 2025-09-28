@@ -32,9 +32,6 @@ jobs:
 
   run_tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tools/beman-tidy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,9 +49,6 @@ jobs:
 
   build_and_install:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tools/beman-tidy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,9 +69,6 @@ jobs:
 
   run_on_exemplar:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tools/beman-tidy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -105,4 +96,4 @@ jobs:
   create-issue-when-fault:
     needs: [run_linter, run_tests, build_and_install, run_on_exemplar]
     if: failure() && (github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
-    uses: ./.github/workflows/reusable-beman-create-issue-when-fault.yml
+    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-create-issue-when-fault.yml@1.1.0
