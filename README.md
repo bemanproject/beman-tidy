@@ -7,15 +7,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 and apply (`--fix-inplace`) the [Beman Standard](https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md)
 to their repositories.
 
-Note: `2025-06-07`: In order to make the best and quickly use of the tool in the entire organization, most of the
-checks will not support the `--fix-inplace` flag in the first iteration.
+**Note `2025-06-07`:** The first iteration of the tool will not support `--fix-inplace` in order to
+expedite adoption across the Beman Project.
 
 ## Usage
 
 - Display help:
 
 ```shell
-$ uv run beman-tidy --help
+$ beman-tidy --help
 usage: beman-tidy [-h] [--fix-inplace | --no-fix-inplace] [--verbose | --no-verbose] [--require-all | --no-require-all] [--checks CHECKS] repo_path
 
 positional arguments:
@@ -36,7 +36,7 @@ options:
 
 ```shell
 # dry-run, require-all, non-verbose
-$ uv run beman-tidy /path/to/exemplar --require-all
+$ beman-tidy /path/to/exemplar --require-all
 Summary    Requirement:  18 checks passed, 1 checks failed, 5 checks skipped,  23 checks not implemented.
 Summary Recommendation:  0 checks passed, 0 checks failed, 0 checks skipped,  0 checks not implemented.
 
@@ -134,9 +134,9 @@ Coverage          TOTAL:  95.83% (23/24 checks passed).
 - Run beman-tidy on the exemplar repository (fix issues in-place):
 
 ```shell
-uv run beman-tidy path/to/exemplar --fix-inplace --verbose
+beman-tidy path/to/exemplar --fix-inplace --verbose
 ```
 
-## beman-tidy Development
+## Working on beman-tidy
 
-Please refer to the [Beman Tidy Development Guide](./docs/dev-guide.md) for more details.
+Please refer to the [Beman Tidy Development Guide](https://github.com/bemanproject/beman-tidy/blob/main/docs/dev-guide.md) for more details.
