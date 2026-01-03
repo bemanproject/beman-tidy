@@ -29,4 +29,4 @@ This is a valid README.md file that follows the Beman Standard: the implements i
 
 This is a valid README.md file that follows the Beman Standard: the library status is properly formatted.
 
-This is a valid README.md file that follows the Beman Standard: the license is properly formatted  - Apache License.
+This is a valid README.md file that follows the Beman Standard: the license is properly formatted.

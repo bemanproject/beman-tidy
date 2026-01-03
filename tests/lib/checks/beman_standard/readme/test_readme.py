@@ -42,6 +42,8 @@ def test__readme_title__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v2.md"),
         # Title: # beman.exemplar: Awesome Beman Library
         Path(f"{valid_prefix}/README-v3.md"),
+        # Title: # beman.exemplar: The Most Awesome Beman Library
+        Path(f"{valid_prefix}/README-v4.md"),
     ]
 
     run_check_for_each_path(
@@ -103,6 +105,8 @@ def test__readme_badges__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v2.md"),
         # Badges: production ready (stable api) status and cpp29 target
         Path(f"{valid_prefix}/README-v3.md"),
+        # Badges: retired status and cpp26 target
+        Path(f"{valid_prefix}/README-v4.md"),
     ]
 
     run_check_for_each_path(
@@ -164,6 +168,8 @@ def test__readme_implements__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v1.md"),
         Path(f"{valid_prefix}/README-v2.md"),
         Path(f"{valid_prefix}/README-v3.md"),
+        Path(f"{valid_prefix}/README-v4.md"),
+        Path(f"{valid_prefix}/README-v5.md"),
     ]
 
     run_check_for_each_path(
@@ -213,6 +219,7 @@ def test__readme_library_status__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v1.md"),
         Path(f"{valid_prefix}/README-v2.md"),
         Path(f"{valid_prefix}/README-v3.md"),
+        Path(f"{valid_prefix}/README-v4.md"),
     ]
 
     run_check_for_each_path(
@@ -264,6 +271,8 @@ def test__readme_license__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v2.md"),
         # License: Apache License 2.0 with LLVM Exceptions
         Path(f"{valid_prefix}/README-v3.md"),
+        # License: Apache License 2.0 with LLVM Exceptions and Boost Tooling
+        Path(f"{valid_prefix}/README-v4.md"),
     ]
 
     run_check_for_each_path(
