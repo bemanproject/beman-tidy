@@ -271,7 +271,7 @@ def test__readme_license__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v2.md"),
         # License: Apache License 2.0 with LLVM Exceptions
         Path(f"{valid_prefix}/README-v3.md"),
-        # License: Apache License 2.0 with LLVM Exceptions and Boost Tooling
+        # License: Apache License 2.0 with LLVM Exceptions and Boost
         Path(f"{valid_prefix}/README-v4.md"),
     ]
 
