@@ -28,9 +28,7 @@ def test__license_approved__valid(repo_info, beman_standard_check_config):
         # Apache License v2.0 with LLVM Exceptions
         Path(f"{valid_prefix}/valid-LICENSE-v1"),
         # Boost Software License - Version 1.0
-        Path(f"{valid_prefix}/valid-LICENSE-v2"),
-        # The MIT License
-        Path(f"{valid_prefix}/valid-LICENSE-v3"),
+        Path(f"{valid_prefix}/valid-LICENSE-v2")
     ]
 
     run_check_for_each_path(
@@ -91,9 +89,7 @@ def test__license_apache_llvm__invalid(repo_info, beman_standard_check_config):
     """
     invalid_license_paths = [
         # Boost Software License 1.0 is license.approved compatible, but not compatible with license.apache_llvm.
-        Path(f"{valid_prefix}/valid-LICENSE-v2"),
-        # MIT License  is license.approved compatible, but not compatible with license.apache_llvm.
-        Path(f"{valid_prefix}/valid-LICENSE-v3"),
+        Path(f"{valid_prefix}/valid-LICENSE-v2")
     ]
 
     run_check_for_each_path(

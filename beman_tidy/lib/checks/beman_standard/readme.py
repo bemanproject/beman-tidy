@@ -7,8 +7,7 @@ from ..base.file_base_check import FileBaseCheck, BaseCheck
 from ..system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.string import (
     match_apache_license_v2_with_llvm_exceptions,
-    match_boost_software_license_v1_0,
-    match_the_mit_license,
+    match_boost_software_license_v1_0
 )
 
 
@@ -197,7 +196,6 @@ class ReadmeLicenseCheck(ReadmeBaseCheck):
         if (
             not match_apache_license_v2_with_llvm_exceptions(license_text)
             and not match_boost_software_license_v1_0(license_text)
-            and not match_the_mit_license(license_text)
         ):
             self.log(
                 f"The file '{self.path}' does not contain the required license. "

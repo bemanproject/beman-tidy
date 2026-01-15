@@ -14,7 +14,7 @@
 
 ## License
 
-This project is licensed under the Apache License 2.0 with LLVM Exceptions blah blah, and for tooling, the docs are under the MIT License.
+This project is licensed under the Apache License 2.0 with LLVM Exceptions blah blah, and for tooling, the docs are under the Boost .
 
 ## Other
 
