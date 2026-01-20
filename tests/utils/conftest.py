@@ -10,7 +10,8 @@ def mock_repo_info():
     """Return repository information for beman.exemplar library"""
     return {
         "top_level": ".",
-        "name": "exemplar",
+        "name": "exemplar",  # Checkout directory name
+        "short_name": "exemplar",  # Repository name from remote URL
         "remote_url": "https://github.com/bemanproject/exemplar",
         "current_branch": "main",
         "default_branch": "main",

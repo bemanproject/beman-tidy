@@ -20,13 +20,20 @@ class BemanTreeDirectoryCheck(DirectoryBaseCheck):
     - src/beman/exemplar
 
     Note: A path can be optional. Actual implementation will be in the derived's check().
+
+    The short_name is obtained from the repository's remote URL (via repo_info['short_name']),
+    not from the local checkout directory name, to avoid coupling to the directory name.
     """
 
     def __init__(self, repo_info, beman_standard_check_config, prefix_path):
+        # Use short_name from repo_info, which is parsed from the remote URL
+        # Fall back to 'name' (checkout directory) if short_name is not available
+        short_name = repo_info.get("short_name", repo_info["name"])
+        self.short_name = short_name
         super().__init__(
             repo_info,
             beman_standard_check_config,
-            f"{prefix_path}/beman/{repo_info['name']}",
+            f"{prefix_path}/beman/{short_name}",
         )
 
 
@@ -61,14 +68,14 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
             forbidden_prefix = self.repo_path / forbidden_prefix
             if forbidden_prefix.exists():
                 self.log(
-                    f"Please move source files from {forbidden_prefix} to src/beman/{self.repo_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
+                    f"Please move source files from {forbidden_prefix} to src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
                 )
                 return False
 
         # If `src/` exists, src/beman/<short_name> also should exist.
         if (self.repo_path / "src/").exists() and not self.path.exists():
             self.log(
-                f"Please use the required source files location: src/beman/{self.repo_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
+                f"Please use the required source files location: src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
             )
             return False
 
@@ -80,7 +87,7 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
         # we cannot do a proper implementation for fix().
         if not self.check():
             self.log(
-                f"Please manually move sources to src/beman/{self.repo_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
+                f"Please manually move sources to src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
             )
 
 
