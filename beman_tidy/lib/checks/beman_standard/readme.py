@@ -113,15 +113,16 @@ class ReadmeImplementsCheck(ReadmeBaseCheck):
     def check(self):
         lines = self.read_lines_strip()
 
-        # Match the pattern to start with "**Implements**:", then have a paper reference with a wg21.link URL.
+        # Matches lines starting with "**Implements**:" that reference a WG21 paper
+        # and include a corresponding https://wg21.link/Pxxxx[Rx] URL
+
         # Examples of valid lines:
         # **Implements**: [Standard Library Concepts (P0898)](https://wg21.link/P0898).
-        # **Implements**: `std::ranges::any_view` proposed in [any_view (P3411R4)](https://wg21.link/p3411r4).
-        # **Implements**: [Give *std::optional* Range Support (P3168R2)](https://wg21.link/p3168r2) and [`std::optional<T&>` (P2988R5)](https://wg21.link/P2988R5)
+        # **Implements**: `std::ranges::any_view` proposed in [any_view (p3411r4)](https://wg21.link/p3411r4).
+        # **Implements**: [Give *std::optional* Range Support (P3168R2)](https://wg21.link/p3168r2) and [`std::optional<T&>` (p2988r5)](https://wg21.link/P2988R5)
         # **Implements**: [.... (P0000)](https://wg21.link/p0000), [.... (P1111R1)](https://wg21.link/p1111r1), and [.... (P2222)](https://wg21.link/p2222),
 
-        regex = r"^\*\*Implements\*\*:\s+.*\bP\d{4}R?\d*\b.*wg21\.link/\S+"
-
+        regex = r"^\*\*Implements\*\*:\s+.*\b[pP]\d{4}(?:[rR]\d+)?\b.*wg21\.link/[pP]\d{4}(?:[rR]\d+)?\b"
         # Count the number of lines that match the regex
         implement_lines = 0
         for line in lines:
