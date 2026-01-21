@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import subprocess
+
 from ..base.directory_base_check import DirectoryBaseCheck
 from ..system.registry import register_beman_standard_check
 
@@ -115,9 +117,9 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
 
     def check(self):
         # Exclude directories that are not part of the tests.
-        exclude_dirs = [".github", "tests", ".git"]
+        exclude_dirs = [".github", "tests", ".git", "infra"]
         if self.repo_name == "exemplar":
-            exclude_dirs.extend(["cookiecutter", "infra"])
+            exclude_dirs.extend("cookiecutter")
 
         # Find all test files in the repository outside the excluded directories.
         misplaced_test_files = []
@@ -213,11 +215,11 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
 
     def check(self):
         # Exclude directories that are not part of the documentation.
-        exclude_dirs = ["src", "papers", "examples", ".github"]
+        exclude_dirs = ["src", "papers", "examples", ".github", "infra"]
         if self.path.exists():
             exclude_dirs.append("docs")
         if self.repo_name == "exemplar":
-            exclude_dirs.extend(["cookiecutter", "infra"])
+            exclude_dirs.append("cookiecutter")
 
         # Find all MD files in the repository.
         misplaced_md_files = [
@@ -276,11 +278,11 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
             └── abstract.bst
         """
         # Exclude directories that are not part of the papers/ directory.
-        exclude_dirs = ["src", "docs", "examples", ".github"]
+        exclude_dirs = ["src", "docs", "examples", ".github", "infra"]
         if self.path.exists():
             exclude_dirs.append("papers")
         if self.repo_name == "exemplar":
-            exclude_dirs.extend(["cookiecutter", "infra"])
+            exclude_dirs.append("cookiecutter")
 
         # File extensions that are considered "paper-related"
         paper_extensions = [
