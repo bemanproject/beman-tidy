@@ -8,7 +8,7 @@
 <!-- markdownlint-disable-next-line line-length -->
 `beman.exemplar` is a minimal C++ library conforming to [The Beman Standard](https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md). This can be used as a template for those intending to write Beman libraries. It may also find use as a minimal and modern  C++ project structure.
 
-**Implements**: `std::identity` proposed in [Standard Library Concepts (P0898R3)](https://wg21.link/P0898R3).
+**Implements**: [Give *std::optional* Range Support (p3168r2)](https://wg21.link/p3168r2) and [`std::optional<T&>` (P2988R5)](https://wg21.link/P2988R5)
 
 <!-- markdownlint-disable-next-line line-length -->
 **Status**: [Production ready. Stable API.](https://github.com/bemanproject/beman/blob/main/docs/beman_library_maturity_model.md#production-ready-stable-api)
