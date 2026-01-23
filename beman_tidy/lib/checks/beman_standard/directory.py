@@ -115,13 +115,13 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
 
     def check(self):
         # Exclude directories that are not part of the tests.
-        exclude_dirs = [".github", "tests", ".git", "infra"]
+        exclude_dirs = [".github", f"tests/beman/{self.repo_info['name']}", ".git", "infra"]
         if self.repo_name == "exemplar":
-            exclude_dirs.extend("cookiecutter")
+            exclude_dirs.append("cookiecutter")
 
         # Find all test files in the repository outside the excluded directories.
         misplaced_test_files = []
-        for p in self.repo_path.rglob("*test*"):
+        for p in self.repo_path.rglob("*.test.*"):
             if not any(excluded in str(p) for excluded in exclude_dirs):
                 misplaced_test_files.append(p)
 
@@ -147,7 +147,7 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
             )
             return False
 
-        # Check passes if tests/ directory exists and contains relevant test files.
+        # Check passes if the tests/ directory exists and contains relevant test files.
         return True
 
     def fix(self):

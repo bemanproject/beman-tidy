@@ -118,6 +118,8 @@ def test__directory_tests__invalid(repo_info, beman_standard_check_config):
         Path(f"{invalid_prefix}/repo-exemplar-v6"),
         # Wrong name for tests/ directory.
         Path(f"{invalid_prefix}/repo-exemplar-v7"),
+        # Test file in tests/beman/ directory with a test file in tests/beman/<short_name>.
+        Path(f"{invalid_prefix}/repo-exemplar-v8"),
     ]
 
     run_check_for_each_path(
