@@ -3,7 +3,7 @@
 
 from pathlib import Path
 
-def get_source_files(repo_path):
+def get_cpp_files(repo_path):
     """
     Get all source files in the repository.
     Currently considers C++ source and header files.
