@@ -25,7 +25,7 @@ class MultipleFilesBaseCheck(BaseCheck):
 
     def check(self):
         """
-        Runs the check on all source files.
+        Runs the actual check on all target files.
         Returns True if all files pass the check.
         """
         source_files = get_source_files(self.repo_path)
