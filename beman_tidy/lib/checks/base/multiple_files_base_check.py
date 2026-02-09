@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from abc import abstractmethod
-from ...utils.file import get_source_files
+from ...utils.file import get_cpp_files
 from .base_check import BaseCheck
 
 
@@ -29,7 +29,7 @@ class MultipleFilesBaseCheck(BaseCheck):
         Runs the actual check on all target files.
         Returns True if all files pass the check.
         """
-        source_files = get_source_files(self.repo_path)
+        source_files = get_cpp_files(self.repo_path)
         all_passed = True
         for relative_path in source_files:
             file_check = self.create_file_check(relative_path)
@@ -54,7 +54,7 @@ class MultipleFilesBaseCheck(BaseCheck):
         Runs the fix on all source files.
         Returns True if all files are fixed (or were already correct).
         """
-        source_files = get_source_files(self.repo_path)
+        source_files = get_cpp_files(self.repo_path)
         all_fixed = True
         for relative_path in source_files:
             file_check = self.create_file_check(relative_path)
