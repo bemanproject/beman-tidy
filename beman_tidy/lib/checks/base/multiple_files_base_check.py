@@ -9,7 +9,8 @@ from .base_check import BaseCheck
 class MultipleFilesBaseCheck(BaseCheck):
     """
     Base class for checks that operate on multiple files.
-    It iterates over all source files and runs a specific FileBaseCheck on each.
+    It iterates over all target files and runs a specific FileBaseCheck on each.
+    Examples: run over all cpp fils; run over all CMakeLists.txt files; etc.
     """
 
     def __init__(self, repo_info, beman_standard_check_config):
@@ -25,7 +26,7 @@ class MultipleFilesBaseCheck(BaseCheck):
 
     def check(self):
         """
-        Runs the check on all source files.
+        Runs the actual check on all target files.
         Returns True if all files pass the check.
         """
         source_files = get_source_files(self.repo_path)

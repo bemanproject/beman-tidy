@@ -3,13 +3,13 @@
 
 from pathlib import Path
 
-def get_source_files(repo_path):
+def get_cpp_files(repo_path):
     """
     Get all source files in the repository.
     Currently considers C++ source and header files.
     Ignores common build and IDE directories.
     """
-    source_extensions = {".hpp", ".cpp", ".h", ".c", ".cxx", ".hxx", ".cc", ".hh"}
+    cpp_extensions = {".hpp", ".h", ".hxx", ".hh", ".cpp", ".cxx", ".cc", ".c"}
     exclude_dirs = {".git", "build", ".idea", ".vscode", "__pycache__", "venv", "env"}
     
     source_files = []
