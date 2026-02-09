@@ -29,8 +29,7 @@ class FileCopyrightCheck(BatchFileBaseCheck):
         Implementation the "file.copyright" check for a single file.
         """
         def __init__(self, repo_info, beman_standard_check_config, relative_path):
-            super().__init__(repo_info, beman_standard_check_config, relative_path)
-            self.name = "file.copyright"
+            super().__init__(repo_info, beman_standard_check_config, relative_path, name="file.copyright")
 
         def _get_spdx_info(self, lines):
             """
@@ -69,11 +68,11 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             for i in range(spdx_index + 1, len(lines)):
                 line = lines[i].strip()
                 
-                # Allow empty lines
+                # Allows empty lines
                 if not line:
                     continue
                     
-                # If it doesn't start with comment prefix, assume end of header comments
+                # If it doesn't start with comment prefix, assumes end of header comments
                 if not line.startswith(comment_prefix):
                     break
                 

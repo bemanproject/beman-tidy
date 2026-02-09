@@ -13,8 +13,8 @@ class FileBaseCheck(BaseCheck):
     Base class for checks that operate on a file.
     """
 
-    def __init__(self, repo_info, beman_standard_check_config, relative_path):
-        super().__init__(repo_info, beman_standard_check_config)
+    def __init__(self, repo_info, beman_standard_check_config, relative_path, name=None):
+        super().__init__(repo_info, beman_standard_check_config, name=name)
 
         # set path - e.g. "README.md"
         self.path = self.repo_path / relative_path
@@ -128,16 +128,18 @@ class BatchFileBaseCheck(BaseCheck):
 
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config)
+        self.beman_standard_check_config = beman_standard_check_config
         self.file_check_class = None
 
     def _create_and_init_file_check(self, relative_path):
         """
         Helper to create and initialize a file check instance.
-        Returns the instance if it should run, or
-            None if it should be skipped, or 
-            False if it failed pre_check.
+        Returns
+            the instance, if it should run,
+            None, if it should be skipped, or
+            False, if it failed pre_check.
         """
-        file_check = self.file_check_class(self.repo_info, self.config, relative_path)
+        file_check = self.file_check_class(self.repo_info, self.beman_standard_check_config, relative_path)
         file_check.name = self.name
 
         file_check.log_enabled = self.log_enabled
