@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from abc import abstractmethod
-from ...utils.files import get_source_files
+from ...utils.file import get_source_files
 from .base_check import BaseCheck
 
 
