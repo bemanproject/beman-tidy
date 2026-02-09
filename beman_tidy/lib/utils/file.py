@@ -5,7 +5,7 @@ from pathlib import Path
 
 def get_cpp_files(repo_path):
     """
-    Get all source files in the repository.
+    Get all C++ files in the repository.
     Currently considers C++ source and header files.
     Ignores common build and IDE directories.
     """
