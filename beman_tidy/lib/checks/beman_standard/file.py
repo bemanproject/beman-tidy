@@ -3,6 +3,7 @@
 
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
+from ...utils.file import get_cpp_files, get_spdx_info
 
 # [file.*] checks category.
 # All checks in this file extend the BaseCheck class.
@@ -24,6 +25,11 @@ class FileCopyrightCheck(BatchFileBaseCheck):
     Recommendation: Source code files should NOT include a copyright notice following the SPDX license identifier.
     """
 
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+        self.file_check_class = self.FileCopyrightCheckImpl
+        self.file_path_generator = get_cpp_files
+
     class FileCopyrightCheckImpl(FileBaseCheck):
         """
         Implementation the "file.copyright" check for a single file.
@@ -31,32 +37,9 @@ class FileCopyrightCheck(BatchFileBaseCheck):
         def __init__(self, repo_info, beman_standard_check_config, relative_path):
             super().__init__(repo_info, beman_standard_check_config, relative_path, name="file.copyright")
 
-        def _get_spdx_info(self, lines):
-            """
-            Helper to find the SPDX line index and the comment prefix.
-            Returns (spdx_index, comment_prefix).
-            If not found or invalid, returns (-1, None).
-            """
-            spdx_index = next(
-                (i for i, line in enumerate(lines) if "SPDX-License-Identifier:" in line),
-                -1
-            )
-            
-            if spdx_index == -1:
-                return -1, None
-
-            spdx_line = lines[spdx_index].strip()
-            comment_prefix = None
-            if spdx_line.startswith("//"):
-                comment_prefix = "//"
-            elif spdx_line.startswith("#"):
-                comment_prefix = "#"
-                
-            return spdx_index, comment_prefix
-
         def check(self):
             lines = self.read_lines()
-            spdx_index, comment_prefix = self._get_spdx_info(lines)
+            spdx_index, comment_prefix = get_spdx_info(lines)
 
             if spdx_index == -1:
                 return True
@@ -85,7 +68,7 @@ class FileCopyrightCheck(BatchFileBaseCheck):
 
         def fix(self):
             lines = self.read_lines()
-            spdx_index, comment_prefix = self._get_spdx_info(lines)
+            spdx_index, comment_prefix = get_spdx_info(lines)
 
             if spdx_index == -1 or comment_prefix is None:
                 return True
@@ -118,7 +101,3 @@ class FileCopyrightCheck(BatchFileBaseCheck):
                 
             self.write_lines(new_lines)
             return True
-
-    def __init__(self, repo_info, beman_standard_check_config):
-        super().__init__(repo_info, beman_standard_check_config)
-        self.file_check_class = self.FileCopyrightCheckImpl

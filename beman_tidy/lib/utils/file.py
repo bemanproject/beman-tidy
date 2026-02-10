@@ -11,6 +11,13 @@ def get_repo_ignorable_subdirectories():
     return {".git", "build", ".idea", ".vscode", "__pycache__", "venv", "env"}
 
 
+def get_cpp_extensions():
+    """
+    Returns a set of common C++ source and header file extensions.
+    """
+    return {".hpp", ".h", ".hxx", ".hh", ".cpp", ".cxx", ".cc", ".c"}
+
+
 def get_matched_paths(repo_path, extensions, exclude_dirs=None):
     """
     Get all files in the repository matching the given extensions.
@@ -44,9 +51,30 @@ def get_matched_paths(repo_path, extensions, exclude_dirs=None):
 
 def get_cpp_files(repo_path):
     """
-    Get all C++ files in the repository.
-    Currently considers C++ source and header files.
-    Ignores common build and IDE directories.
+    Get all C++ source and header files in the repository.
     """
-    cpp_extensions = {".hpp", ".h", ".hxx", ".hh", ".cpp", ".cxx", ".cc", ".c"}
-    return get_matched_paths(repo_path, cpp_extensions)
+    return get_matched_paths(repo_path, get_cpp_extensions())
+
+
+def get_spdx_info(lines):
+    """
+    Helper to find the SPDX line index and the comment prefix.
+    Returns (spdx_index, comment_prefix).
+    If not found or invalid, returns (-1, None).
+    """
+    spdx_index = next(
+        (i for i, line in enumerate(lines) if "SPDX-License-Identifier:" in line),
+        -1
+    )
+    
+    if spdx_index == -1:
+        return -1, None
+
+    spdx_line = lines[spdx_index].strip()
+    comment_prefix = None
+    if spdx_line.startswith("//"):
+        comment_prefix = "//"
+    elif spdx_line.startswith("#"):
+        comment_prefix = "#"
+        
+    return spdx_index, comment_prefix
