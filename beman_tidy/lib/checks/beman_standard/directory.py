@@ -290,7 +290,7 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
         exclude_dirs = ["src", "docs", "examples", ".github", "infra"]
         if self.path.exists():
             exclude_dirs.append("papers")
-        if self.repo_name == "exemplar":
+        if self.short_name == "exemplar":
             exclude_dirs.append("cookiecutter")
 
         # File extensions that are considered "paper-related"
