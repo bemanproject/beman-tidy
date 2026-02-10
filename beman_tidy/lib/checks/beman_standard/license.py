@@ -9,8 +9,7 @@ from ..system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.git import get_beman_recommendated_license_path
 from beman_tidy.lib.utils.string import (
     match_apache_license_v2_with_llvm_exceptions,
-    match_boost_software_license_v1_0,
-    match_the_mit_license,
+    match_boost_software_license_v1_0
 )
 
 # [license.*] checks category.
@@ -44,10 +43,6 @@ class LicenseApprovedCheck(LicenseBaseCheck):
                 "Valid Boost Software License - Version 1.0 found in LICENSE file.",
                 log_level="info",
             )
-            return True
-
-        if match_the_mit_license(content):
-            self.log("Valid MIT License found in LICENSE file.", log_level="info")
             return True
 
         self.log(

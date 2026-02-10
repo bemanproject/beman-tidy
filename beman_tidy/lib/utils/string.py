@@ -120,24 +120,6 @@ def match_boost_software_license_v1_0(content):
     return True
 
 
-def match_the_mit_license(content):
-    # beman/LICENSE contains the following text (multiple lines)
-    # - The MIT License
-    #
-    # We also check for variations.
-    #
-    license_regex = [
-        rf"The MIT License",  # noqa: F541
-        rf"MIT License",  # noqa: F541
-    ]
-    if not any(
-        re.search(regex, content, re.IGNORECASE) is not None for regex in license_regex
-    ):
-        return False
-
-    return True
-
-
 def skip_lines(lines, n):
     return lines[n:] if lines is not None else None
 
