@@ -125,7 +125,7 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
     def check(self):
         # Exclude directories that are not part of the tests.
         exclude_dirs = [".github", f"tests/beman/{self.short_name}", ".git", "infra"]
-        if self.repo_name == "exemplar":
+        if self.short_name == "exemplar":
             exclude_dirs.append("cookiecutter")
 
         # Find all test files in the repository outside the excluded directories.
