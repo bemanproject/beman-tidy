@@ -35,6 +35,8 @@ def test__repository_name__valid(repo_info, beman_standard_check_config):
         repo_info.copy() | {"name": "execution"},
         repo_info.copy() | {"name": "utf_view"},
         repo_info.copy() | {"name": "net"},
+        # Legacy directory name "beman.<short_name>" is accepted when it matches canonical library name
+        repo_info.copy() | {"name": "beman.optional", "short_name": "optional"},
     ]
 
     run_check_for_each_repo_info(
@@ -50,8 +52,8 @@ def test__repository_name__invalid(repo_info, beman_standard_check_config):
     Test that repositories with invalid repository names fail the check.
     """
     # Create mock repo info with invalid repository names
+    # Note: "beman.<short_name>" is accepted when it matches canonical library name
     invalid_repo_infos = [
-        repo_info.copy() | {"name": "beman.exemplar"},
         repo_info.copy() | {"name": "exemplar26"},
         repo_info.copy() | {"name": "beman.exemplar26"},
         repo_info.copy() | {"name": "exemplar_"},

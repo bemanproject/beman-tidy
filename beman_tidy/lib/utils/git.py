@@ -1,11 +1,49 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import re
 import sys
 import yaml
 from pathlib import Path
 
 from git import Repo, InvalidGitRepositoryError
+
+
+def parse_repo_name_from_remote_url(remote_url: str) -> str | None:
+    """
+    Parse the repository name from a Git remote URL.
+
+    Supports common URL formats:
+    - https://github.com/owner/repo.git
+    - https://github.com/owner/repo
+    - git@github.com:owner/repo.git
+    - git@github.com:owner/repo
+
+    Args:
+        remote_url: The remote URL string
+
+    Returns:
+        The repository name (without .git extension), or None if parsing fails
+    """
+    if not remote_url:
+        return None
+
+    # Pattern for HTTPS URLs: https://github.com/owner/repo.git or https://github.com/owner/repo
+    https_pattern = r'https?://[^/]+/(?:[^/]+/)?([^/]+?)(?:\.git)?/?$'
+    # Pattern for SSH URLs: git@host:owner/repo.git or git@host:owner/repo
+    ssh_pattern = r'git@[^:]+:(?:[^/]+/)?([^/]+?)(?:\.git)?/?$'
+
+    # Try HTTPS pattern first
+    match = re.search(https_pattern, remote_url)
+    if match:
+        return match.group(1)
+
+    # Try SSH pattern
+    match = re.search(ssh_pattern, remote_url)
+    if match:
+        return match.group(1)
+
+    return None
 
 
 def get_repo_info(path: str):
@@ -25,10 +63,25 @@ def get_repo_info(path: str):
         # Get the repository name (directory name of the top level)
         repo_name = top_level_dir.name
 
-        # Get the remote URL (assuming 'origin' is the remote name)
+        # Get the remote URL, preferring 'upstream' over 'origin' to handle forks correctly
+        # Forks often have 'upstream' pointing to the original repository with the correct name
+        # TODO: Consider using GitHub/GitLab API to get canonical repository metadata,
+        #       which would be more robust for forks with renamed repositories
         remote_url = None
-        if "origin" in repo.remotes:
+        if "upstream" in repo.remotes:
+            remote_url = repo.remotes.upstream.url
+        elif "origin" in repo.remotes:
             remote_url = repo.remotes.origin.url
+
+        # Get the repository short name from remote URL (actual repo name, not checkout dir)
+        # This handles forks correctly by using upstream if available
+        short_name = parse_repo_name_from_remote_url(remote_url) if remote_url else None
+        # Fall back to directory name if we can't parse the remote URL
+        if short_name is None:
+            short_name = repo_name
+        # Normalize: repo may be named "beman.optional" on disk or on GitHub; short_name = "optional"
+        if short_name.startswith("beman."):
+            short_name = short_name[6:]
 
         # Get the current branch
         current_branch = repo.active_branch.name
@@ -48,7 +101,8 @@ def get_repo_info(path: str):
 
         return {
             "top_level": top_level_dir,
-            "name": repo_name,
+            "name": repo_name,  # Keep for backward compatibility (checkout directory name)
+            "short_name": short_name,  # Actual repository name from remote URL
             "remote_url": remote_url,
             "current_branch": current_branch,
             "default_branch": default_branch,

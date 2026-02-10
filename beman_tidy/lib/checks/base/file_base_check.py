@@ -4,6 +4,8 @@
 from abc import abstractmethod
 import re
 
+from beman_tidy.lib.utils.string import normalize_path_for_display
+
 from .base_check import BaseCheck
 
 class FileBaseCheck(BaseCheck):
@@ -30,11 +32,13 @@ class FileBaseCheck(BaseCheck):
             return False
 
         if not self.path.exists():
-            self.log(f"The file '{self.path}' does not exist.")
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(f"The file '{display_path}' does not exist.")
             return False
 
         if self.is_empty():
-            self.log(f"The file '{self.path}' is empty.")
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(f"The file '{display_path}' is empty.")
             return False
 
         return True
@@ -87,7 +91,8 @@ class FileBaseCheck(BaseCheck):
             with open(self.path, "w") as file:
                 file.write(content)
         except Exception as e:
-            self.log(f"Error writing the file '{self.path}': {e}")
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(f"Error writing the file '{display_path}': {e}")
 
     def write_lines(self, lines):
         """

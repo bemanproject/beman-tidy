@@ -7,7 +7,8 @@ from ..base.file_base_check import FileBaseCheck, BaseCheck
 from ..system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.string import (
     match_apache_license_v2_with_llvm_exceptions,
-    match_boost_software_license_v1_0
+    match_boost_software_license_v1_0,
+    normalize_path_for_display,
 )
 
 
@@ -46,8 +47,9 @@ class ReadmeTitleCheck(ReadmeBaseCheck):
         # Match the pattern "# <self.library_name>[: <short_description>]"
         regex = rf"^# {re.escape(self.library_name)}: (.*)$"  # noqa: F541
         if not re.match(regex, first_line):
+            display_path = normalize_path_for_display(self.path, self.repo_path)
             self.log(
-                f"The first line of the file '{self.path}' is invalid. It should start with '# {self.library_name}: <short_description>'."
+                f"The first line of the file '{display_path}' is invalid. It should start with '# {self.library_name}: <short_description>'."
             )
             return False
 
@@ -91,8 +93,9 @@ class ReadmeBadgesCheck(ReadmeBaseCheck):
             validate_badges(category, badges)
 
             if count_badges(badges) != 1:
+                display_path = normalize_path_for_display(self.path, self.repo_path)
                 self.log(
-                    f"The file '{self.path}' does not contain exactly one required badge of category '{category}'."
+                    f"The file '{display_path}' does not contain exactly one required badge of category '{category}'."
                 )
                 count_failed += 1
 
@@ -134,8 +137,9 @@ class ReadmeImplementsCheck(ReadmeBaseCheck):
             return True
 
         # Invalid/missing/duplicate "Implements:" line
+        display_path = normalize_path_for_display(self.path, self.repo_path)
         self.log(
-            f"Invalid/missing/duplicate 'Implements:' line in '{self.path}'. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#readmeimplements for more information."
+            f"Invalid/missing/duplicate 'Implements:' line in '{display_path}'. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#readmeimplements for more information."
         )
         return False
 
@@ -161,8 +165,9 @@ class ReadmeLibraryStatusCheck(ReadmeBaseCheck):
         # Check if at least one of the required status values is present.
         status_count = len([status for status in statuses if self.has_content(status)])
         if status_count != 1:
+            display_path = normalize_path_for_display(self.path, self.repo_path)
             self.log(
-                f"The file '{self.path}' does not contain exactly one of the required statuses from {statuses}"
+                f"The file '{display_path}' does not contain exactly one of the required statuses from {statuses}"
             )
             return False
 
@@ -187,8 +192,9 @@ class ReadmeLicenseCheck(ReadmeBaseCheck):
             r"^## License\n(.*?)\n##", content, re.DOTALL | re.MULTILINE
         )
         if license_section is None:
+            display_path = normalize_path_for_display(self.path, self.repo_path)
             self.log(
-                f"The file '{self.path}' does not contain a `## License` section. "
+                f"The file '{display_path}' does not contain a `## License` section. "
                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#readmelicense."
             )
             return False
@@ -199,8 +205,9 @@ class ReadmeLicenseCheck(ReadmeBaseCheck):
             not match_apache_license_v2_with_llvm_exceptions(license_text)
             and not match_boost_software_license_v1_0(license_text)
         ):
+            display_path = normalize_path_for_display(self.path, self.repo_path)
             self.log(
-                f"The file '{self.path}' does not contain the required license. "
+                f"The file '{display_path}' does not contain the required license. "
                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#readmelicense for the desired format."
             )
             return False

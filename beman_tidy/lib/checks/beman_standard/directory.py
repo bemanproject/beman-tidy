@@ -3,6 +3,7 @@
 
 from ..base.directory_base_check import DirectoryBaseCheck
 from ..system.registry import register_beman_standard_check
+from beman_tidy.lib.utils.string import normalize_path_for_display
 
 
 # [directory.*] checks category.
@@ -20,13 +21,20 @@ class BemanTreeDirectoryCheck(DirectoryBaseCheck):
     - src/beman/exemplar
 
     Note: A path can be optional. Actual implementation will be in the derived's check().
+
+    The short_name is obtained from the repository's remote URL (via repo_info['short_name']),
+    not from the local checkout directory name, to avoid coupling to the directory name.
     """
 
     def __init__(self, repo_info, beman_standard_check_config, prefix_path):
+        # Use short_name from repo_info, which is parsed from the remote URL
+        # Fall back to 'name' (checkout directory) if short_name is not available
+        short_name = repo_info.get("short_name", repo_info["name"])
+        self.short_name = short_name
         super().__init__(
             repo_info,
             beman_standard_check_config,
-            f"{prefix_path}/beman/{repo_info['name']}",
+            f"{prefix_path}/beman/{short_name}",
         )
 
 
@@ -60,15 +68,16 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
         for forbidden_prefix in forbidden_source_locations:
             forbidden_prefix = self.repo_path / forbidden_prefix
             if forbidden_prefix.exists():
+                display_path = normalize_path_for_display(forbidden_prefix, self.repo_path)
                 self.log(
-                    f"Please move source files from {forbidden_prefix} to src/beman/{self.repo_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
+                    f"Please move source files from {display_path} to src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
                 )
                 return False
 
         # If `src/` exists, src/beman/<short_name> also should exist.
         if (self.repo_path / "src/").exists() and not self.path.exists():
             self.log(
-                f"Please use the required source files location: src/beman/{self.repo_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
+                f"Please use the required source files location: src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
             )
             return False
 
@@ -80,7 +89,7 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
         # we cannot do a proper implementation for fix().
         if not self.check():
             self.log(
-                f"Please manually move sources to src/beman/{self.repo_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
+                f"Please manually move sources to src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
             )
 
 
@@ -115,7 +124,7 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
 
     def check(self):
         # Exclude directories that are not part of the tests.
-        exclude_dirs = [".github", f"tests/beman/{self.repo_info['name']}", ".git", "infra"]
+        exclude_dirs = [".github", f"tests/beman/{self.short_name}", ".git", "infra"]
         if self.repo_name == "exemplar":
             exclude_dirs.append("cookiecutter")
 
@@ -128,7 +137,8 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
         # Check if any test files are misplaced outside the excluded directories.
         if len(misplaced_test_files) > 0:
             for misplaced_test_file in misplaced_test_files:
-                self.log(f"Misplaced test file found: {misplaced_test_file}")
+                display_path = normalize_path_for_display(misplaced_test_file, self.repo_path)
+                self.log(f"Misplaced test file found: {display_path}")
 
             self.log(
                 "Please move all test files within the tests/ directory. "
@@ -232,7 +242,8 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
         # Check if any MD files are misplaced.
         if len(misplaced_md_files) > 0:
             for misplaced_md_file in misplaced_md_files:
-                self.log(f"Misplaced MD file found: {misplaced_md_file}")
+                display_path = normalize_path_for_display(misplaced_md_file, self.repo_path)
+                self.log(f"Misplaced MD file found: {display_path}")
 
             self.log(
                 "Please move all documentation files within the docs/ directory, except for the root README.md file. "
@@ -320,7 +331,8 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
 
         if len(misplaced_paper_files) > 0:
             for misplaced_paper_file in misplaced_paper_files:
-                self.log(f"Misplaced paper file found: {misplaced_paper_file}")
+                display_path = normalize_path_for_display(misplaced_paper_file, self.repo_path)
+                self.log(f"Misplaced paper file found: {display_path}")
 
             self.log(
                 "Please move all paper related files (and directories if applicable) within the papers/ directory. "
