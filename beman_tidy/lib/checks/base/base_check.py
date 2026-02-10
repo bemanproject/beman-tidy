@@ -79,10 +79,12 @@ class BaseCheck(ABC):
         self.repo_info = repo_info
         assert "name" in repo_info
         self.repo_name = repo_info["name"]
+        # short_name = repo name from remote URL (upstream/origin); use for library name and paths
+        self.short_name = repo_info.get("short_name", repo_info["name"])
         assert "top_level" in repo_info
         self.repo_path = Path(repo_info["top_level"])
         assert self.repo_path is not None
-        self.library_name = f"beman.{self.repo_name}"
+        self.library_name = f"beman.{self.short_name}"
         assert self.library_name is not None
 
         # set beman library maturity model

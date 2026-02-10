@@ -79,6 +79,9 @@ def get_repo_info(path: str):
         # Fall back to directory name if we can't parse the remote URL
         if short_name is None:
             short_name = repo_name
+        # Normalize: repo may be named "beman.optional" on disk or on GitHub; short_name = "optional"
+        if short_name.startswith("beman."):
+            short_name = short_name[6:]
 
         # Get the current branch
         current_branch = repo.active_branch.name
