@@ -3,6 +3,7 @@
 
 from ..base.directory_base_check import DirectoryBaseCheck
 from ..system.registry import register_beman_standard_check
+from beman_tidy.lib.utils.string import normalize_path_for_display
 
 
 # [directory.*] checks category.
@@ -67,8 +68,9 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
         for forbidden_prefix in forbidden_source_locations:
             forbidden_prefix = self.repo_path / forbidden_prefix
             if forbidden_prefix.exists():
+                display_path = normalize_path_for_display(forbidden_prefix, self.repo_path)
                 self.log(
-                    f"Please move source files from {forbidden_prefix} to src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
+                    f"Please move source files from {display_path} to src/beman/{self.short_name}. See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorysources for more information."
                 )
                 return False
 
@@ -135,7 +137,8 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
         # Check if any test files are misplaced outside the excluded directories.
         if len(misplaced_test_files) > 0:
             for misplaced_test_file in misplaced_test_files:
-                self.log(f"Misplaced test file found: {misplaced_test_file}")
+                display_path = normalize_path_for_display(misplaced_test_file, self.repo_path)
+                self.log(f"Misplaced test file found: {display_path}")
 
             self.log(
                 "Please move all test files within the tests/ directory. "
@@ -239,7 +242,8 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
         # Check if any MD files are misplaced.
         if len(misplaced_md_files) > 0:
             for misplaced_md_file in misplaced_md_files:
-                self.log(f"Misplaced MD file found: {misplaced_md_file}")
+                display_path = normalize_path_for_display(misplaced_md_file, self.repo_path)
+                self.log(f"Misplaced MD file found: {display_path}")
 
             self.log(
                 "Please move all documentation files within the docs/ directory, except for the root README.md file. "
@@ -327,7 +331,8 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
 
         if len(misplaced_paper_files) > 0:
             for misplaced_paper_file in misplaced_paper_files:
-                self.log(f"Misplaced paper file found: {misplaced_paper_file}")
+                display_path = normalize_path_for_display(misplaced_paper_file, self.repo_path)
+                self.log(f"Misplaced paper file found: {display_path}")
 
             self.log(
                 "Please move all paper related files (and directories if applicable) within the papers/ directory. "

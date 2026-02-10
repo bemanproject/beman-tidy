@@ -4,6 +4,7 @@
 import re
 from beman_tidy.lib.checks.base.base_check import BaseCheck
 from beman_tidy.lib.checks.beman_standard.readme import ReadmeBaseCheck
+from beman_tidy.lib.utils.string import normalize_path_for_display
 from ..system.registry import register_beman_standard_check
 
 # [release.*] checks category.
@@ -59,8 +60,9 @@ class ReleaseGodboltTrunkVersionCheck(ReadmeBaseCheck):
             r"\[!\[Compiler Explorer Example\]\(https://img\.shields\.io/badge/Try%20it%20on%20Compiler%20Explorer-grey\?logo=compilerexplorer&logoColor=67c52a\)\]\(https://godbolt\.org/z/([a-zA-Z0-9]+)\)"
         )
         if not re.search(regex, content):
+            display_path = normalize_path_for_display(self.path, self.repo_path)
             self.log(
-                f"The file '{self.path}' does not contain a Compiler Explorer badge - trunk version assumed to be missing."
+                f"The file '{display_path}' does not contain a Compiler Explorer badge - trunk version assumed to be missing."
             )
             return False
 

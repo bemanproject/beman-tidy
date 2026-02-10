@@ -4,6 +4,8 @@
 from abc import abstractmethod
 from pathlib import Path
 
+from beman_tidy.lib.utils.string import normalize_path_for_display
+
 from .base_check import BaseCheck
 
 
@@ -31,11 +33,13 @@ class DirectoryBaseCheck(BaseCheck):
             return False
 
         if not self.path.exists():
-            self.log(f"The directory '{self.path}' does not exist.")
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(f"The directory '{display_path}' does not exist.")
             return False
 
         if self.is_empty():
-            self.log(f"The directory '{self.path}' is empty.")
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(f"The directory '{display_path}' is empty.")
             return False
 
         return True

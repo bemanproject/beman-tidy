@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import re
+from pathlib import Path
 
 red_color = "\033[91m"
 green_color = "\033[92m"
@@ -148,3 +149,18 @@ def skip_empty_lines(lines):
     while len(lines) > 0 and len(lines[0].strip()) == 0:
         lines = lines[1:]
     return lines
+
+
+def normalize_path_for_display(path, repo_path):
+    """
+    Normalize a path for user-friendly display by making it relative to the repository root.
+
+    Handles cases where the checkout directory name differs from the repo name
+    (e.g. Optional26 vs optional) or the path includes worktree branch names (e.g. main).
+    """
+    path = Path(path)
+    repo_path = Path(repo_path)
+    try:
+        return str(path.relative_to(repo_path))
+    except ValueError:
+        return str(path)
