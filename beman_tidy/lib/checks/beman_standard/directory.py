@@ -226,7 +226,7 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
         exclude_dirs = ["src", "papers", "examples", ".github", "infra"]
         if self.path.exists():
             exclude_dirs.append("docs")
-        if self.repo_name == "exemplar":
+        if self.short_name == "exemplar":
             exclude_dirs.append("cookiecutter")
 
         # Find all MD files in the repository.
