@@ -1,5 +1,8 @@
 # beman-tidy: The Codebase Bemanification Tool
 
+<!-- markdownlint-disable-next-line line-length -->
+![CI Tests](https://github.com/bemanproject/beman-tidy/actions/workflows/beman-tidy.yml/badge.svg)
+
 <!--
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 -->
