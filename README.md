@@ -1,7 +1,7 @@
 # beman-tidy: The Codebase Bemanification Tool
 
 <!-- markdownlint-disable-next-line line-length -->
-![Library Status](https://raw.githubusercontent.com/bemanproject/beman/refs/heads/main/images/badges/beman_badge-beman_library_under_development.svg) ![CI Tests](https://github.com/bemanproject/beman-tidy/actions/workflows/beman-tidy.yml/badge.svg)
+![CI Tests](https://github.com/bemanproject/beman-tidy/actions/workflows/beman-tidy.yml/badge.svg)
 
 <!--
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
