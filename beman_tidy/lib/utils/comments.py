@@ -29,15 +29,19 @@ def determine_comment_style(lines, line_index):
     if any(line.startswith(start) for start in BLOCK_STARTS):
         return CommentType.BLOCK
         
-    # Check if inside block comment (look backwards)
+    # Check if inside block comment
     for i in range(line_index - 1, -1, -1):
         prev_line = lines[i].strip()
-        
-        # If start marker is found before end marker, we are not inside a block
-        if any(end in prev_line for end in BLOCK_ENDS):
+
+        has_start = any(prev_line.startswith(start) for start in BLOCK_STARTS)
+        has_end = any(end in prev_line for end in BLOCK_ENDS)
+
+        if has_start and has_end:
+            continue
+        elif has_end:
             return None
-            
-        if any(prev_line.startswith(start) for start in BLOCK_STARTS):
+        elif has_start:
+            # We are inside the block
             return CommentType.BLOCK
              
     return None
