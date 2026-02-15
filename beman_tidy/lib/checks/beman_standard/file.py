@@ -4,7 +4,7 @@
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
 from ...utils.file import get_cpp_files, get_spdx_info
-from ...utils.comments import find_in_comment, CommentType, BLOCK_END, BLOCK_START
+from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_STARTS, LINE_PREFIXES
 
 # [file.*] checks category.
 # All checks in this file extend the BaseCheck class.
@@ -103,7 +103,6 @@ class FileCopyrightCheck(BatchFileBaseCheck):
         def _process_line_comments(self, lines, start_index, texts, log_func):
             processed_lines = []
             i = start_index
-            prefix = '//' # Hardcoded as per comments.py logic
             
             while i < len(lines):
                 line = lines[i]
@@ -114,7 +113,7 @@ class FileCopyrightCheck(BatchFileBaseCheck):
                     i += 1
                     continue
                     
-                if not stripped.startswith(prefix):
+                if not any(stripped.startswith(prefix) for prefix in LINE_PREFIXES):
                     break
                 
                 if self._contains_text(stripped, texts):
@@ -131,15 +130,19 @@ class FileCopyrightCheck(BatchFileBaseCheck):
         def _process_block_comments(self, lines, start_index, texts, log_func):
             processed_lines = []
             i = start_index
-            block_start = BLOCK_START
-            block_end = BLOCK_END
             
             while i < len(lines):
                 line = lines[i]
                 stripped = line.strip()
                 
-                if block_end in line:
-                    new_line = self._handle_block_end_line(line, texts, block_start, block_end, log_func)
+                block_end = None
+                for end in BLOCK_ENDS:
+                    if end in line:
+                        block_end = end
+                        break
+                
+                if block_end:
+                    new_line = self._handle_block_end_line(line, texts, block_end, log_func)
                     processed_lines.append(new_line)
                     i += 1
                     break
@@ -156,7 +159,7 @@ class FileCopyrightCheck(BatchFileBaseCheck):
                 
             return processed_lines, i
 
-        def _handle_block_end_line(self, line, texts, block_start, block_end, log_func):
+        def _handle_block_end_line(self, line, texts, block_end, log_func):
             pre, sep, post = line.partition(block_end)
             lower_pre = pre.lower()
             
@@ -169,13 +172,20 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             if found_text:
                 if log_func:
                     log_func(f"Removing line content: {line.strip()}")
-                return self._reconstruct_block_end_line(pre, sep, post, block_start)
+                return self._reconstruct_block_end_line(pre, sep, post)
             
             return line
 
-        def _reconstruct_block_end_line(self, pre, sep, post, block_start):
+        def _reconstruct_block_end_line(self, pre, sep, post):
             new_line_content = ""
-            if block_start in pre:
+            
+            block_start = None
+            for start in BLOCK_STARTS:
+                if start in pre:
+                    block_start = start
+                    break
+            
+            if block_start:
                  start_idx = pre.find(block_start)
                  new_line_content += pre[:start_idx + len(block_start)] + " "
             else:

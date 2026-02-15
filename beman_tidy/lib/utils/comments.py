@@ -6,10 +6,10 @@ class CommentType(Enum):
     LINE = auto()
     BLOCK = auto()
 
-# Currently only supports C/C++ comments
-LINE_PREFIX = '//'
-BLOCK_START = '/*'
-BLOCK_END = '*/'
+# Supports multiple comment styles
+LINE_PREFIXES = ['//']
+BLOCK_STARTS = ['/*']
+BLOCK_ENDS = ['*/']
 
 def determine_comment_style(lines, line_index):
     """
@@ -22,21 +22,22 @@ def determine_comment_style(lines, line_index):
     line = lines[line_index].strip()
     
     # Check for line comments
-    if line.startswith(LINE_PREFIX):
+    if any(line.startswith(prefix) for prefix in LINE_PREFIXES):
         return CommentType.LINE
         
     # Check for block comment start
-    if line.startswith(BLOCK_START):
+    if any(line.startswith(start) for start in BLOCK_STARTS):
         return CommentType.BLOCK
         
     # Check if inside block comment (look backwards)
     for i in range(line_index - 1, -1, -1):
         prev_line = lines[i].strip()
-        if BLOCK_END in prev_line:
-            # Found an end marker before a start marker, so we are not inside a block
+        
+        # If start marker is found before end marker, we are not inside a block
+        if any(end in prev_line for end in BLOCK_ENDS):
             return None
             
-        if prev_line.startswith(BLOCK_START):
+        if any(prev_line.startswith(start) for start in BLOCK_STARTS):
             return CommentType.BLOCK
              
     return None
@@ -60,8 +61,10 @@ def iterate_comment_lines(lines, start_index, comment_type):
                 yield i, line
                 i += 1
                 continue
-            if not stripped.startswith(LINE_PREFIX):
+            
+            if not any(stripped.startswith(prefix) for prefix in LINE_PREFIXES):
                 break
+            
             yield i, line
             i += 1
 
@@ -69,7 +72,7 @@ def iterate_comment_lines(lines, start_index, comment_type):
         while i < len(lines):
             line = lines[i]
             yield i, line
-            if BLOCK_END in line:
+            if any(end in line for end in BLOCK_ENDS):
                 break
             i += 1
 
@@ -80,8 +83,11 @@ def find_in_comment(lines, start_index, comment_type, texts, ignore_case=False):
     Returns (line_index, found_text) or (None, None).
     """
     for i, line in iterate_comment_lines(lines, start_index, comment_type):
-        if comment_type == CommentType.BLOCK and BLOCK_END in line:
-            line = line.split(BLOCK_END)[0]
+        if comment_type == CommentType.BLOCK:
+            for end in BLOCK_ENDS:
+                if end in line:
+                    line = line.split(end)[0]
+                    break
 
         found_text = find_in_line(line, texts, ignore_case)
         if found_text:
