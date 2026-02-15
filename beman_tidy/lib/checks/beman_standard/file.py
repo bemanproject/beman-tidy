@@ -4,6 +4,7 @@
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
 from ...utils.file import get_cpp_files, get_spdx_info
+from ...utils.comments import find_in_comment, CommentType, BLOCK_END, BLOCK_START
 
 # [file.*] checks category.
 # All checks in this file extend the BaseCheck class.
@@ -39,31 +40,21 @@ class FileCopyrightCheck(BatchFileBaseCheck):
 
         def check(self):
             lines = self.read_lines()
-            spdx_index, comment_prefix = get_spdx_info(lines)
+            spdx_index, comment_info = get_spdx_info(lines)
 
             if spdx_index == -1:
                 return True
             
-            if comment_prefix is None:
-                # TODO: Support block comments (e.g. Markdown <!-- ... --> or C++ /* ... */)
+            if comment_info is None:
                 return True
 
-            for i in range(spdx_index + 1, len(lines)):
-                line = lines[i].strip()
-                
-                # Allows empty lines
-                if not line:
-                    continue
-                    
-                # If it doesn't start with comment prefix, assumes end of header comments
-                if not line.startswith(comment_prefix):
-                    break
-                
-                lower_line = line.lower()
-                if "copyright" in lower_line or "(c)" in lower_line:
-                    self.log(f"Copyright notice found in {self.path.name} at line {i+1}. It should be removed.")
-                    return False
-                    
+            # Start searching from the line after SPDX identifier
+            line_idx, found_text = find_in_comment(lines, spdx_index + 1, comment_info, ["copyright", "(c)"], ignore_case=True)
+            
+            if line_idx is not None:
+                self.log(f"Copyright notice found in {self.path.name} at line {line_idx+1}. It should be removed.")
+                return False
+
             return True
 
         def fix(self):
