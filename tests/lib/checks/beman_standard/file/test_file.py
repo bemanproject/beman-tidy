@@ -9,16 +9,30 @@ from beman_tidy.lib.checks.beman_standard.file import FileCopyrightCheck
 test_data_prefix = Path("tests/lib/checks/beman_standard/file/data")
 valid_prefix = test_data_prefix / "valid"
 invalid_prefix = test_data_prefix / "invalid"
+valid_block_prefix = test_data_prefix / "valid_block"
+invalid_block_prefix = test_data_prefix / "invalid_block"
 
 def test__file_copyright__valid(repo_info, beman_standard_check_config):
     repo_info["top_level"] = valid_prefix
-    
+
     check = FileCopyrightCheck(repo_info, beman_standard_check_config)
     assert check.check() is True
 
 def test__file_copyright__invalid(repo_info, beman_standard_check_config):
     repo_info["top_level"] = invalid_prefix
-    
+
+    check = FileCopyrightCheck(repo_info, beman_standard_check_config)
+    assert check.check() is False
+
+def test__file_copyright__valid_block_comments(repo_info, beman_standard_check_config):
+    repo_info["top_level"] = valid_block_prefix
+
+    check = FileCopyrightCheck(repo_info, beman_standard_check_config)
+    assert check.check() is True
+
+def test__file_copyright__invalid_block_comments(repo_info, beman_standard_check_config):
+    repo_info["top_level"] = invalid_block_prefix
+
     check = FileCopyrightCheck(repo_info, beman_standard_check_config)
     assert check.check() is False
 
@@ -26,26 +40,56 @@ def test__file_copyright__fix_inplace(repo_info, beman_standard_check_config, tm
     for item in invalid_prefix.iterdir():
         if item.is_file():
             shutil.copy(item, tmp_path / item.name)
-    
+
     repo_info["top_level"] = tmp_path
     check = FileCopyrightCheck(repo_info, beman_standard_check_config)
-    
+
     assert check.check() is False
-    
+
     assert check.fix() is True
-    
+
     assert check.check() is True
-    
+
     for item in invalid_prefix.iterdir():
         if not item.is_file():
             continue
-            
+
         fixed_file = tmp_path / item.name
         content = fixed_file.read_text()
         lines = content.splitlines()
-        
+
         for line in lines:
             if "SPDX-License-Identifier:" in line:
                 continue
             if line.strip().startswith("//"):
                  assert "Copyright" not in line, f"Copyright still present in {fixed_file.name}: {line}"
+
+def test__file_copyright__fix_inplace_block_comments(repo_info, beman_standard_check_config, tmp_path):
+    for item in invalid_block_prefix.iterdir():
+        if item.is_file():
+            shutil.copy(item, tmp_path / item.name)
+
+    repo_info["top_level"] = tmp_path
+    check = FileCopyrightCheck(repo_info, beman_standard_check_config)
+
+    assert check.check() is False
+
+    assert check.fix() is True
+
+    assert check.check() is True
+
+    for item in invalid_block_prefix.iterdir():
+        if not item.is_file():
+            continue
+
+        fixed_file = tmp_path / item.name
+        content = fixed_file.read_text()
+        lines = content.splitlines()
+
+        for line in lines:
+            if "SPDX-License-Identifier:" in line:
+                continue
+            # Check both single-line block comments and multi-line block comments
+            stripped = line.strip()
+            if stripped.startswith("/*") or stripped.startswith("*"):
+                assert "Copyright" not in line, f"Copyright still present in {fixed_file.name}: {line}"
