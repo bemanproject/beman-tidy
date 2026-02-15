@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument("repo_path", help="path to the repository to check", type=str)
     parser.add_argument(
         "--fix-inplace",
-        help="Try to automatically fix found issues",
+        help="try to automatically fix found issues",
         action=argparse.BooleanOptionalAction,
         default=False,
     )
@@ -36,9 +36,12 @@ def parse_args():
     parser.add_argument(
         "--checks", help="array of checks to run", type=str, default=None
     )
+    parser.add_argument(
+        "--config", help="path to the configuration file (default: .beman-tidy.yml in repo root)", type=str, default=None
+    )
     args = parser.parse_args()
 
-    args.repo_info = get_repo_info(args.repo_path)
+    args.repo_info = get_repo_info(args.repo_path, config_path=args.config)
     args.checks = args.checks.split(",") if args.checks else None
 
     return args

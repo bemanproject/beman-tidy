@@ -4,9 +4,9 @@
 from abc import abstractmethod
 import re
 
-from beman_tidy.lib.utils.string import normalize_path_for_display
-
 from .base_check import BaseCheck
+from ...utils.file import get_cpp_files, get_repo_ignorable_subdirectories
+
 
 class FileBaseCheck(BaseCheck):
     """
@@ -32,13 +32,11 @@ class FileBaseCheck(BaseCheck):
             return False
 
         if not self.path.exists():
-            display_path = normalize_path_for_display(self.path, self.repo_path)
-            self.log(f"The file '{display_path}' does not exist.")
+            self.log(f"The file '{self.path}' does not exist.")
             return False
 
         if self.is_empty():
-            display_path = normalize_path_for_display(self.path, self.repo_path)
-            self.log(f"The file '{display_path}' is empty.")
+            self.log(f"The file '{self.path}' is empty.")
             return False
 
         return True
@@ -91,8 +89,7 @@ class FileBaseCheck(BaseCheck):
             with open(self.path, "w") as file:
                 file.write(content)
         except Exception as e:
-            display_path = normalize_path_for_display(self.path, self.repo_path)
-            self.log(f"Error writing the file '{display_path}': {e}")
+            self.log(f"Error writing the file '{self.path}': {e}")
 
     def write_lines(self, lines):
         """
@@ -174,7 +171,11 @@ class BatchFileBaseCheck(BaseCheck):
         """
         self._validate()
 
-        source_files = self.file_path_generator(self.repo_path)
+        system_ignores = get_repo_ignorable_subdirectories()
+        user_ignores = self.repo_info.get("config", {}).get("ignored_paths", [])
+        ignores = list(system_ignores) + user_ignores
+
+        source_files = self.file_path_generator(self.repo_path, ignores=ignores)
         all_successful = True
         
         for relative_path in source_files:
