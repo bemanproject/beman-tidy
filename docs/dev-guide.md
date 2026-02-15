@@ -13,6 +13,7 @@
 * `tests/`: Unit tests for the tool.
   * Structure is similar to the `beman_tidy/` directory.
   * `pytest` is used for testing.
+* `.beman-tidy.yml`: Configuration file for `beman-tidy` (optional).
 
 ## Adding a new check
 

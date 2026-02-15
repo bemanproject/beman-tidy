@@ -19,7 +19,7 @@ expedite adoption across the Beman Project.
 
 ```shell
 $ beman-tidy --help
-usage: beman-tidy [-h] [--fix-inplace | --no-fix-inplace] [--verbose | --no-verbose] [--require-all | --no-require-all] [--checks CHECKS] repo_path
+usage: beman-tidy [-h] [--fix-inplace | --no-fix-inplace] [--verbose | --no-verbose] [--require-all | --no-require-all] [--checks CHECKS] [--config CONFIG] repo_path
 
 positional arguments:
   repo_path             path to the repository to check
@@ -33,6 +33,7 @@ options:
   --require-all, --no-require-all
                         all checks are required regardless of the check type (e.g., Recommendation becomes Requirement)
   --checks CHECKS       array of checks to run
+  --config CONFIG       path to the configuration file (default: .beman-tidy.yml in repo root)
 ```
 
 - Run beman-tidy on the exemplar repository **(default: dry-run mode)**
@@ -138,6 +139,24 @@ Coverage          TOTAL:  95.83% (23/24 checks passed).
 
 ```shell
 beman-tidy path/to/exemplar --fix-inplace --verbose
+```
+
+## Configuration
+
+You can configure `beman-tidy` by placing a `.beman-tidy.yml` file in the root of your repository.
+
+Currently, it supports ignoring specific paths or directories:
+
+```yaml
+ignored_paths:
+  - include/beman/optional/detail/stl_interfaces/config.hpp
+  - include/beman/optional/detail/stl_interfaces/
+```
+
+You can also specify a custom configuration file path using the `--config` option:
+
+```shell
+beman-tidy . --config my-config.yml
 ```
 
 ## Working on beman-tidy
