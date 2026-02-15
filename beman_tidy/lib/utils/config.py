@@ -70,3 +70,14 @@ def load_repo_config(repo_path, config_path=None):
         sys.exit(1)
 
     return config
+
+
+def get_ignores(repo_info):
+    """
+    Returns a combined list of default system ignores and user-configured ignores.
+    """
+    from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
+
+    default_ignores = get_repo_ignorable_subdirectories()
+    user_ignores = repo_info.get("config", {}).get("ignored_paths", [])
+    return list(default_ignores) + user_ignores

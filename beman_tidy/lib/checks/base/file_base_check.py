@@ -7,7 +7,7 @@ from pathlib import Path
 
 from beman_tidy.lib.utils.string import normalize_path_for_display
 from .base_check import BaseCheck
-from ...utils.file import get_repo_ignorable_subdirectories
+from ...utils.config import get_ignores
 
 
 class FileBaseCheck(BaseCheck):
@@ -53,9 +53,7 @@ class FileBaseCheck(BaseCheck):
         if super().should_skip():
             return True
 
-        default_ignores = get_repo_ignorable_subdirectories()
-        user_ignores = self.repo_info.get("config", {}).get("ignored_paths", [])
-        ignores = list(default_ignores) + user_ignores
+        ignores = get_ignores(self.repo_info)
 
         rel_path_str = self.relative_path.as_posix()
 
@@ -202,9 +200,7 @@ class BatchFileBaseCheck(BaseCheck):
         """
         self._validate()
 
-        default_ignores = get_repo_ignorable_subdirectories()
-        user_ignores = self.repo_info.get("config", {}).get("ignored_paths", [])
-        ignores = list(default_ignores) + user_ignores
+        ignores = get_ignores(self.repo_info)
 
         all_files = self.file_path_generator(self.repo_path, ignores=ignores)
         all_successful = True
