@@ -4,6 +4,7 @@
 import sys
 import yaml
 from pathlib import Path
+from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
 
 
 def validate_config(config):
@@ -76,7 +77,6 @@ def get_ignores(repo_info):
     """
     Returns a combined list of default system ignores and user-configured ignores.
     """
-    from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
 
     default_ignores = get_repo_ignorable_subdirectories()
     user_ignores = repo_info.get("config", {}).get("ignored_paths", [])
