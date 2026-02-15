@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import pytest
-
 from beman_tidy.lib.utils.comments import (
     BLOCK_ENDS,
     BLOCK_STARTS,
