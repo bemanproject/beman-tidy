@@ -59,36 +59,139 @@ class FileCopyrightCheck(BatchFileBaseCheck):
 
         def fix(self):
             lines = self.read_lines()
-            spdx_index, comment_prefix = get_spdx_info(lines)
+            spdx_index, comment_info = get_spdx_info(lines)
 
-            if spdx_index == -1 or comment_prefix is None:
+            if spdx_index == -1 or comment_info is None:
                 return True
 
-            new_lines = []
-            new_lines.extend(lines[:spdx_index+1])
+            # Start removing from the line after SPDX identifier
+            new_lines = self._remove_lines_with_text_in_comment(
+                lines, 
+                spdx_index + 1,
+                comment_info, 
+                ["copyright", "(c)"], 
+                log_func=lambda msg: self.log(f"{msg} in {self.path.name}")
+            )
+
+            self.write("".join(new_lines))
+            return True
+
+        def _remove_lines_with_text_in_comment(self, lines, start_index, comment_type, texts, log_func=None):
+            """
+            Removes lines from the comment block that contain any of the texts.
+            Preserves block comment structure.
+            Returns the new list of lines.
+            """
+            if start_index < 0 or start_index >= len(lines) or comment_type is None:
+                return lines
+
+            new_lines = lines[:start_index]
             
-            i = spdx_index + 1
+            if comment_type == CommentType.LINE:
+                processed_lines, next_idx = self._process_line_comments(lines, start_index, texts, log_func)
+                new_lines.extend(processed_lines)
+                new_lines.extend(lines[next_idx:])
+            elif comment_type == CommentType.BLOCK:
+                processed_lines, next_idx = self._process_block_comments(lines, start_index, texts, log_func)
+                new_lines.extend(processed_lines)
+                new_lines.extend(lines[next_idx:])
+            else:
+                new_lines.extend(lines[start_index:])
+            
+            return new_lines
+
+        def _process_line_comments(self, lines, start_index, texts, log_func):
+            processed_lines = []
+            i = start_index
+            prefix = '//' # Hardcoded as per comments.py logic
+            
             while i < len(lines):
                 line = lines[i]
                 stripped = line.strip()
                 
                 if not stripped:
-                    new_lines.append(line)
+                    processed_lines.append(line)
                     i += 1
                     continue
                     
-                if not stripped.startswith(comment_prefix):
-                    new_lines.extend(lines[i:])
+                if not stripped.startswith(prefix):
                     break
                 
-                lower_line = stripped.lower()
-                if "copyright" in lower_line or "(c)" in lower_line:
-                    self.log(f"Removing copyright line in {self.path.name}: {stripped}")
+                if self._contains_text(stripped, texts):
+                    if log_func:
+                        log_func(f"Removing line: {stripped}")
                     i += 1
                     continue
                 
-                new_lines.append(line)
+                processed_lines.append(line)
+                i += 1
+            
+            return processed_lines, i
+
+        def _process_block_comments(self, lines, start_index, texts, log_func):
+            processed_lines = []
+            i = start_index
+            block_start = BLOCK_START
+            block_end = BLOCK_END
+            
+            while i < len(lines):
+                line = lines[i]
+                stripped = line.strip()
+                
+                if block_end in line:
+                    new_line = self._handle_block_end_line(line, texts, block_start, block_end, log_func)
+                    processed_lines.append(new_line)
+                    i += 1
+                    break
+                
+                # Normal block line
+                if self._contains_text(stripped, texts):
+                    if log_func:
+                        log_func(f"Removing line: {stripped}")
+                    i += 1
+                    continue
+                    
+                processed_lines.append(line)
                 i += 1
                 
-            self.write_lines(new_lines)
-            return True
+            return processed_lines, i
+
+        def _handle_block_end_line(self, line, texts, block_start, block_end, log_func):
+            pre, sep, post = line.partition(block_end)
+            lower_pre = pre.lower()
+            
+            found_text = None
+            for text in texts:
+                if text.lower() in lower_pre:
+                    found_text = text
+                    break
+            
+            if found_text:
+                if log_func:
+                    log_func(f"Removing line content: {line.strip()}")
+                return self._reconstruct_block_end_line(pre, sep, post, block_start)
+            
+            return line
+
+        def _reconstruct_block_end_line(self, pre, sep, post, block_start):
+            new_line_content = ""
+            if block_start in pre:
+                 start_idx = pre.find(block_start)
+                 new_line_content += pre[:start_idx + len(block_start)] + " "
+            else:
+                 stripped_pre = pre.strip()
+                 if stripped_pre.startswith("*"):
+                     indent = pre[:pre.find("*")+1]
+                     new_line_content += indent + " "
+                 else:
+                     new_line_content += pre[:len(pre)-len(pre.lstrip())]
+            
+            new_line_content += sep + post
+            return new_line_content
+
+        def _contains_text(self, line, texts):
+            lower_line = line.lower()
+            for text in texts:
+                if text.lower() in lower_line:
+                    return True
+            return False
