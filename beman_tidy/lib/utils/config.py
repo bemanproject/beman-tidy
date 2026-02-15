@@ -27,13 +27,14 @@ def validate_config(config):
             print(f"Error: Invalid entry in 'ignored_paths': {path}. Must be a string.")
             return False
 
+        clean_path = path.rstrip("/")
         # Check for exact match
-        if path in mandatory_files:
-             print(f"Error: Cannot ignore mandatory file '{path}' in .beman-tidy.yml")
+        if clean_path in mandatory_files:
+             print(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yml")
              return False
         
         # Check if ignoring root directory
-        if path == "." or path == "./":
+        if clean_path == "." or clean_path == "":
              print("Error: Cannot ignore root directory in .beman-tidy.yml")
              return False
              
