@@ -5,7 +5,7 @@ from abc import abstractmethod
 import re
 
 from .base_check import BaseCheck
-from ...utils.file import get_cpp_files, get_repo_ignorable_subdirectories
+from ...utils.file import get_repo_ignorable_subdirectories
 
 
 class FileBaseCheck(BaseCheck):

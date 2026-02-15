@@ -34,7 +34,7 @@ def validate_config(config):
         
         # Check if ignoring root directory
         if path == "." or path == "./":
-             print(f"Error: Cannot ignore root directory in .beman-tidy.yml")
+             print("Error: Cannot ignore root directory in .beman-tidy.yml")
              return False
              
     return True

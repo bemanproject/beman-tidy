@@ -3,8 +3,6 @@
 
 import pytest
 import yaml
-import sys
-from pathlib import Path
 from beman_tidy.lib.utils.config import validate_config, load_repo_config
 
 def test_validate_config_valid():
