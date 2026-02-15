@@ -6,7 +6,7 @@ from beman_tidy.lib.utils.comments import (
     BLOCK_STARTS,
     LINE_PREFIXES,
     CommentType,
-    determine_comment_style,
+    determine_comment_type,
     find_in_comment,
     find_in_line,
     iterate_comment_lines,
@@ -14,9 +14,9 @@ from beman_tidy.lib.utils.comments import (
 
 
 def test__comments__determine_comment_style__out_of_bounds():
-    assert determine_comment_style([], 0) is None
-    assert determine_comment_style(["// hi"], -1) is None
-    assert determine_comment_style(["// hi"], 1) is None
+    assert determine_comment_type([], 0) is None
+    assert determine_comment_type(["// hi"], -1) is None
+    assert determine_comment_type(["// hi"], 1) is None
 
 
 def test__comments__determine_comment_style__line_comment():
@@ -24,7 +24,7 @@ def test__comments__determine_comment_style__line_comment():
         "int x = 0;\n",
         "// comment\n",
     ]
-    assert determine_comment_style(lines, 1) == CommentType.LINE
+    assert determine_comment_type(lines, 1) == CommentType.LINE
 
 
 def test__comments__determine_comment_style__block_comment_start():
@@ -33,7 +33,7 @@ def test__comments__determine_comment_style__block_comment_start():
         " * middle\n",
         " */\n",
     ]
-    assert determine_comment_style(lines, 0) == CommentType.BLOCK
+    assert determine_comment_type(lines, 0) == CommentType.BLOCK
 
 
 def test__comments__determine_comment_style__inside_block_comment():
@@ -43,7 +43,7 @@ def test__comments__determine_comment_style__inside_block_comment():
         " */\n",
         "int x = 0;\n",
     ]
-    assert determine_comment_style(lines, 1) == CommentType.BLOCK
+    assert determine_comment_type(lines, 1) == CommentType.BLOCK
 
 
 def test__comments__determine_comment_style__after_block_comment_is_none():
@@ -52,7 +52,7 @@ def test__comments__determine_comment_style__after_block_comment_is_none():
         " */\n",
         "int x = 0;\n",
     ]
-    assert determine_comment_style(lines, 2) is None
+    assert determine_comment_type(lines, 2) is None
 
 
 def test__comments__determine_comment_style__single_line_block_comment():
@@ -60,7 +60,7 @@ def test__comments__determine_comment_style__single_line_block_comment():
         "/* single-line block comment */\n",
         "int x = 0;\n",
     ]
-    assert determine_comment_style(lines, 0) == CommentType.BLOCK
+    assert determine_comment_type(lines, 0) == CommentType.BLOCK
 
 
 def test__comments__determine_comment_style__after_single_line_block_comment():
@@ -68,7 +68,7 @@ def test__comments__determine_comment_style__after_single_line_block_comment():
         "/* single-line block comment */\n",
         "int x = 0;\n",
     ]
-    assert determine_comment_style(lines, 1) is None
+    assert determine_comment_type(lines, 1) is None
 
 
 def test__comments__determine_comment_style__not_inside_single_line_block_comment():
@@ -78,9 +78,9 @@ def test__comments__determine_comment_style__not_inside_single_line_block_commen
         "/* Copyright notice */\n",
     ]
     # Line 2 (the blank line) should NOT be considered inside a block comment
-    assert determine_comment_style(lines, 1) is None
+    assert determine_comment_type(lines, 1) is None
     # Line 2 (the Copyright line) is its own single-line block comment
-    assert determine_comment_style(lines, 2) == CommentType.BLOCK
+    assert determine_comment_type(lines, 2) == CommentType.BLOCK
 
 
 def test__comments__iterate_comment_lines__line_comment_block_with_blank_lines():

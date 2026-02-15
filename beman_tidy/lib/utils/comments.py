@@ -11,7 +11,7 @@ LINE_PREFIXES = ['//']
 BLOCK_STARTS = ['/*']
 BLOCK_ENDS = ['*/']
 
-def determine_comment_style(lines, line_index):
+def determine_comment_type(lines, line_index):
     """
     Determines the comment style at the given line index.
     Returns CommentType or None.

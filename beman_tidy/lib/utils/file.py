@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from pathlib import Path
-from .comments import determine_comment_style
+from .comments import determine_comment_type
 
 
 def get_repo_ignorable_subdirectories():
@@ -57,9 +57,9 @@ def get_cpp_files(repo_path):
     return get_matched_paths(repo_path, get_cpp_extensions())
 
 
-def get_spdx_info(lines):
+def get_spdx_type(lines):
     """
-    Helper to find the SPDX line index and the comment style.
+    Helper to find the SPDX line index and the comment type.
     Returns (spdx_index, comment_type).
 
     If not found or invalid, returns (-1, None).
@@ -72,5 +72,5 @@ def get_spdx_info(lines):
     if spdx_index == -1:
         return -1, None
 
-    comment_type = determine_comment_style(lines, spdx_index)
+    comment_type = determine_comment_type(lines, spdx_index)
     return spdx_index, comment_type
