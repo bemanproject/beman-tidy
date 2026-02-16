@@ -55,9 +55,7 @@ class FileBaseCheck(BaseCheck):
             return True
 
         ignores = get_ignores(self.repo_info)
-
         rel_path_str = self.relative_path.as_posix()
-
         for ignore in ignores:
             ignore_str = str(ignore)
             if rel_path_str == ignore_str:
