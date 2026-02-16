@@ -4,6 +4,7 @@
 import sys
 import yaml
 from pathlib import Path
+from importlib.resources import files
 from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
 
 
@@ -46,31 +47,38 @@ def load_repo_config(repo_path, config_path=None):
     """
     Load the configuration file.
     """
+    # Load default configuration
+    default_config_path = files('beman_tidy').joinpath('.beman-tidy.yml')
+    with default_config_path.open('r') as f:
+        default_config = yaml.safe_load(f) or {}
+
+    # Determine user config path
     if config_path:
-        target_path = Path(config_path)
+        user_config_path = Path(config_path)
     else:
-        target_path = Path(repo_path) / ".beman-tidy.yml" # default name
+        user_config_path = Path(repo_path) / ".beman-tidy.yml"
 
-    if not target_path.exists():
-        if config_path:
-            print(f"Error: Configuration file specified not found at '{config_path}'")
+    # Load user configuration if it exists
+    user_config = {}
+    if user_config_path.exists():
+        try:
+            with open(user_config_path, "r") as f:
+                user_config = yaml.safe_load(f) or {}
+        except Exception as e:
+            print(f"Error loading user configuration from '{user_config_path}': {e}")
             sys.exit(1)
-        return {}
-
-    try:
-        with open(target_path, "r") as f:
-            config = yaml.safe_load(f)
-    except Exception as e:
-        print(f"Error loading configuration from '{target_path}': {e}")
+    elif config_path:
+        print(f"Error: Configuration file specified not found at '{config_path}'")
         sys.exit(1)
 
-    if config is None:
-        return {}
+    # Merge configurations
+    merged_config = default_config.copy()
+    merged_config.update(user_config)
 
-    if not validate_config(config):
+    if not validate_config(merged_config):
         sys.exit(1)
 
-    return config
+    return merged_config
 
 
 def get_ignores(repo_info):
