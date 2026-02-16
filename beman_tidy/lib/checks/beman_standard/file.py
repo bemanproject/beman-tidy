@@ -76,10 +76,10 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             fix_comment_type = comment_type
 
             if self._is_single_line_block_comment(lines, spdx_index, comment_type):
-                next_index, next_type = self._find_next_comment_start(lines, spdx_index + 1)
+                next_index, next_comment_type = self._find_next_comment_start(lines, spdx_index + 1)
                 if next_index != -1:
                     start_fix_index = next_index
-                    fix_comment_type = next_type
+                    fix_comment_type = next_comment_type
                 else:
                     return True
 
@@ -95,11 +95,11 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             self.write("".join(new_lines))
             return True
 
-        def _has_valid_spdx(self, spdx_index, type):
-            return spdx_index != -1 and type is not None
+        def _has_valid_spdx(self, spdx_index, comment_type):
+            return spdx_index != -1 and comment_type is not None
 
-        def _is_single_line_block_comment(self, lines, spdx_index, comment_type):
-            if comment_type == CommentType.BLOCK:
+        def _is_single_line_block_comment(self, lines, spdx_index, comment_info):
+            if comment_info == CommentType.BLOCK:
                 if any(end in lines[spdx_index] for end in BLOCK_ENDS):
                     return True
             return False
