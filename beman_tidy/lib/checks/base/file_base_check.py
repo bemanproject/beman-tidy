@@ -16,6 +16,7 @@ class FileBaseCheck(BaseCheck):
     """
 
     def __init__(self, repo_info, beman_standard_check_config, relative_path, name=None):
+        self.repo_info = repo_info
         self.relative_path = Path(relative_path)
         super().__init__(repo_info, beman_standard_check_config, name=name)
 
