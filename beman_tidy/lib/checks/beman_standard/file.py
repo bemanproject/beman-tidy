@@ -38,27 +38,37 @@ class FileCopyrightCheck(BatchFileBaseCheck):
         def __init__(self, repo_info, beman_standard_check_config, relative_path):
             super().__init__(repo_info, beman_standard_check_config, relative_path, name="file.copyright")
 
-        def check(self):
-            lines = self.read_lines()
+        def _get_copyright_search_start_info(self, lines):
+            """
+            Finds the starting point for searching for copyright notices.
+            This is the comment block immediately following the SPDX identifier.
+            Returns (start_index, comment_type) or (None, None) if no further processing is needed.
+            """
             spdx_index, comment_type = get_spdx_info(lines)
-
             if not self._has_valid_spdx(spdx_index, comment_type):
-                return True
+                return None, None
 
-            start_search_index = spdx_index + 1
+            start_index = spdx_index + 1
             search_comment_type = comment_type
-
             if self._is_single_line_block_comment(lines, spdx_index, comment_type):
                 next_index, next_comment_type = self._find_next_comment_start(lines, spdx_index + 1)
                 if next_index != -1:
-                    start_search_index = next_index
+                    start_index = next_index
                     search_comment_type = next_comment_type
                 else:
-                    return True
+                    return None, None
+
+            return start_index, search_comment_type
+
+        def check(self):
+            lines = self.read_lines()
+            start_search_index, search_comment_type = self._get_copyright_search_start_info(lines)
+            if start_search_index is None:
+                return True
 
             # Start searching from the line after SPDX identifier
             line_index, found_text = find_in_comment(lines, start_search_index, search_comment_type, ["copyright", "(c)"], ignore_case=True)
-            
+
             if line_index is not None:
                 self.log(f"Copyright notice found in {self.path.name} at line {line_index+1}. It should be removed.")
                 return False
@@ -67,28 +77,16 @@ class FileCopyrightCheck(BatchFileBaseCheck):
 
         def fix(self):
             lines = self.read_lines()
-            spdx_index, comment_type = get_spdx_info(lines)
-
-            if not self._has_valid_spdx(spdx_index, comment_type):
+            start_fix_index, fix_comment_type = self._get_copyright_search_start_info(lines)
+            if start_fix_index is None:
                 return True
-
-            start_fix_index = spdx_index + 1
-            fix_comment_type = comment_type
-
-            if self._is_single_line_block_comment(lines, spdx_index, comment_type):
-                next_index, next_comment_type = self._find_next_comment_start(lines, spdx_index + 1)
-                if next_index != -1:
-                    start_fix_index = next_index
-                    fix_comment_type = next_comment_type
-                else:
-                    return True
 
             # Start removing from the line after SPDX identifier
             new_lines = self._remove_lines_with_text_in_comment(
-                lines, 
+                lines,
                 start_fix_index,
                 fix_comment_type,
-                ["copyright", "(c)"], 
+                ["copyright", "(c)"],
                 log_func=lambda msg: self.log(f"{msg} in {self.path.name}")
             )
 
@@ -131,7 +129,6 @@ class FileCopyrightCheck(BatchFileBaseCheck):
                 return lines
 
             new_lines = lines[:start_index]
-            
             if comment_type == CommentType.LINE:
                 processed_lines, next_index = self._process_line_comments(lines, start_index, texts, log_func)
                 new_lines.extend(processed_lines)
@@ -152,15 +149,12 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             while i < len(lines):
                 line = lines[i]
                 stripped = line.strip()
-                
                 if not stripped:
                     processed_lines.append(line)
                     i += 1
                     continue
-                    
                 if not any(stripped.startswith(prefix) for prefix in LINE_PREFIXES):
                     break
-                
                 if self._contains_text(stripped, texts):
                     if log_func:
                         log_func(f"Removing line: {stripped}")
