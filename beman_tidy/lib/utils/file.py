@@ -57,10 +57,10 @@ def get_cpp_files(repo_path):
     return get_matched_paths(repo_path, get_cpp_extensions())
 
 
-def get_spdx_type(lines):
+def get_spdx_info(lines):
     """
-    Helper to find the SPDX line index and the comment type.
-    Returns (spdx_index, comment_type).
+    Helper to find the SPDX line index and the comment info.
+    Returns (spdx_index, comment_info).
 
     If not found or invalid, returns (-1, None).
     """
@@ -72,5 +72,5 @@ def get_spdx_type(lines):
     if spdx_index == -1:
         return -1, None
 
-    comment_type = determine_comment_type(lines, spdx_index)
-    return spdx_index, comment_type
+    comment_info = determine_comment_type(lines, spdx_index)
+    return spdx_index, comment_info
