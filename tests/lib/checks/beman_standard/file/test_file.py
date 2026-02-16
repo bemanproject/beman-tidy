@@ -6,7 +6,7 @@ from pathlib import Path
 
 from beman_tidy.lib.checks.beman_standard.file import FileCopyrightCheck
 
-# workaround to test for both normal and block comments
+# Workaround to test for both normal and block comments.
 test_data_prefix = Path("tests/lib/checks/beman_standard/file/data")
 valid_prefix = test_data_prefix / "valid"
 invalid_prefix = test_data_prefix / "invalid"
@@ -33,13 +33,13 @@ def test__file_copyright__invalid(repo_info, beman_standard_check_config):
 
 def test__file_copyright__fix_inplace(repo_info, beman_standard_check_config, tmp_path):
     # Test with invalid_prefix
-    dir1 = tmp_path / "invalid"
-    dir1.mkdir()
+    invalid_dir = tmp_path / "invalid"
+    invalid_dir.mkdir()
     for item in invalid_prefix.iterdir():
         if item.is_file():
-            shutil.copy(item, dir1 / item.name)
+            shutil.copy(item, invalid_dir / item.name)
 
-    repo_info["top_level"] = dir1
+    repo_info["top_level"] = invalid_dir
     check = FileCopyrightCheck(repo_info, beman_standard_check_config)
 
     assert check.check() is False
@@ -50,7 +50,7 @@ def test__file_copyright__fix_inplace(repo_info, beman_standard_check_config, tm
         if not item.is_file():
             continue
 
-        fixed_file = dir1 / item.name
+        fixed_file = invalid_dir / item.name
         content = fixed_file.read_text()
         lines = content.splitlines()
 
@@ -61,13 +61,13 @@ def test__file_copyright__fix_inplace(repo_info, beman_standard_check_config, tm
                  assert "Copyright" not in line, f"Copyright still present in {fixed_file.name}: {line}"
 
     # Test with invalid_block_prefix
-    dir2 = tmp_path / "invalid_block"
-    dir2.mkdir()
+    invalid_block_dir = tmp_path / "invalid_block"
+    invalid_block_dir.mkdir()
     for item in invalid_block_prefix.iterdir():
         if item.is_file():
-            shutil.copy(item, dir2 / item.name)
+            shutil.copy(item, invalid_block_dir / item.name)
 
-    repo_info["top_level"] = dir2
+    repo_info["top_level"] = invalid_block_dir
     check = FileCopyrightCheck(repo_info, beman_standard_check_config)
 
     assert check.check() is False
@@ -78,7 +78,7 @@ def test__file_copyright__fix_inplace(repo_info, beman_standard_check_config, tm
         if not item.is_file():
             continue
 
-        fixed_file = dir2 / item.name
+        fixed_file = invalid_block_dir / item.name
         content = fixed_file.read_text()
         lines = content.splitlines()
 
