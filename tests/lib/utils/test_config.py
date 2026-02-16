@@ -114,7 +114,7 @@ def test_load_repo_config_invalid_yaml(tmp_path, capsys):
         load_repo_config(tmp_path)
     
     captured = capsys.readouterr()
-    assert "Error loading configuration" in captured.out
+    assert "Error loading user configuration" in captured.out
 
 def test_load_repo_config_invalid_validation(tmp_path, capsys):
     """Test loading a configuration that fails validation."""
