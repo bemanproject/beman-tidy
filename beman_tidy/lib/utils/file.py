@@ -56,6 +56,26 @@ def get_cpp_files(repo_path):
     return get_matched_paths(repo_path, get_cpp_extensions())
 
 
+def get_beman_include_headers(repo_path):
+    """
+    Get all header files in the repository under an include/beman directory.
+    """
+    header_extensions = {".hpp", ".h", ".hxx", ".hh"}
+    all_headers = get_matched_paths(repo_path, header_extensions)
+    
+    beman_headers = []
+    for path in all_headers:
+        try:
+            parts = path.parts
+            include_index = parts.index('include')
+            if include_index + 1 < len(parts) and parts[include_index + 1] == 'beman':
+                beman_headers.append(path)
+        except ValueError:
+            continue
+            
+    return beman_headers
+
+
 def get_spdx_info(lines):
     """
     Helper to find the SPDX line index and the comment prefix.
