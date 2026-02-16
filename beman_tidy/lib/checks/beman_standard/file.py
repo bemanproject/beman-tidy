@@ -3,7 +3,7 @@
 
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
-from ...utils.file import get_cpp_files, get_spdx_type
+from ...utils.file import get_cpp_files, get_spdx_info
 from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_STARTS, LINE_PREFIXES
 
 # [file.*] checks category.
@@ -26,8 +26,8 @@ class FileCopyrightCheck(BatchFileBaseCheck):
     Recommendation: Source code files should NOT include a copyright notice following the SPDX license identifier.
     """
 
-    def __init__(self, repo_type, beman_standard_check_config):
-        super().__init__(repo_type, beman_standard_check_config)
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
         self.file_check_class = self.FileCopyrightCheckImpl
         self.file_path_generator = get_cpp_files
 
@@ -35,29 +35,29 @@ class FileCopyrightCheck(BatchFileBaseCheck):
         """
         Implementation the "file.copyright" check for a single file.
         """
-        def __init__(self, repo_type, beman_standard_check_config, relative_path):
-            super().__init__(repo_type, beman_standard_check_config, relative_path, name="file.copyright")
+        def __init__(self, repo_info, beman_standard_check_config, relative_path):
+            super().__init__(repo_info, beman_standard_check_config, relative_path, name="file.copyright")
 
         def check(self):
             lines = self.read_lines()
-            spdx_index, comment_type = get_spdx_type(lines)
+            spdx_index, comment_info = get_spdx_info(lines)
 
-            if not self._has_valid_spdx(spdx_index, comment_type):
+            if not self._has_valid_spdx(spdx_index, comment_info):
                 return True
 
             start_search_index = spdx_index + 1
-            search_comment_type = comment_type
+            search_comment_info = comment_info
 
-            if self._is_single_line_block_comment(lines, spdx_index, comment_type):
-                next_index, next_type = self._find_next_comment_start(lines, spdx_index + 1)
+            if self._is_single_line_block_comment(lines, spdx_index, comment_info):
+                next_index, next_info = self._find_next_comment_start(lines, spdx_index + 1)
                 if next_index != -1:
                     start_search_index = next_index
-                    search_comment_type = next_type
+                    search_comment_info = next_info
                 else:
                     return True
 
             # Start searching from the line after SPDX identifier
-            line_index, found_text = find_in_comment(lines, start_search_index, search_comment_type, ["copyright", "(c)"], ignore_case=True)
+            line_index, found_text = find_in_comment(lines, start_search_index, search_comment_info, ["copyright", "(c)"], ignore_case=True)
             
             if line_index is not None:
                 self.log(f"Copyright notice found in {self.path.name} at line {line_index+1}. It should be removed.")
@@ -67,19 +67,19 @@ class FileCopyrightCheck(BatchFileBaseCheck):
 
         def fix(self):
             lines = self.read_lines()
-            spdx_index, comment_type = get_spdx_type(lines)
+            spdx_index, comment_info = get_spdx_info(lines)
 
-            if not self._has_valid_spdx(spdx_index, comment_type):
+            if not self._has_valid_spdx(spdx_index, comment_info):
                 return True
 
             start_fix_index = spdx_index + 1
-            fix_comment_type = comment_type
+            fix_comment_info = comment_info
 
-            if self._is_single_line_block_comment(lines, spdx_index, comment_type):
+            if self._is_single_line_block_comment(lines, spdx_index, comment_info):
                 next_index, next_style = self._find_next_comment_start(lines, spdx_index + 1)
                 if next_index != -1:
                     start_fix_index = next_index
-                    fix_comment_type = next_style
+                    fix_comment_info = next_style
                 else:
                     return True
 
@@ -87,7 +87,7 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             new_lines = self._remove_lines_with_text_in_comment(
                 lines, 
                 start_fix_index,
-                fix_comment_type, 
+                fix_comment_info,
                 ["copyright", "(c)"], 
                 log_func=lambda msg: self.log(f"{msg} in {self.path.name}")
             )
@@ -95,11 +95,11 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             self.write("".join(new_lines))
             return True
 
-        def _has_valid_spdx(self, spdx_index, comment_type):
-            return spdx_index != -1 and comment_type is not None
+        def _has_valid_spdx(self, spdx_index, comment_info):
+            return spdx_index != -1 and comment_info is not None
 
-        def _is_single_line_block_comment(self, lines, spdx_index, comment_type):
-            if comment_type == CommentType.BLOCK:
+        def _is_single_line_block_comment(self, lines, spdx_index, comment_info):
+            if comment_info == CommentType.BLOCK:
                 if any(end in lines[spdx_index] for end in BLOCK_ENDS):
                     return True
             return False
@@ -121,22 +121,22 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             
             return -1, None
 
-        def _remove_lines_with_text_in_comment(self, lines, start_index, comment_type, texts, log_func=None):
+        def _remove_lines_with_text_in_comment(self, lines, start_index, comment_info, texts, log_func=None):
             """
             Removes lines from the comment block that contain any of the texts.
             Preserves block comment structure.
             Returns the new list of lines.
             """
-            if start_index < 0 or start_index >= len(lines) or comment_type is None:
+            if start_index < 0 or start_index >= len(lines) or comment_info is None:
                 return lines
 
             new_lines = lines[:start_index]
             
-            if comment_type == CommentType.LINE:
+            if comment_info == CommentType.LINE:
                 processed_lines, next_index = self._process_line_comments(lines, start_index, texts, log_func)
                 new_lines.extend(processed_lines)
                 new_lines.extend(lines[next_index:])
-            elif comment_type == CommentType.BLOCK:
+            elif comment_info == CommentType.BLOCK:
                 processed_lines, next_index = self._process_block_comments(lines, start_index, texts, log_func)
                 new_lines.extend(processed_lines)
                 new_lines.extend(lines[next_index:])
