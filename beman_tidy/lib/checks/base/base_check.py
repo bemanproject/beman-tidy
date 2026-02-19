@@ -65,16 +65,6 @@ class BaseCheck(ABC):
         )
         assert self.full_text_body is not None
 
-        # set log level - e.g. "error" or "warning" or "skipped"
-        self.log_enabled = False
-        self.log_level = (
-            "skipped"
-            if self.should_skip()
-            else "error"
-            if self.type == "Requirement"
-            else "warning"
-        )
-
         # set repo info
         self.repo_info = repo_info
         assert "name" in repo_info
@@ -94,6 +84,25 @@ class BaseCheck(ABC):
         assert "values" in beman_library_maturity_model
         assert len(beman_library_maturity_model["values"]) == 4
         self.beman_library_maturity_model = beman_library_maturity_model["values"]
+
+        self.log_enabled = False
+        self._log_level = None  # lazily initialized
+
+    @property
+    def log_level(self):
+        if self._log_level is None:
+            self._log_level = (
+                "skipped"
+                if self.should_skip()
+                else "error"
+                if self.type == "Requirement"
+                else "warning"
+            )
+        return self._log_level
+
+    @log_level.setter
+    def log_level(self, value):
+        self._log_level = value
 
     def should_skip(self):
         """
