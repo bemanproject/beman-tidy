@@ -145,11 +145,20 @@ beman-tidy path/to/exemplar --fix-inplace --verbose
 
 You can configure `beman-tidy` by placing a `.beman-tidy.yml` file in the root of your repository.
 
-Currently, it supports ignoring specific paths or directories:
+Currently, it supports ignoring specific paths or directories. When you add a path to `ignored_paths`, it will be excluded from all checks.
 
+- To ignore a specific file, provide its full path relative to the repository root.
+- To ignore a directory, provide the path to that directory. This will ignore the directory itself and all files and subdirectories within it. A trailing slash (`/`) is optional.
+
+For example:
 ```yaml
 ignored_paths:
   - include/beman/optional/detail/stl_interfaces/config.hpp
+  - include/beman/optional/detail/stl_interfaces/
+```
+or
+```yaml
+ignored_paths:
   - include/beman/optional/detail/stl_interfaces/
 ```
 
