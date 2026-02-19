@@ -87,17 +87,22 @@ class BaseCheck(ABC):
 
         self.log_enabled = False
         self._log_level = None  # lazily initialized
+        self._is_resolving_log_level = False
 
     @property
     def log_level(self):
         if self._log_level is None:
-            self._log_level = (
-                "skipped"
-                if self.should_skip()
-                else "error"
-                if self.type == "Requirement"
-                else "warning"
-            )
+            self._is_resolving_log_level = True
+            try:
+                self._log_level = (
+                    "skipped"
+                    if self.should_skip()
+                    else "error"
+                    if self.type == "Requirement"
+                    else "warning"
+                )
+            finally:
+                self._is_resolving_log_level = False
         return self._log_level
 
     @log_level.setter
@@ -176,17 +181,23 @@ class BaseCheck(ABC):
         """
 
         if self.log_enabled and enabled:
-            log_level = log_level if log_level else self.log_level
+            if log_level:
+                level = log_level
+            elif self._is_resolving_log_level: # if it hasn't been initialized yet
+                level = "info"
+            else:
+                level = self.log_level
+
             color = (
                 red_color
-                if log_level == "error"
+                if level == "error"
                 else yellow_color
-                if log_level == "warning"
+                if level == "warning"
                 else gray_color
-                if log_level == "skipped"
+                if level == "skipped"
                 else blue_color
-                if log_level == "info"
+                if level == "info"
                 else no_color
             )
 
-            print(f"[{color}{log_level}{no_color}][{self.name}]: {message}")
+            print(f"[{color}{level}{no_color}][{self.name}]: {message}")
