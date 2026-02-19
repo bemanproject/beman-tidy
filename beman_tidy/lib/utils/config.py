@@ -94,16 +94,18 @@ def get_ignores(repo_info):
 def is_ignored(repo_info, relative_path):
     """
     Check if a given path is ignored by the configuration.
+    A path can be a file or a directory.
+    If a directory is ignored, all its children are also ignored.
     """
     ignores = get_ignores(repo_info)
     rel_path_str = relative_path.as_posix()
     for ignore in ignores:
-        ignore_str = str(ignore)
+        ignore_str = str(ignore).rstrip('/')
+
         if rel_path_str == ignore_str:
             return True
-        if ignore_str.endswith("/"):
-            if rel_path_str.startswith(ignore_str):
-                return True
-        elif rel_path_str.startswith(ignore_str + "/"):
+        
+        if rel_path_str.startswith(ignore_str + '/'):
             return True
+
     return False
