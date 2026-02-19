@@ -89,3 +89,21 @@ def get_ignores(repo_info):
     default_ignores = get_repo_ignorable_subdirectories()
     user_ignores = repo_info.get("config", {}).get("ignored_paths", [])
     return list(default_ignores) + user_ignores
+
+
+def is_ignored(repo_info, relative_path):
+    """
+    Check if a given path is ignored by the configuration.
+    """
+    ignores = get_ignores(repo_info)
+    rel_path_str = relative_path.as_posix()
+    for ignore in ignores:
+        ignore_str = str(ignore)
+        if rel_path_str == ignore_str:
+            return True
+        if ignore_str.endswith("/"):
+            if rel_path_str.startswith(ignore_str):
+                return True
+        elif rel_path_str.startswith(ignore_str + "/"):
+            return True
+    return False

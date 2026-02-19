@@ -7,7 +7,7 @@ from pathlib import Path
 from beman_tidy.lib.utils.string import normalize_path_for_display
 
 from .base_check import BaseCheck
-from ...utils.config import get_ignores
+from ...utils.config import is_ignored
 
 
 class DirectoryBaseCheck(BaseCheck):
@@ -52,20 +52,7 @@ class DirectoryBaseCheck(BaseCheck):
         """
         if super().should_skip():
             return True
-
-        ignores = get_ignores(self.repo_info)
-        rel_path_str = self.relative_path.as_posix()
-        for ignore in ignores:
-            ignore_str = str(ignore)
-            if rel_path_str == ignore_str:
-                return True
-            if ignore_str.endswith("/"):
-                if rel_path_str.startswith(ignore_str):
-                    return True
-            elif rel_path_str.startswith(ignore_str + "/"):
-                return True
-
-        return False
+        return is_ignored(self.repo_info, self.relative_path)
 
     @abstractmethod
     def check(self):
