@@ -143,30 +143,23 @@ beman-tidy path/to/exemplar --fix-inplace --verbose
 
 ## Configuration
 
-You can configure `beman-tidy` by placing a `.beman-tidy.yml` file in the root of your repository.
+`beman-tidy` attempts to read configuration for each source file from a `.beman-tidy.yml` file located in the root of your repository. You can also specify a custom configuration file path using the `--config` option.
 
-Currently, it supports ignoring specific paths or directories. When you add a path to `ignored_paths`, it will be excluded from all checks.
+The following configuration options may be used in a `.beman-tidy.yml` file:
 
-- To ignore a specific file, provide its full path relative to the repository root.
-- To ignore a directory, provide the path to that directory. This will ignore the directory itself and all files and subdirectories within it. A trailing slash (`/`) is optional.
+`ignored_paths` - A list of paths to be excluded from all checks.
+  - To ignore a specific file, provide its full path relative to the repository root.
+  - To ignore a directory, provide the path to that directory. This will ignore the directory itself and all files and subdirectories within it. A trailing slash (`/`) is optional.
 
-For example:
-```yaml
-ignored_paths:
-  - include/beman/optional/detail/stl_interfaces/config.hpp
-  - include/beman/optional/detail/stl_interfaces/
-```
-or
-```yaml
-ignored_paths:
-  - include/beman/optional/detail/stl_interfaces/
-```
-
-You can also specify a custom configuration file path using the `--config` option:
-
-```shell
-beman-tidy . --config my-config.yml
-```
+  Example:
+  ```yaml
+  ignored_paths:
+    # Ignores a single file
+    - include/beman/optional/detail/stl_interfaces/config.hpp
+    
+    # Ignores a directory and everything inside it
+    - include/beman/optional/another_dir
+  ```
 
 ## Working on beman-tidy
 
