@@ -4,7 +4,6 @@
 import sys
 import yaml
 from pathlib import Path
-from importlib.resources import files
 from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
 
 
@@ -43,12 +42,19 @@ def validate_config(config):
     return True
 
 
+def get_default_config_path():
+    """
+    Returns the path to the default configuration file.
+    """
+    return Path(__file__).parent.parent.parent / ".beman-standard.yml"
+
+
 def load_repo_config(repo_path, config_path=None):
     """
     Load the configuration file.
     """
     # Load default configuration
-    default_config_path = files('beman_tidy').joinpath('.beman-tidy.yml')
+    default_config_path = get_default_config_path()
     with default_config_path.open('r') as f:
         default_config = yaml.safe_load(f) or {}
 

@@ -3,7 +3,7 @@
 
 import pytest
 import yaml
-from beman_tidy.lib.utils.config import validate_config, load_repo_config
+from beman_tidy.lib.utils.config import validate_config, load_repo_config, get_default_config_path
 
 def test_validate_config_valid():
     """Test that a valid configuration passes validation."""
@@ -68,33 +68,49 @@ def test_validate_config_root_ignored(capsys):
     assert "Error: Cannot ignore root directory" in captured.out
 
 def test_load_repo_config_default(tmp_path):
-    """Test loading the default configuration file."""
-    config_content = {
+    """Test loading the default configuration file and merging with user config."""
+    default_config_path = get_default_config_path()
+    with default_config_path.open('r') as f:
+        expected_config = yaml.safe_load(f) or {}
+
+    user_config_content = {
         "ignored_paths": ["build/"]
     }
+    expected_config.update(user_config_content)
+
     config_file = tmp_path / ".beman-tidy.yml"
     with open(config_file, "w") as f:
-        yaml.dump(config_content, f)
+        yaml.dump(user_config_content, f)
 
     config = load_repo_config(tmp_path)
-    assert config == config_content
+    assert config == expected_config
 
 def test_load_repo_config_custom_path(tmp_path):
     """Test loading a configuration file from a custom path."""
-    config_content = {
+    default_config_path = get_default_config_path()
+    with default_config_path.open('r') as f:
+        expected_config = yaml.safe_load(f) or {}
+
+    user_config_content = {
         "ignored_paths": ["dist/"]
     }
+    expected_config.update(user_config_content)
+    
     config_file = tmp_path / "custom_config.yml"
     with open(config_file, "w") as f:
-        yaml.dump(config_content, f)
+        yaml.dump(user_config_content, f)
 
     config = load_repo_config(tmp_path, config_path=str(config_file))
-    assert config == config_content
+    assert config == expected_config
 
 def test_load_repo_config_not_found_default(tmp_path):
     """Test loading when the default configuration file does not exist."""
+    default_config_path = get_default_config_path()
+    with default_config_path.open('r') as f:
+        expected_config = yaml.safe_load(f) or {}
+    
     config = load_repo_config(tmp_path)
-    assert config == {}
+    assert config == expected_config
 
 def test_load_repo_config_not_found_custom(tmp_path, capsys):
     """Test loading when a custom configuration file does not exist."""
