@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import os
 from pathlib import Path
 from .comments import determine_comment_type
 
@@ -9,7 +10,7 @@ def get_repo_ignorable_subdirectories():
     """
     Returns a set of common build and IDE directories to ignore.
     """
-    return {".git", "build", ".idea", ".vscode", "__pycache__", "venv", "env"}
+    return {".git/", "build/", ".idea/", ".vscode/", "__pycache__/", "venv/", "env/"}
 
 
 def get_cpp_extensions():
@@ -19,42 +20,49 @@ def get_cpp_extensions():
     return {".hpp", ".h", ".hxx", ".hh", ".cpp", ".cxx", ".cc", ".c"}
 
 
-def get_matched_paths(repo_path, extensions, exclude_dirs=None):
+def _is_ignored(path, ignores):
+    path_str = path.as_posix()
+
+    for pattern in ignores:
+        clean_pattern = pattern.rstrip("/") # trailing slash is optional
+        if path_str == clean_pattern or path_str.startswith(clean_pattern + "/"):
+            return True
+    return False
+
+
+def get_matched_paths(repo_path, extensions, ignores=None):
     """
     Get all files in the repository matching the given extensions.
-    Ignores directories specified in exclude_dirs.
+    Ignores paths specified in 'ignores'.
     """
-    if exclude_dirs is None:
-        exclude_dirs = get_repo_ignorable_subdirectories()
+    if ignores is None:
+        ignores = get_repo_ignorable_subdirectories()
 
     matched_files = []
     repo_path = Path(repo_path)
 
-    for path in repo_path.rglob("*"):
-        if not path.is_file():
-            continue
+    for root, dirs, files in os.walk(repo_path):
+        rel_root = Path(root).relative_to(repo_path)
 
-        try:
-            relative_path = path.relative_to(repo_path)
-        except ValueError:
-            continue
+        for d in list(dirs):
+            d_path = rel_root / d
+            if _is_ignored(d_path, ignores):
+                dirs.remove(d)
 
-        # Check if any part of the relative path is in exclude_dirs
-        if any(part in exclude_dirs for part in relative_path.parts):
-            continue
-
-        # Found match.
-        if path.suffix in extensions:
-            matched_files.append(relative_path)
+        for f in files:
+            f_path = rel_root / f
+            if f_path.suffix in extensions:
+                if not _is_ignored(f_path, ignores):
+                    matched_files.append(f_path)
 
     return sorted(list(set(matched_files)))
 
 
-def get_cpp_files(repo_path):
+def get_cpp_files(repo_path, ignores=None):
     """
     Get all C++ source and header files in the repository.
     """
-    return get_matched_paths(repo_path, get_cpp_extensions())
+    return get_matched_paths(repo_path, get_cpp_extensions(), ignores=ignores)
 
 
 def get_spdx_info(lines):

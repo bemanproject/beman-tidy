@@ -11,6 +11,6 @@ def repo_info(mock_repo_info):  # noqa: F811
     return mock_repo_info
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def beman_standard_check_config(mock_beman_standard_check_config):  # noqa: F811
     return mock_beman_standard_check_config
