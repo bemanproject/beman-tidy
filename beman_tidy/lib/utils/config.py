@@ -18,7 +18,7 @@ def validate_config(config):
         return True
 
     if not isinstance(ignored_paths, list):
-        print(f"Error: 'ignored_paths' in .beman-tidy.yml must be a list, but got {type(ignored_paths).__name__}.")
+        print(f"Error: 'ignored_paths' in .beman-tidy.yaml must be a list, but got {type(ignored_paths).__name__}.")
         return False
 
     mandatory_files = {"README.md", "LICENSE"}
@@ -31,12 +31,12 @@ def validate_config(config):
         clean_path = path.rstrip("/")
         # Check for exact match
         if clean_path in mandatory_files:
-             print(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yml")
+             print(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yaml")
              return False
         
         # Check if ignoring root directory
         if clean_path == "." or clean_path == "":
-             print("Error: Cannot ignore root directory in .beman-tidy.yml")
+             print("Error: Cannot ignore root directory in .beman-tidy.yaml")
              return False
              
     return True
@@ -46,7 +46,7 @@ def get_default_config_path():
     """
     Returns the path to the default configuration file.
     """
-    return Path(__file__).parent.parent.parent / ".beman-standard.yml"
+    return Path(__file__).parent.parent.parent / ".beman-standard.yaml"
 
 
 def load_repo_config(repo_path, config_path=None):
@@ -62,7 +62,7 @@ def load_repo_config(repo_path, config_path=None):
     if config_path:
         user_config_path = Path(config_path)
     else:
-        user_config_path = Path(repo_path) / ".beman-tidy.yml"
+        user_config_path = Path(repo_path) / ".beman-tidy.yaml"
 
     # Load user configuration if it exists
     user_config = {}

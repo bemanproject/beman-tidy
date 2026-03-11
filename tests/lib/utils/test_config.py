@@ -24,7 +24,7 @@ def test_validate_config_ignored_paths_not_list(capsys):
     }
     assert validate_config(config) is False
     captured = capsys.readouterr()
-    assert "Error: 'ignored_paths' in .beman-tidy.yml must be a list" in captured.out
+    assert "Error: 'ignored_paths' in .beman-tidy.yaml must be a list" in captured.out
 
 def test_validate_config_ignored_paths_invalid_entry(capsys):
     """Test that validation fails if ignored_paths contains non-string entries."""
@@ -78,7 +78,7 @@ def test_load_repo_config_default(tmp_path):
     }
     expected_config.update(user_config_content)
 
-    config_file = tmp_path / ".beman-tidy.yml"
+    config_file = tmp_path / ".beman-tidy.yaml"
     with open(config_file, "w") as f:
         yaml.dump(user_config_content, f)
 
@@ -96,7 +96,7 @@ def test_load_repo_config_custom_path(tmp_path):
     }
     expected_config.update(user_config_content)
     
-    config_file = tmp_path / "custom_config.yml"
+    config_file = tmp_path / "custom_config.yaml"
     with open(config_file, "w") as f:
         yaml.dump(user_config_content, f)
 
@@ -115,14 +115,14 @@ def test_load_repo_config_not_found_default(tmp_path):
 def test_load_repo_config_not_found_custom(tmp_path, capsys):
     """Test loading when a custom configuration file does not exist."""
     with pytest.raises(SystemExit):
-        load_repo_config(tmp_path, config_path=str(tmp_path / "nonexistent.yml"))
+        load_repo_config(tmp_path, config_path=str(tmp_path / "nonexistent.yaml"))
     
     captured = capsys.readouterr()
     assert "Error: Configuration file specified not found" in captured.out
 
 def test_load_repo_config_invalid_yaml(tmp_path, capsys):
     """Test loading an invalid YAML file."""
-    config_file = tmp_path / ".beman-tidy.yml"
+    config_file = tmp_path / ".beman-tidy.yaml"
     with open(config_file, "w") as f:
         f.write("invalid: yaml: :")
 
@@ -137,7 +137,7 @@ def test_load_repo_config_invalid_validation(tmp_path, capsys):
     config_content = {
         "ignored_paths": ["README.md"]
     }
-    config_file = tmp_path / ".beman-tidy.yml"
+    config_file = tmp_path / ".beman-tidy.yaml"
     with open(config_file, "w") as f:
         yaml.dump(config_content, f)
 

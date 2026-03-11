@@ -37,7 +37,7 @@ def parse_args():
         "--checks", help="array of checks to run", type=str, default=None
     )
     parser.add_argument(
-        "--config", help="path to the configuration file (default: .beman-tidy.yml in repo root)", type=str, default=None
+        "--config", help="path to the configuration file (default: .beman-tidy.yaml in repo root)", type=str, default=None
     )
     args = parser.parse_args()
 

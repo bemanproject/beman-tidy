@@ -33,7 +33,7 @@ options:
   --require-all, --no-require-all
                         all checks are required regardless of the check type (e.g., Recommendation becomes Requirement)
   --checks CHECKS       array of checks to run
-  --config CONFIG       path to the configuration file (default: .beman-tidy.yml in repo root)
+  --config CONFIG       path to the configuration file (default: .beman-tidy.yaml in repo root)
 ```
 
 - Run beman-tidy on the exemplar repository **(default: dry-run mode)**
@@ -143,9 +143,9 @@ beman-tidy path/to/exemplar --fix-inplace --verbose
 
 ## Configuration
 
-`beman-tidy` attempts to read configuration for each source file from a `.beman-tidy.yml` file located in the root of your repository. You can also specify a custom configuration file path using the `--config` option.
+`beman-tidy` attempts to read configuration for each source file from a `.beman-tidy.yaml` file located in the root of your repository. You can also specify a custom configuration file path using the `--config` option.
 
-The following configuration options may be used in a `.beman-tidy.yml` file:
+The following configuration options may be used in a `.beman-tidy.yaml` file:
 
 `ignored_paths` - A list of paths to be excluded from all checks.
   - To ignore a specific file, provide its full path relative to the repository root.
