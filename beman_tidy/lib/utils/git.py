@@ -127,7 +127,7 @@ def get_beman_standard_config_path():
     """
     Get the path to the Beman Standard YAML configuration file.
     """
-    return Path(__file__).parent.parent.parent / ".beman-standard.yml"
+    return Path(__file__).parent.parent.parent / ".beman-standard.yaml"
 
 
 def get_beman_recommendated_license_path():
