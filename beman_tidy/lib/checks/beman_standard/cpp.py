@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import re
 from beman_tidy.lib.checks.base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from beman_tidy.lib.checks.system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.file import get_beman_include_headers
@@ -21,9 +22,6 @@ class CppNamespaceCheck(BatchFileBaseCheck):
         """
         Implementation of the "cpp.namespace" check for a single file.
         """
-        # TODO: Implement a way to detect an existing namespace that doesnt wrap the entire code
-        # with something like abstract syntax trees(?) via libclang / just search for '{' and '}'
-        # current functionality: passes any file containing the right namespace
         def __init__(self, repo_info, beman_standard_check_config, relative_path):
             super().__init__(repo_info, beman_standard_check_config, relative_path, name="cpp.namespace")
             self.short_name = ""
@@ -48,23 +46,16 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             parts = self.path.parts
             include_index = parts.index('include')
             self.short_name = parts[include_index + 2]
-            expected_namespace = f"namespace beman::{self.short_name}"
-            lines = self.read_lines()
+            
+            # Pattern to match either "namespace beman::my_lib" or "namespace beman { ... namespace my_lib"
+            pattern = re.compile(
+                r"namespace\s+beman\s*::\s*" + re.escape(self.short_name) +
+                r"|namespace\s+beman\s*\{\s*\n\s*namespace\s+" + re.escape(self.short_name)
+            )
 
-            code_start_index, code_end_index = self._get_code_body_indices(lines)
-            has_found_namespace = False
-            for i in range(code_start_index, code_end_index):
-                line = lines[i].strip()
-                if not line or line.startswith('//'):
-                    continue
-                if expected_namespace in line:
-                    has_found_namespace = True
-                    break
-                self.log(f"Code found outside of expected namespace '{expected_namespace}' at line {i+1}.")
-                return False
-
-            if not has_found_namespace:
-                self.log(f"File does not contain the expected namespace '{expected_namespace}'.")
+            content = self.read()
+            if not pattern.search(content):
+                self.log(f"File does not contain the expected namespace 'beman::{self.short_name}'.")
                 return False
 
             return True
@@ -74,16 +65,22 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             include_index = parts.index('include')
             self.short_name = parts[include_index + 2]
             lines = self.read_lines()
+            
             insert_line, close_line = self._get_code_body_indices(lines)
-
+                    
             new_lines = lines[:insert_line]
-            if insert_line > 0 and lines[insert_line - 1].strip():
-                 new_lines.append("")   # blank line for style
+            # blank line for style
+            if insert_line > 0 and lines[insert_line-1].strip():
+                 new_lines.append("")
+            
             new_lines.append(f"namespace beman::{self.short_name} {{")
             new_lines.extend(lines[insert_line:close_line])
             new_lines.append(f"}} // namespace beman::{self.short_name}")
+            
+            # blank line for style
             if close_line < len(lines) and lines[close_line].strip():
-                 new_lines.append("")   # blank line for style
+                 new_lines.append("")
+
             new_lines.extend(lines[close_line:])
 
             self.write_lines(new_lines)
