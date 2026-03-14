@@ -10,6 +10,7 @@
     * `beman_tidy/lib/checks/`: The checks for the tool.
     * `beman_tidy/lib/pipeline.py`: The checks pipeline for the `beman-tidy` tool.
   * `beman_tidy/.beman-standard.yml`: Stable (offline) version of the standard.
+  * `beman_tidy/.beman-tidy.yml`: Default configuration file for `beman-tidy`. Will be merged with the user's.
 * `tests/`: Unit tests for the tool.
   * Structure is similar to the `beman_tidy/` directory.
   * `pytest` is used for testing.

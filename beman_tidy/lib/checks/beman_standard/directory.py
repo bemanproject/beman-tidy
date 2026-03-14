@@ -4,6 +4,7 @@
 from ..base.directory_base_check import DirectoryBaseCheck
 from ..system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.string import normalize_path_for_display
+from ...utils.config import is_ignored
 
 
 # [directory.*] checks category.
@@ -132,7 +133,8 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
         misplaced_test_files = []
         for p in self.repo_path.rglob("*.test.*"):
             if not any(excluded in str(p) for excluded in exclude_dirs):
-                misplaced_test_files.append(p)
+                if not is_ignored(self.repo_info, p.relative_to(self.repo_path)):
+                    misplaced_test_files.append(p)
 
         # Check if any test files are misplaced outside the excluded directories.
         if len(misplaced_test_files) > 0:
@@ -233,10 +235,9 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
         misplaced_md_files = [
             p
             for p in self.repo_path.rglob("*.md")
-            if not any(
-                excluded in p.parts for excluded in exclude_dirs
-            )  # exclude files in excluded directories
-            and p != self.repo_path / "README.md"  # exclude root README.md
+            if not any(excluded in p.parts for excluded in exclude_dirs)
+            and p != self.repo_path / "README.md"
+            and not is_ignored(self.repo_info, p.relative_to(self.repo_path))
         ]
 
         # Check if any MD files are misplaced.
@@ -326,6 +327,7 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
                 if (
                     not any(excluded in str(p) for excluded in exclude_dirs)
                     and p != self.repo_path / "README.md"
+                    and not is_ignored(self.repo_info, p.relative_to(self.repo_path))
                 ):
                     misplaced_paper_files.append(p)
 
