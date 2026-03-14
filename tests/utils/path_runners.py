@@ -20,7 +20,7 @@ def run_check_for_each_repo_info(
             {"default_branch": "master", ...},
         ]
         check_class = RepositoryDefaultBranchCheck
-        beman_standard_check_config = "/path/to/.beman-standard.yml"
+        beman_standard_check_config = "/path/to/.beman-standard.yaml"
     """
     for repo_info in repo_infos:
         check_instance = check_class(repo_info, beman_standard_check_config)
@@ -46,7 +46,7 @@ def run_check_for_each_path(
         ]
         check_class = ReadmeTitleCheck or DirectorySourcesCheck
         repo_info = "beman.exemplar"
-        beman_standard_check_config = "/path/to/.beman-standard.yml"
+        beman_standard_check_config = "/path/to/.beman-standard.yaml"
     """
     for path in paths:
         if os.path.isdir(path):
@@ -87,7 +87,7 @@ def run_fix_inplace_for_each_file_path(
         ]
         check_class = ReadmeTitleCheck
         repo_info = "beman.exemplar"
-        beman_standard_check_config = "beman_tidy/.beman-standard.yml"
+        beman_standard_check_config = "beman_tidy/.beman-standard.yaml"
     """
     for invalid_path in invalid_file_paths:
         check_instance = check_class(repo_info, beman_standard_check_config)

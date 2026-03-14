@@ -72,7 +72,7 @@ class ReadmeBadgesCheck(ReadmeBaseCheck):
     def check(self):
         """
         self.config["values"] contains a fixed set of Beman badges,
-        check .beman-standard.yml for the desired format.
+        check .beman-standard.yaml for the desired format.
         """
 
         def validate_badges(category, badges):

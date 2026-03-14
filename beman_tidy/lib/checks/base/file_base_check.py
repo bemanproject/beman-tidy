@@ -3,10 +3,12 @@
 
 from abc import abstractmethod
 import re
+from pathlib import Path
 
 from beman_tidy.lib.utils.string import normalize_path_for_display
-
 from .base_check import BaseCheck
+from ...utils.config import is_ignored, get_ignores
+
 
 class FileBaseCheck(BaseCheck):
     """
@@ -15,6 +17,7 @@ class FileBaseCheck(BaseCheck):
 
     def __init__(self, repo_info, beman_standard_check_config, relative_path, name=None):
         super().__init__(repo_info, beman_standard_check_config, name=name)
+        self.relative_path = Path(relative_path)
 
         # set path - e.g. "README.md"
         self.path = self.repo_path / relative_path
@@ -42,6 +45,14 @@ class FileBaseCheck(BaseCheck):
             return False
 
         return True
+
+    def should_skip(self):
+        """
+        Check if the file should be skipped based on configuration.
+        """
+        if super().should_skip():
+            return True
+        return is_ignored(self.repo_info, self.relative_path)
 
     @abstractmethod
     def check(self):
@@ -156,7 +167,6 @@ class BatchFileBaseCheck(BaseCheck):
         file_check.name = self.name
 
         file_check.log_enabled = self.log_enabled
-        file_check.log_level = self.log_level
         
         if file_check.should_skip():
             return None
@@ -174,10 +184,12 @@ class BatchFileBaseCheck(BaseCheck):
         """
         self._validate()
 
-        source_files = self.file_path_generator(self.repo_path)
+        ignores = get_ignores(self.repo_info)
+
+        all_files = self.file_path_generator(self.repo_path, ignores=ignores)
         all_successful = True
         
-        for relative_path in source_files:
+        for relative_path in all_files:
             file_check = self._create_and_init_file_check(relative_path)
 
             if file_check is None:

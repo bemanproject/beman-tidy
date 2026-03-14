@@ -7,6 +7,7 @@ import yaml
 from pathlib import Path
 
 from git import Repo, InvalidGitRepositoryError
+from .config import load_repo_config
 
 
 def parse_repo_name_from_remote_url(remote_url: str) -> str | None:
@@ -46,7 +47,7 @@ def parse_repo_name_from_remote_url(remote_url: str) -> str | None:
     return None
 
 
-def get_repo_info(path: str):
+def get_repo_info(path: str, config_path: str = None):
     """
     Get information about the repository at the given path.
     Returns data as a dictionary.
@@ -99,6 +100,9 @@ def get_repo_info(path: str):
         # Get unstaged changes
         unstaged_changes = repo.git.diff("--stat")
 
+        # Load repository configuration
+        config = load_repo_config(top_level_dir, config_path)
+
         return {
             "top_level": top_level_dir,
             "name": repo_name,  # Keep for backward compatibility (checkout directory name)
@@ -109,6 +113,7 @@ def get_repo_info(path: str):
             "commit_hash": commit_hash,
             "status": status,
             "unstaged_changes": unstaged_changes,
+            "config": config,
         }
     except InvalidGitRepositoryError:
         print(f"The path '{path}' is not inside a valid Git repository.")
@@ -122,7 +127,7 @@ def get_beman_standard_config_path():
     """
     Get the path to the Beman Standard YAML configuration file.
     """
-    return Path(__file__).parent.parent.parent / ".beman-standard.yml"
+    return Path(__file__).parent.parent.parent / ".beman-standard.yaml"
 
 
 def get_beman_recommendated_license_path():

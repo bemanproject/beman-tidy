@@ -7,6 +7,7 @@ from pathlib import Path
 from beman_tidy.lib.utils.string import normalize_path_for_display
 
 from .base_check import BaseCheck
+from ...utils.config import is_ignored
 
 
 class DirectoryBaseCheck(BaseCheck):
@@ -16,6 +17,7 @@ class DirectoryBaseCheck(BaseCheck):
 
     def __init__(self, repo_info, beman_standard_check_config, relative_path):
         super().__init__(repo_info, beman_standard_check_config)
+        self.relative_path = Path(relative_path)
 
         # set path - e.g. "src/beman/exemplar"
         self.path = self.repo_path / relative_path
@@ -43,6 +45,14 @@ class DirectoryBaseCheck(BaseCheck):
             return False
 
         return True
+
+    def should_skip(self):
+        """
+        Check if the file should be skipped based on configuration.
+        """
+        if super().should_skip():
+            return True
+        return is_ignored(self.repo_info, self.relative_path)
 
     @abstractmethod
     def check(self):
