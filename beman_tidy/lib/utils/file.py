@@ -76,14 +76,14 @@ def get_cpp_files(repo_path, ignores=None):
     """
     Get all C++ source and header files in the repository.
     """
-    return get_matched_paths(repo_path, get_cpp_extensions(), exclude_dirs=ignores)
+    return get_matched_paths(repo_path, get_cpp_extensions(), ignores=ignores)
 
 
 def get_beman_include_headers(repo_path, ignores=None):
     """
     Get all header files in the repository under an include/beman directory.
     """
-    all_headers = get_matched_paths(repo_path, get_cpp_header_extensions(), exclude_dirs=ignores)
+    all_headers = get_matched_paths(repo_path, get_cpp_header_extensions(), ignores=ignores)
     
     beman_headers = []
     for path in all_headers:
