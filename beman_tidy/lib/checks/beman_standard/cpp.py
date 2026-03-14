@@ -63,7 +63,7 @@ class CppNamespaceCheck(BatchFileBaseCheck):
         def fix(self):
             parts = self.path.parts
             include_index = parts.index('include')
-            self.short_.name = parts[include_index + 2]
+            self.short_name = parts[include_index + 2]
             lines = self.read_lines()
             
             insert_line, close_line = self._get_code_body_indices(lines)
