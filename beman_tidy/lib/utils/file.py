@@ -13,11 +13,25 @@ def get_repo_ignorable_subdirectories():
     return {".git/", "build/", ".idea/", ".vscode/", "__pycache__/", "venv/", "env/"}
 
 
+def get_cpp_header_extensions():
+    """
+    Returns a set of common C++ header file extensions.
+    """
+    return {".hpp", ".h", ".hxx", ".hh"}
+
+
+def get_cpp_source_extensions():
+    """
+    Returns a set of common C++ source file extensions.
+    """
+    return {".cpp", ".cxx", ".cc", ".c"}
+
+
 def get_cpp_extensions():
     """
     Returns a set of common C++ source and header file extensions.
     """
-    return {".hpp", ".h", ".hxx", ".hh", ".cpp", ".cxx", ".cc", ".c"}
+    return get_cpp_header_extensions() | get_cpp_source_extensions()
 
 
 def _is_ignored(path, ignores):
@@ -63,6 +77,25 @@ def get_cpp_files(repo_path, ignores=None):
     Get all C++ source and header files in the repository.
     """
     return get_matched_paths(repo_path, get_cpp_extensions(), ignores=ignores)
+
+
+def get_beman_include_headers(repo_path, ignores=None):
+    """
+    Get all header files in the repository under an include/beman directory.
+    """
+    all_headers = get_matched_paths(repo_path, get_cpp_header_extensions(), ignores=ignores)
+    
+    beman_headers = []
+    for path in all_headers:
+        try:
+            parts = path.parts
+            include_index = parts.index('include')
+            if include_index + 1 < len(parts) and parts[include_index + 1] == 'beman':
+                beman_headers.append(path)
+        except ValueError:
+            continue
+            
+    return beman_headers
 
 
 def get_spdx_info(lines):
