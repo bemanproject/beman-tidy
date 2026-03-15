@@ -38,6 +38,21 @@ class BemanTreeDirectoryCheck(DirectoryBaseCheck):
             f"{prefix_path}/beman/{short_name}",
         )
 
+def _get_tolerated_root_files():
+    """
+    Returns a set of filenames that are allowed to exist in the root directory.
+    """
+    return {"README.md", "CONTRIBUTING.md"}
+
+def _get_paper_extensions():
+    """
+    Returns a list of file extensions that are "paper-related".
+    """
+    return [
+        ".md", ".bib", ".bst", ".tex", ".sty", ".cls", ".pdf", ".docx",
+        ".org", ".html", ".css", ".js", ".asciidoc", ".asc", ".ad",
+        ".ascdoc", ".rst", ".wip", ".draft", ".proposal", ".standard",
+    ]
 
 # TODO directory.interface_headers
 
@@ -212,7 +227,7 @@ class DirectoryExamplesCheck(DirectoryBaseCheck):
 class DirectoryDocsCheck(DirectoryBaseCheck):
     """
     Check if the all documentation files reside within docs/ directory.
-    Exception: root README.md file.
+    Exception: root README.md and CONTRIBUTING.md files.
     """
 
     def __init__(self, repo_info, beman_standard_check_config):
@@ -230,13 +245,15 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
             exclude_dirs.append("docs")
         if self.short_name == "exemplar":
             exclude_dirs.append("cookiecutter")
+        
+        tolerated_files = _get_tolerated_root_files()
 
         # Find all MD files in the repository.
         misplaced_md_files = [
             p
             for p in self.repo_path.rglob("*.md")
             if not any(excluded in p.parts for excluded in exclude_dirs)
-            and p != self.repo_path / "README.md"
+            and p.name not in tolerated_files
             and not is_ignored(self.repo_info, p.relative_to(self.repo_path))
         ]
 
@@ -247,7 +264,7 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
                 self.log(f"Misplaced MD file found: {display_path}")
 
             self.log(
-                "Please move all documentation files within the docs/ directory, except for the root README.md file. "
+                f"Please move all documentation files within the docs/ directory, except for root files: {', '.join(tolerated_files)}. "
                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorydocs for more information."
             )
 
@@ -257,8 +274,9 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
         return True
 
     def fix(self):
+        tolerated_files = _get_tolerated_root_files()
         self.log(
-            "Please manually move documentation files to the docs/ directory, except for the root README.md file. "
+            f"Please manually move documentation files to the docs/ directory, except for root files: {', '.join(tolerated_files)}. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorydocs for more information."
         )
 
@@ -294,30 +312,8 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
         if self.short_name == "exemplar":
             exclude_dirs.append("cookiecutter")
 
-        # File extensions that are considered "paper-related"
-        paper_extensions = [
-            ".md",
-            ".bib",
-            ".bst",
-            ".tex",
-            ".sty",
-            ".cls",
-            ".pdf",
-            ".docx",
-            ".org",
-            ".html",
-            ".css",
-            ".js",
-            ".asciidoc",
-            ".asc",
-            ".ad",
-            ".ascdoc",
-            ".rst",
-            ".wip",
-            ".draft",
-            ".proposal",
-            ".standard",
-        ]
+        paper_extensions = _get_paper_extensions()
+        tolerated_files = _get_tolerated_root_files()
 
         # Find all misplaced paper-related files in the repository.
         misplaced_paper_files = []
@@ -326,7 +322,7 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
                 # Exclude files that are already in excluded directories.
                 if (
                     not any(excluded in str(p) for excluded in exclude_dirs)
-                    and p != self.repo_path / "README.md"
+                    and p.name not in tolerated_files
                     and not is_ignored(self.repo_info, p.relative_to(self.repo_path))
                 ):
                     misplaced_paper_files.append(p)
@@ -337,7 +333,7 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
                 self.log(f"Misplaced paper file found: {display_path}")
 
             self.log(
-                "Please move all paper related files (and directories if applicable) within the papers/ directory. "
+                f"Please move all paper related files (and directories if applicable) within the papers/ directory, except for root files: {', '.join(tolerated_files)}. "
                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorypapers for more information."
             )
 
@@ -347,7 +343,8 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
         return True
 
     def fix(self):
+        tolerated_files = _get_tolerated_root_files()
         self.log(
-            "Please move all paper related files (and directories if applicable) to papers/ directory. "
+            f"Please move all paper related files (and directories if applicable) to papers/ directory, except for root files: {', '.join(tolerated_files)}. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorypapers for more information."
         )
