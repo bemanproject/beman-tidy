@@ -46,14 +46,27 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             parts = self.path.parts
             include_index = parts.index('include')
             self.short_name = parts[include_index + 2]
+            lines = self.read_lines()
             
+            code_start_index, code_end_index = self._get_code_body_indices(lines)
+            
+            has_actual_code = False
+            for i in range(code_start_index, code_end_index):
+                line = lines[i].strip()
+                if line and not line.startswith('//') and not line.startswith('#'):
+                    has_actual_code = True
+                    break
+            
+            if not has_actual_code:
+                return True
+
             # Pattern to match either "namespace beman::my_lib" or "namespace beman { ... namespace my_lib"
             pattern = re.compile(
                 r"namespace\s+beman\s*::\s*" + re.escape(self.short_name) +
                 r"|namespace\s+beman\s*\{\s*\n\s*namespace\s+" + re.escape(self.short_name)
             )
 
-            content = self.read()
+            content = "".join(lines)
             if not pattern.search(content):
                 self.log(f"File does not contain the expected namespace 'beman::{self.short_name}'.")
                 return False
