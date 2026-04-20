@@ -41,6 +41,9 @@ class ReadmeTitleCheck(ReadmeBaseCheck):
         super().__init__(repo_info, beman_standard_check_config)
 
     def check(self):
+        if self.short_name == "exemplar":
+            return True  # Skip the check for exemplar library, as it is a special case.
+
         lines = self.read_lines_strip()
         first_line = lines[0]
 
