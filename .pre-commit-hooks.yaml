@@ -1,5 +1,5 @@
 - id: beman-tidy
-  name: "beman-tidy: bemanification your repo"
+  name: "beman-tidy"
   entry: beman-tidy
   language: python
   pass_filenames: false
