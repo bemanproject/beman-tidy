@@ -88,8 +88,12 @@ def get_repo_info(path: str, config_path: str = None):
         current_branch = repo.active_branch.name
 
         # Get the default branch
-        split_head = repo.git.symbolic_ref("refs/remotes/origin/HEAD").split("/")
-        default_branch = split_head[-1]
+        # Note: shallow clones (e.g. GitHub Actions) may not have refs/remotes/origin/HEAD set.
+        try:
+            split_head = repo.git.symbolic_ref("refs/remotes/origin/HEAD").split("/")
+            default_branch = split_head[-1]
+        except Exception:
+            default_branch = "main"  # fallback for shallow clones
 
         # Get the commit hash
         commit_hash = repo.head.commit.hexsha
