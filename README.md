@@ -213,9 +213,13 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
 - How do I get more detail?
   - Run with `--verbose` to print per-check diagnostics.
 
-## Working on beman-tidy
+## Integrating beman-tidy into Your Library
 
-Please refer to the [Beman Tidy Development Guide](https://github.com/bemanproject/beman-tidy/blob/main/docs/dev-guide.md) for more details.
+Please refer to the [How to Integrate beman-tidy pre-commit Hook in Your Library](./docs/pre-commit.md) for more details.
+
+## Contributing on beman-tidy
+
+Please refer to the [Beman Tidy Development Guide](./docs/dev-guide.md) for more details.
 
 ## License
 

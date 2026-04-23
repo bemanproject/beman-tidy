@@ -1,7 +1,7 @@
 - id: beman-tidy
-  name: "beman-tidy: bemanification your repo"
-  entry: ./beman-tidy/beman-tidy
-  language: script
+  name: "beman-tidy"
+  entry: beman-tidy
+  language: python
   pass_filenames: false
   always_run: true
   args: [".", "--verbose"]
