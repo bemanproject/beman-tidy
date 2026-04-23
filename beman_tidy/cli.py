@@ -3,9 +3,22 @@
 
 import argparse
 import sys
+from importlib.metadata import PackageNotFoundError, version
 
 from beman_tidy.lib.utils.git import get_repo_info, load_beman_standard_config
 from beman_tidy.lib.pipeline import run_checks_pipeline
+
+
+def _get_version() -> str:
+    """
+    Resolve the installed package version, falling back to ``"unknown"`` when
+    the distribution metadata is not discoverable (for example, when running
+    straight from a checkout without an editable install).
+    """
+    try:
+        return version("beman-tidy")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 def parse_args():
@@ -14,6 +27,11 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"beman-tidy {_get_version()}",
+    )
     parser.add_argument("repo_path", help="path to the repository to check", type=str)
     parser.add_argument(
         "--fix-inplace",
