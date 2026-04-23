@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import argparse
+from importlib.metadata import version as _pkg_version
 import sys
 
 from beman_tidy.lib.utils.git import get_repo_info, load_beman_standard_config
@@ -14,6 +15,11 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"beman-tidy {_pkg_version('beman-tidy')}",
+    )
     parser.add_argument("repo_path", help="path to the repository to check", type=str)
     parser.add_argument(
         "--fix-inplace",
@@ -37,7 +43,10 @@ def parse_args():
         "--checks", help="array of checks to run", type=str, default=None
     )
     parser.add_argument(
-        "--config", help="path to the configuration file (default: .beman-tidy.yaml in repo root)", type=str, default=None
+        "--config",
+        help="path to the configuration file (default: .beman-tidy.yaml in repo root)",
+        type=str,
+        default=None,
     )
     args = parser.parse_args()
 
