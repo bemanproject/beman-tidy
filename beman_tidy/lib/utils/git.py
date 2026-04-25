@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import logging
 import re
 import sys
 import yaml
@@ -120,10 +121,10 @@ def get_repo_info(path: str, config_path: str = None):
             "config": config,
         }
     except InvalidGitRepositoryError:
-        print(f"The path '{path}' is not inside a valid Git repository.")
+        logging.error(f"The path '{path}' is not inside a valid Git repository.")
         sys.exit(1)
     except Exception:
-        print(f"An error occurred while getting repository information. Check {path}.")
+        logging.error(f"An error occurred while getting repository information. Check {path}.")
         sys.exit(1)
 
 
