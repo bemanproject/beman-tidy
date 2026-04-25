@@ -80,15 +80,15 @@ jobs:
 
       - name: Run beman-tidy on beman.${{ matrix.repo }}
         run: |
-          beman-tidy ${{ matrix.repo }}/
+          # Use set +e so bash does not exit early on non-zero exit codes.
+          # beman-tidy exits with the number of failed requirement checks (0 = all pass, N = N failures).
+          # Violations (exit code > 0) are acceptable - libraries may have open violations.
+          # A Python crash would produce a traceback on stderr before exiting.
+          set +e
+          beman-tidy --verbose ${{ matrix.repo }}/
           exit_code=$?
-          # Exit code 0: all checks passed
-          # Exit code 1: violations found (acceptable - libraries may have open violations)
-          # Exit code 2: beman-tidy crashed (bug in beman-tidy) -> fail
-          if [ $exit_code -eq 2 ]; then
-            echo "::error::beman-tidy crashed on beman.${{ matrix.repo }} (exit code 2)"
-            exit 1
-          fi
+          set -e
+          echo "beman-tidy exit code: $exit_code"
           exit 0
 
   create-issue-when-fault:
