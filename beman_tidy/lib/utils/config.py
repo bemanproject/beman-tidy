@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import fnmatch
 import sys
 import yaml
 from pathlib import Path
 from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
+from beman_tidy.lib.utils.string import yellow_color, no_color
 
 
 def validate_config(config):
@@ -39,7 +41,72 @@ def validate_config(config):
              print("Error: Cannot ignore root directory in .beman-tidy.yaml")
              return False
              
+    if not _validate_ignored_rules(config):
+        return False
+
     return True
+
+
+def _validate_ignored_rules(config):
+    """
+    Validate the 'ignored_rules' configuration.
+    Returns True if valid, False otherwise.
+    """
+    ignored_rules = config.get("ignored_rules", [])
+    if not ignored_rules:
+        return True
+
+    if not isinstance(ignored_rules, list):
+        print(f"Error: 'ignored_rules' in .beman-tidy.yaml must be a list, but got {type(ignored_rules).__name__}.")
+        return False
+
+    for entry in ignored_rules:
+        if not isinstance(entry, str):
+            print(f"Error: Invalid entry in 'ignored_rules': {entry}. Must be a string.")
+            return False
+
+    return True
+
+
+def get_ignored_rules(repo_info, known_rule_names):
+    """
+    Get the expanded set of ignored rule names from the configuration.
+    Resolves glob patterns against the known rule names.
+    Returns an empty set if no ignored_rules are configured.
+
+    @param repo_info: The repository info dict containing the config.
+    @param known_rule_names: A list/set of all known rule names to match against.
+    @return: A set of rule names to ignore.
+    """
+    config = repo_info.get("config", {})
+    raw_patterns = config.get("ignored_rules", [])
+    if not raw_patterns:
+        return set()
+
+    all_matched = set()
+    for pattern in raw_patterns:
+        if "*" in pattern:
+            # Expand glob pattern
+            matched = {name for name in known_rule_names if fnmatch.fnmatch(name, pattern)}
+            if not matched:
+                print(f"{yellow_color}Warning: ignored_rules pattern '{pattern}' does not match any known rule. Skipping.{no_color}")
+            else:
+                all_matched.update(matched)
+        else:
+            # Exact match
+            if pattern in known_rule_names:
+                all_matched.add(pattern)
+            else:
+                print(f"{yellow_color}Warning: ignored_rules pattern '{pattern}' does not match any known rule. Skipping.{no_color}")
+
+    return all_matched
+
+
+def is_rule_ignored(rule_name, ignored_rules):
+    """
+    Check if a specific rule name is in the set of ignored rules.
+    """
+    return rule_name in ignored_rules
 
 
 def get_default_config_path():
