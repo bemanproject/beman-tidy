@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Run on beman.exemplar
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' #  09:00AM EEST (@neatudarius' timezone)
+
+jobs:
+  run_on_exemplar:
+    name: Run on beman.exemplar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Build and install beman-tidy
+        run: |
+          uv build
+          uv tool install --force dist/*.whl
+          beman-tidy --help
+
+      # - name: Run installed beman-tidy on exemplar repo
+      #   run: |
+      #     git clone https://github.com/bemanproject/exemplar.git
+      #     cd exemplar/ # Testing that beman-tidy can be run from any path, e.g. from the exemplar repo.
+      #     beman-tidy --verbose --require-all .
+
+  create-issue-when-fault:
+    needs: [run_on_exemplar]
+    if: failure() && (github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-create-issue-when-fault.yml@1.1.0
