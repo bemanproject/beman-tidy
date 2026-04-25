@@ -89,11 +89,11 @@ jobs:
           uv tool install --force dist/*.whl
           beman-tidy --help
 
-      - name: Run installed beman-tidy on exemplar repo
-        run: |
-          git clone https://github.com/bemanproject/exemplar.git
-          cd exemplar/ # Testing that beman-tidy can be run from any path, e.g. from the exemplar repo.
-          beman-tidy --verbose --require-all .
+      # - name: Run installed beman-tidy on exemplar repo
+      #   run: |
+      #     git clone https://github.com/bemanproject/exemplar.git
+      #     cd exemplar/ # Testing that beman-tidy can be run from any path, e.g. from the exemplar repo.
+      #     beman-tidy --verbose --require-all .
 
   create-issue-when-fault:
     needs: [run_linter, run_tests, build_and_install, run_on_exemplar]
