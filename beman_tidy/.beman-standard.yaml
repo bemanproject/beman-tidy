@@ -103,6 +103,10 @@ cmake.skip_examples:
     - type: Recommendation
 cmake.avoid_passthroughs:
     - type: Recommendation
+cmake.implicit_defaults:
+    - type: Recommendation
+cmake.no_single_use_vars:
+    - type: Recommendation
 
 # DIRECTORY
 directory.interface_headers:

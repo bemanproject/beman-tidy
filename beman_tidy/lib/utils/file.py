@@ -79,6 +79,33 @@ def get_cpp_files(repo_path, ignores=None):
     return get_matched_paths(repo_path, get_cpp_extensions(), ignores=ignores)
 
 
+def get_cmake_files(repo_path, ignores=None):
+    """
+    Get all CMake files (CMakeLists.txt and *.cmake) in the repository.
+    """
+    if ignores is None:
+        ignores = get_repo_ignorable_subdirectories()
+
+    matched_files = []
+    repo_path = Path(repo_path)
+
+    for root, dirs, files in os.walk(repo_path):
+        rel_root = Path(root).relative_to(repo_path)
+
+        for d in list(dirs):
+            d_path = rel_root / d
+            if _is_ignored(d_path, ignores):
+                dirs.remove(d)
+
+        for f in files:
+            f_path = rel_root / f
+            if f_path.suffix == ".cmake" or f_path.name == "CMakeLists.txt":
+                if not _is_ignored(f_path, ignores):
+                    matched_files.append(f_path)
+
+    return sorted(list(set(matched_files)))
+
+
 def get_beman_include_headers(repo_path, ignores=None):
     """
     Get all header files in the repository under an include/beman directory.
