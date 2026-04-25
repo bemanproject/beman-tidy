@@ -3,9 +3,11 @@
 
 import argparse
 import sys
+import logging
 
 from beman_tidy.lib.utils.git import get_repo_info, load_beman_standard_config
 from beman_tidy.lib.pipeline import run_checks_pipeline
+from beman_tidy.lib.utils.logger_config import setup_logging
 
 
 def parse_args():
@@ -51,11 +53,14 @@ def main():
     """
     The beman-tidy main entry point.
     """
+    setup_logging()
+    logger = logging.getLogger(__name__)
+
     args = parse_args()
 
     beman_standard_check_config = load_beman_standard_config()
     if not beman_standard_check_config or len(beman_standard_check_config) == 0:
-        print("Failed to download the beman standard. STOP.")
+        logger.info("Failed to download the beman standard. STOP.")
         return
 
     checks_to_run = (

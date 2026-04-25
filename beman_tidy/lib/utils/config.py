@@ -3,9 +3,10 @@
 
 import sys
 import yaml
+import logging
+
 from pathlib import Path
 from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
-
 
 def validate_config(config):
     """
@@ -18,25 +19,25 @@ def validate_config(config):
         return True
 
     if not isinstance(ignored_paths, list):
-        print(f"Error: 'ignored_paths' in .beman-tidy.yaml must be a list, but got {type(ignored_paths).__name__}.")
+        logging.error(f"Error: 'ignored_paths' in .beman-tidy.yaml must be a list, but got {type(ignored_paths).__name__}.")
         return False
 
     mandatory_files = {"README.md", "LICENSE"}
 
     for path in ignored_paths:
         if not isinstance(path, str):
-            print(f"Error: Invalid entry in 'ignored_paths': {path}. Must be a string.")
+            logging.error(f"Error: Invalid entry in 'ignored_paths': {path}. Must be a string.")
             return False
 
         clean_path = path.rstrip("/")
         # Check for exact match
         if clean_path in mandatory_files:
-             print(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yaml")
+             logging.error(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yaml")
              return False
         
         # Check if ignoring root directory
         if clean_path == "." or clean_path == "":
-             print("Error: Cannot ignore root directory in .beman-tidy.yaml")
+             logging.error("Error: Cannot ignore root directory in .beman-tidy.yaml")
              return False
              
     return True
@@ -71,10 +72,10 @@ def load_repo_config(repo_path, config_path=None):
             with open(user_config_path, "r") as f:
                 user_config = yaml.safe_load(f) or {}
         except Exception as e:
-            print(f"Error loading user configuration from '{user_config_path}': {e}")
+            logging.error(f"Error loading user configuration from '{user_config_path}': {e}")
             sys.exit(1)
     elif config_path:
-        print(f"Error: Configuration file specified not found at '{config_path}'")
+        logging.error(f"Error: Configuration file specified not found at '{config_path}'")
         sys.exit(1)
 
     # Merge configurations
