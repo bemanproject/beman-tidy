@@ -5,6 +5,7 @@ import sys
 
 from .checks.system.registry import get_registered_beman_standard_checks
 from .checks.system.git import DisallowFixInplaceAndUnstagedChangesCheck
+from .utils.config import get_ignored_rules, is_rule_ignored
 from .utils.string import (
     red_color,
     green_color,
@@ -123,10 +124,29 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
             "Requirement": 0,
             "Recommendation": 0,
         }
+        # All checks that were ignored in config.
+        cnt_ignored_checks = {
+            "Requirement": 0,
+            "Recommendation": 0,
+        }
+
+        # Resolve ignored from config.
+        ignored_rules = get_ignored_rules(args.repo_info, checks_to_run)
 
         # Run the checks.
         for check_name in checks_to_run:
             if check_name not in implemented_checks:
+                continue
+
+            # Skip ignoredd.
+            if is_rule_ignored(check_name, ignored_rules):
+                check_type = (
+                    beman_standard_check_config[check_name]["type"]
+                    if not args.require_all
+                    else "Requirement"
+                )
+                log(f"Running check [{check_type}][{check_name}] ... {gray_color}ignored (by config){no_color}\n")
+                cnt_ignored_checks[check_type] += 1
                 continue
 
             check_type, status = run_check(implemented_checks[check_name])
@@ -160,6 +180,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
             cnt_all_beman_standard_checks,
             cnt_implemented_checks,
             cnt_not_implemented_checks,
+            cnt_ignored_checks,
         )
 
     log("beman-tidy pipeline started ...\n")
@@ -170,15 +191,16 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         cnt_all_beman_standard_checks,
         cnt_implemented_checks,
         cnt_not_implemented_checks,
+        cnt_ignored_checks,
     ) = run_pipeline_helper()
     log("\nbeman-tidy pipeline finished.\n")
 
     # Always print the summary.
     print(
-        f"Summary    Requirement: {green_color} {cnt_passed_checks['Requirement']} checks passed{no_color}, {red_color}{cnt_failed_checks['Requirement']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Requirement']} checks skipped, {no_color} {cnt_not_implemented_checks['Requirement']} checks not implemented."
+        f"Summary    Requirement: {green_color} {cnt_passed_checks['Requirement']} checks passed{no_color}, {red_color}{cnt_failed_checks['Requirement']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Requirement']} checks skipped, {no_color} {cnt_not_implemented_checks['Requirement']} checks not implemented{f', {gray_color}{cnt_ignored_checks['Requirement']} checks ignored' if cnt_ignored_checks['Requirement'] > 0 else ''}."
     )
     print(
-        f"Summary Recommendation: {green_color} {cnt_passed_checks['Recommendation']} checks passed{no_color}, {red_color}{cnt_failed_checks['Recommendation']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Recommendation']} checks skipped, {no_color} {cnt_not_implemented_checks['Recommendation']} checks not implemented."
+        f"Summary Recommendation: {green_color} {cnt_passed_checks['Recommendation']} checks passed{no_color}, {red_color}{cnt_failed_checks['Recommendation']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Recommendation']} checks skipped, {no_color} {cnt_not_implemented_checks['Recommendation']} checks not implemented{f', {gray_color}{cnt_ignored_checks['Recommendation']} checks ignored' if cnt_ignored_checks['Recommendation'] > 0 else ''}."
     )
 
     # Always print the coverage.
@@ -195,10 +217,15 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         if not args.require_all
         else cnt_implemented_checks["Requirement"]
     )
+    # Exclude ignored checks from the total implemented count for coverage.
+    ignored_req_total = cnt_ignored_checks["Requirement"] + (cnt_ignored_checks["Recommendation"] if args.require_all else 0)
+    total_implemented_requirement -= ignored_req_total
+
     coverage_requirement = round(
         cnt_passed_requirement / total_implemented_requirement * 100,
         2,
-    )
+    ) if total_implemented_requirement > 0 else 0
+
     cnt_passed_recommendation = (
         cnt_passed_checks["Recommendation"] + cnt_skipped_checks["Recommendation"]
         if not args.require_all
@@ -207,6 +234,10 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
     total_implemented_recommendation = (
         cnt_implemented_checks["Recommendation"] if not args.require_all else 0
     )
+    # Exclude ignored checks from the total implemented count for coverage.
+    ignored_rec_total = 0 if args.require_all else cnt_ignored_checks["Recommendation"]
+    total_implemented_recommendation -= ignored_rec_total
+
     coverage_recommendation = (
         round(
             cnt_passed_recommendation / total_implemented_recommendation * 100,
@@ -222,16 +253,19 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         + cnt_skipped_checks["Recommendation"]
     )
     total_implemented = total_implemented_requirement + total_implemented_recommendation
-    total_coverage = round((total_passed) / (total_implemented) * 100, 2)
+    total_coverage = round((total_passed) / (total_implemented) * 100, 2) if total_implemented > 0 else 0
+    
     print(
-        f"\n{calculate_coverage_color(coverage_requirement)}Coverage    Requirement: {coverage_requirement:{6}.2f}% ({cnt_passed_requirement}/{total_implemented_requirement} checks passed).{no_color}"
+        f"\n{calculate_coverage_color(coverage_requirement)}Coverage    Requirement: {coverage_requirement:{6}.2f}% ({cnt_passed_requirement}/{total_implemented_requirement} checks passed){f' {gray_color}({ignored_req_total} ignored){calculate_coverage_color(coverage_requirement)}' if ignored_req_total > 0 else ''}.{no_color}"
     )
     print(
-        f"{calculate_coverage_color(coverage_recommendation, no_color=args.require_all)}Coverage Recommendation: {coverage_recommendation:{6}.2f}% ({cnt_passed_recommendation}/{total_implemented_recommendation} checks passed).{no_color}"
+        f"{calculate_coverage_color(coverage_recommendation, no_color=args.require_all)}Coverage Recommendation: {coverage_recommendation:{6}.2f}% ({cnt_passed_recommendation}/{total_implemented_recommendation} checks passed){f' {gray_color}({ignored_rec_total} ignored){calculate_coverage_color(coverage_recommendation, no_color=args.require_all)}' if ignored_rec_total > 0 else ''}.{no_color}"
     )
+    total_ignored = cnt_ignored_checks["Requirement"] + cnt_ignored_checks["Recommendation"]
     print(
-        f"{calculate_coverage_color(total_coverage)}Coverage          TOTAL: {total_coverage:{6}.2f}% ({total_passed}/{total_implemented} checks passed).{no_color}"
+        f"{calculate_coverage_color(total_coverage)}Coverage          TOTAL: {total_coverage:{6}.2f}% ({total_passed}/{total_implemented} checks passed){f' {gray_color}({total_ignored} ignored){calculate_coverage_color(total_coverage)}' if total_ignored > 0 else ''}.{no_color}"
     )
+
     # else:
     #     print("Note: RECOMMENDATIONs are not included (--require-all NOT set).")
     total_cnt_failed = cnt_failed_checks["Requirement"] + (
