@@ -80,7 +80,7 @@ jobs:
 
       - name: Run beman-tidy on beman.${{ matrix.repo }}
         run: |
-          beman-tidy ${{ matrix.repo }}/
+          beman-tidy --verbose ${{ matrix.repo }}/
           exit_code=$?
           # Exit code 0: all checks passed
           # Exit code 1: violations found (acceptable - libraries may have open violations)
