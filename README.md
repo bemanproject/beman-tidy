@@ -13,6 +13,35 @@ to their repositories.
 **Note `2025-06-07`:** The first iteration of the tool will not support `--fix-inplace` in order to
 expedite adoption across the Beman Project.
 
+## Installation
+
+```shell
+uv tool install beman-tidy
+```
+
+To update:
+
+```shell
+uv tool upgrade beman-tidy
+```
+
+Post-install sanity check:
+
+```shell
+beman-tidy --help
+```
+
+## Requirements
+
+- Python 3.12+
+- `uv` (Python package and project manager - [Installation](https://docs.astral.sh/uv/getting-started/installation/))
+
+## Compatibility
+
+- Linux
+- macOS
+- Windows
+
 ## Usage
 
 - Display help:
@@ -40,7 +69,7 @@ options:
 
 ```shell
 # dry-run, require-all, non-verbose
-$ beman-tidy /path/to/exemplar --require-all
+$ beman-tidy --require-all /path/to/exemplar
 Summary    Requirement:  18 checks passed, 1 checks failed, 5 checks skipped,  23 checks not implemented.
 Summary Recommendation:  0 checks passed, 0 checks failed, 0 checks skipped,  0 checks not implemented.
 
@@ -48,7 +77,8 @@ Coverage    Requirement:  95.83% (23/24 checks passed).
 Coverage Recommendation:   0.00% (0/0 checks passed).
 Coverage          TOTAL:  95.83% (23/24 checks passed).
 
-# dry-run, non-require-all, non-verbose
+# dry-run, no-require-all, non-verbose
+$ beman-tidy /path/to/exemplar
 Summary    Requirement:  13 checks passed, 1 checks failed, 3 checks skipped,  9 checks not implemented.
 Summary Recommendation:  5 checks passed, 0 checks failed, 2 checks skipped,  14 checks not implemented.
 
@@ -61,6 +91,7 @@ or verbose mode without errors:
 
 ```shell
 # dry-run, require-all, verbose mode - no errors
+$ beman-tidy --require-all --verbose /path/to/exemplar
 beman-tidy pipeline started ...
 
 Running check [Requirement][license.approved] ...
@@ -101,6 +132,7 @@ or verbose mode with errors:
 
 ```shell
 # dry-run, require-all, verbose mode - with errors
+$ beman-tidy --require-all --verbose /path/to/exemplar
 beman-tidy pipeline started ...
 
 Running check [Requirement][license.approved] ...
@@ -138,8 +170,13 @@ Coverage          TOTAL:  95.83% (23/24 checks passed).
 - Run beman-tidy on the exemplar repository (fix issues in-place):
 
 ```shell
-beman-tidy path/to/exemplar --fix-inplace --verbose
+beman-tidy --fix-inplace --verbose path/to/exemplar
 ```
+
+## CI Usage (GitHub Actions)
+
+This repository already includes a full workflow in `.github/workflows/beman-tidy.yml` covering linting,
+tests, build/install, and running `beman-tidy` on `bemanproject/exemplar`.
 
 ## Configuration
 
@@ -147,19 +184,34 @@ beman-tidy path/to/exemplar --fix-inplace --verbose
 
 The following configuration options may be used in a `.beman-tidy.yaml` file:
 
-`ignored_paths` - A list of paths to be excluded from all checks.
+- `ignored_paths` - A list of paths to be excluded from all checks.
   - To ignore a specific file, provide its full path relative to the repository root.
   - To ignore a directory, provide the path to that directory. This will ignore the directory itself and all files and subdirectories within it. A trailing slash (`/`) is optional.
 
-  Example:
+- Example:
   ```yaml
   ignored_paths:
     # Ignores a single file
     - include/beman/optional/detail/stl_interfaces/config.hpp
-    
+
     # Ignores a directory and everything inside it
     - include/beman/optional/another_dir
   ```
+
+## Fix-inplace Status
+
+- The CLI exposes `--fix-inplace`, but auto-fix support is currently limited.
+
+## Troubleshooting / FAQ
+
+- Why is a check reported as skipped?
+  - Some checks are intentionally skippable/dummy implementations and emit a reason in verbose mode.
+- Why do I see "not implemented" in the summary?
+  - The check exists in the Beman Standard snapshot but does not yet have an implemented checker.
+- How do I ignore files/directories?
+  - Use `ignored_paths` in `.beman-tidy.yaml`.
+- How do I get more detail?
+  - Run with `--verbose` to print per-check diagnostics.
 
 ## Integrating beman-tidy into Your Library
 
@@ -168,3 +220,7 @@ Please refer to the [How to Integrate beman-tidy pre-commit Hook in Your Library
 ## Contributing on beman-tidy
 
 Please refer to the [Beman Tidy Development Guide](./docs/dev-guide.md) for more details.
+
+## License
+
+Licensed under Apache-2.0 WITH LLVM-exception. See `LICENSE`.
