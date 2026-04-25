@@ -7,7 +7,6 @@ import logging
 
 from beman_tidy.lib.utils.git import get_repo_info, load_beman_standard_config
 from beman_tidy.lib.pipeline import run_checks_pipeline
-from beman_tidy.lib.utils.logger_config import setup_logging
 
 
 def parse_args():
