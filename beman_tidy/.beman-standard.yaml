@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# 2025-08-04: Latest Beman Standard (https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md)
+# 2026-04-25: Latest Beman Standard (https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md)
 # snapshot made by neatudarius.
 # Please report any issue related to this file to https://github.com/bemanproject/infra/issues.
 
@@ -81,12 +81,12 @@ readme.license:
 # CMAKE
 cmake.default:
     - type: Recommendation
-cmake.use_fetch_content:
+cmake.use_find_package:
     - type: Recommendation
 cmake.project_name:
     - type: Recommendation
 cmake.passive_projects:
-    - type: Recommendation
+    - type: Requirement
 cmake.library_name:
     - type: Recommendation
 cmake.library_alias:
@@ -102,6 +102,10 @@ cmake.skip_tests:
 cmake.skip_examples:
     - type: Recommendation
 cmake.avoid_passthroughs:
+    - type: Recommendation
+cmake.implicit_defaults:
+    - type: Recommendation
+cmake.no_single_use_vars:
     - type: Recommendation
 
 # DIRECTORY
@@ -121,7 +125,7 @@ directory.papers:
     - type: Requirement
 
 # FILE
-file.cpp_names:
+file.names:
     - type: Recommendation
 file.test_names:
     - type: Requirement
