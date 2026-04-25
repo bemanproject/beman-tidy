@@ -53,14 +53,12 @@ def main():
     """
     The beman-tidy main entry point.
     """
-    setup_logging()
-    logger = logging.getLogger(__name__)
 
     args = parse_args()
 
     beman_standard_check_config = load_beman_standard_config()
     if not beman_standard_check_config or len(beman_standard_check_config) == 0:
-        logger.info("Failed to download the beman standard. STOP.")
+        logging.error("Failed to download the beman standard. STOP.")
         return
 
     checks_to_run = (

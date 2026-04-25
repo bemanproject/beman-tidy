@@ -7,6 +7,9 @@ import logging
 
 from pathlib import Path
 from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
+from beman_tidy.lib.utils.logger_config import setup_logging
+
+setup_logging()
 
 def validate_config(config):
     """
@@ -39,7 +42,7 @@ def validate_config(config):
         if clean_path == "." or clean_path == "":
              logging.error("Error: Cannot ignore root directory in .beman-tidy.yaml")
              return False
-             
+        
     return True
 
 

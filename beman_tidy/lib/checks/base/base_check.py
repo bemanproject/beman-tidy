@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from abc import ABC
+import logging
 from pathlib import Path
 
 from ..system.registry import get_beman_standard_check_name_by_class
@@ -200,4 +201,4 @@ class BaseCheck(ABC):
                 else no_color
             )
 
-            print(f"[{color}{level}{no_color}][{self.name}]: {message}")
+            logging.info(f"[{color}{level}{no_color}][{self.name}]: {message}")
