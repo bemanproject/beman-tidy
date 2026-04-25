@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Run on all Beman libraries
+
+on:
+  schedule:
+    - cron: '0 6 * * 0' # Weekly on Sunday 09:00 EEST
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  parse-libraries:
+    name: Parse Beman library list
+    runs-on: ubuntu-latest
+    outputs:
+      libraries: ${{ steps.parse.outputs.libraries }}
+    steps:
+      - name: Fetch libraries.md from bemanproject/website
+        run: |
+          curl -fsSL \
+            https://raw.githubusercontent.com/bemanproject/website/main/src/pages/libraries.md \
+            -o libraries.md
+
+      - name: Parse library repo names
+        id: parse
+        run: |
+          python3 - << 'EOF'
+          import re, json, os
+
+          with open("libraries.md") as f:
+              content = f.read()
+
+          # Excluded: exemplar (template repo, tested separately) and retired libs
+          excluded = {"exemplar", "dump"}
+
+          libs = []
+          for line in content.splitlines():
+              if "Retired" in line:
+                  continue
+              m = re.search(
+                  r'\[beman\.\w+\]\(https://github\.com/bemanproject/(\w+)\)', line
+              )
+              if m:
+                  repo = m.group(1)
+                  if repo not in excluded:
+                      libs.append(repo)
+
+          output = f"libraries={json.dumps(libs)}"
+          print(output)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(output + "\n")
+          EOF
+
+  run-beman-tidy:
+    name: beman.${{ matrix.repo }}
+    needs: parse-libraries
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: ${{ fromJson(needs.parse-libraries.outputs.libraries) }}
+    steps:
+      - name: Checkout beman-tidy
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Build and install beman-tidy
+        run: |
+          uv build
+          uv tool install --force dist/*.whl
+          beman-tidy --version
+
+      - name: Clone beman.${{ matrix.repo }}
+        run: |
+          git clone --depth=1 https://github.com/bemanproject/${{ matrix.repo }}.git
+
+      - name: Run beman-tidy on beman.${{ matrix.repo }}
+        run: |
+          beman-tidy ${{ matrix.repo }}/
+          exit_code=$?
+          # Exit code 0: all checks passed
+          # Exit code 1: violations found (acceptable - libraries may have open violations)
+          # Exit code 2: beman-tidy crashed (bug in beman-tidy) -> fail
+          if [ $exit_code -eq 2 ]; then
+            echo "::error::beman-tidy crashed on beman.${{ matrix.repo }} (exit code 2)"
+            exit 1
+          fi
+          exit 0
+
+  create-issue-when-fault:
+    needs: [run-beman-tidy]
+    if: failure() && (github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-create-issue-when-fault.yml@1.1.0
