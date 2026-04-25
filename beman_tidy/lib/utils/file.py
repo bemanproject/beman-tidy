@@ -98,6 +98,53 @@ def get_beman_include_headers(repo_path, ignores=None):
     return beman_headers
 
 
+COMMENTABLE_EXTENSIONS = {
+    # C++
+    ".cpp", ".hpp", ".h", ".hxx", ".cxx", ".cc",
+    # CMake
+    ".cmake",
+    # Python
+    ".py",
+    # Shell
+    ".sh",
+    # YAML/YML
+    ".yml", ".yaml",
+}
+
+COMMENTABLE_FILENAMES = {
+    "CMakeLists.txt",
+    "Dockerfile",
+}
+
+
+def get_commentable_files(repo_path, ignores=None):
+    """
+    Get all files that can contain a comment (and thus should have an SPDX identifier).
+    Covers C++, CMake, Python, shell scripts, and YAML files.
+    """
+    if ignores is None:
+        ignores = get_repo_ignorable_subdirectories()
+
+    matched_files = []
+    repo_path = Path(repo_path)
+
+    for root, dirs, files in os.walk(repo_path):
+        rel_root = Path(root).relative_to(repo_path)
+
+        for d in list(dirs):
+            d_path = rel_root / d
+            if _is_ignored(d_path, ignores):
+                dirs.remove(d)
+
+        for f in files:
+            f_path = rel_root / f
+            if f_path.suffix in COMMENTABLE_EXTENSIONS or f_path.name in COMMENTABLE_FILENAMES:
+                if not _is_ignored(f_path, ignores):
+                    matched_files.append(f_path)
+
+    return sorted(list(set(matched_files)))
+
+
 def get_spdx_info(lines):
     """
     Helper to find the SPDX line index and the comment info.
