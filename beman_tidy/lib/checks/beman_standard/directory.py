@@ -147,7 +147,8 @@ class DirectoryTestsCheck(BemanTreeDirectoryCheck):
         # Find all test files in the repository outside the excluded directories.
         misplaced_test_files = []
         for p in self.repo_path.rglob("*.test.*"):
-            if not any(excluded in str(p) for excluded in exclude_dirs):
+            rel_p = p.relative_to(self.repo_path).as_posix()
+            if not any(excluded in rel_p for excluded in exclude_dirs):
                 if not is_ignored(self.repo_info, p.relative_to(self.repo_path)):
                     misplaced_test_files.append(p)
 
@@ -321,7 +322,7 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
             for p in self.repo_path.rglob(f"*{extension}"):
                 # Exclude files that are already in excluded directories.
                 if (
-                    not any(excluded in str(p) for excluded in exclude_dirs)
+                    not any(excluded in p.relative_to(self.repo_path).as_posix() for excluded in exclude_dirs)
                     and p.name not in tolerated_files
                     and not is_ignored(self.repo_info, p.relative_to(self.repo_path))
                 ):
