@@ -89,7 +89,7 @@ def get_ignored_rules(repo_info, known_rule_names):
             # Expand glob pattern
             matched = {name for name in known_rule_names if fnmatch.fnmatch(name, pattern)}
             if not matched:
-                print(f"{yellow_color}Warning: ignored_rules pattern '{pattern}' does not match any known rule. Skipping.{no_color}")
+                logging.warning(f"Warning: ignored_rules pattern '{pattern}' does not match any known rule. Skipping.")
             else:
                 all_matched.update(matched)
         else:
@@ -97,7 +97,7 @@ def get_ignored_rules(repo_info, known_rule_names):
             if pattern in known_rule_names:
                 all_matched.add(pattern)
             else:
-                print(f"{yellow_color}Warning: ignored_rules pattern '{pattern}' does not match any known rule. Skipping.{no_color}")
+                logging.warning(f"Warning: ignored_rules pattern '{pattern}' does not match any known rule. Skipping.")
 
     return all_matched
 
