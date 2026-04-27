@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import pytest
 from pathlib import Path
 from beman_tidy.lib.utils.config import is_ignored
 
