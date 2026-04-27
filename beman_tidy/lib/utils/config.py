@@ -16,9 +16,6 @@ def validate_config(config):
     Returns True if valid, False otherwise.
     """
     ignored_paths = config.get("ignored_paths", [])
-    if not ignored_paths:
-        return True
-
     if not isinstance(ignored_paths, list):
         print(f"Error: 'ignored_paths' in .beman-tidy.yaml must be a list, but got {type(ignored_paths).__name__}.")
         return False
