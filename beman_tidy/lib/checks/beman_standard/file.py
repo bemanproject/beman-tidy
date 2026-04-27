@@ -3,7 +3,8 @@
 
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
-from ...utils.file import get_cpp_files, get_spdx_info
+from ...utils.file import get_cpp_files, get_spdx_info, get_commentable_files
+from ...utils.string import normalize_path_for_display
 from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_STARTS, LINE_PREFIXES
 
 # [file.*] checks category.
@@ -16,7 +17,81 @@ from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_ST
 # TODO file.test_names
 
 
-# TODO file.license_id
+@register_beman_standard_check("file.license_id")
+class FileLicenseIdCheck(BatchFileBaseCheck):
+    """
+    [file.license_id]
+    Requirement: The SPDX license identifier must be added at the first possible line
+    in all files which can contain a comment (C++, CMake, Python, shell, YAML, etc.).
+    """
+
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+        self.file_check_class = self.FileLicenseIdCheckImpl
+        self.file_path_generator = get_commentable_files
+
+    class FileLicenseIdCheckImpl(FileBaseCheck):
+        """
+        Implementation of the "file.license_id" check for a single file.
+        """
+
+        def __init__(self, repo_info, beman_standard_check_config, relative_path):
+            super().__init__(repo_info, beman_standard_check_config, relative_path, name="file.license_id")
+
+        def _expected_spdx_line_index(self, lines):
+            """
+            Returns the expected line index for the SPDX identifier.
+            If the first line is a shebang (#!), SPDX goes on line 1; otherwise line 0.
+            """
+            if lines and lines[0].startswith("#!"):
+                return 1
+            return 0
+
+        def check(self):
+            lines = self.read_lines()
+            spdx_index, _ = get_spdx_info(lines)
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+
+            if spdx_index == -1:
+                self.log(
+                    f"Missing SPDX-License-Identifier in {display_path}. "
+                    f"Please add it at the first line. "
+                    f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#filelicense_id"
+                )
+                return False
+
+            expected = self._expected_spdx_line_index(lines)
+            if spdx_index != expected:
+                self.log(
+                    f"SPDX-License-Identifier must be at line {expected + 1} in {display_path}, "
+                    f"but found at line {spdx_index + 1}. "
+                    f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#filelicense_id"
+                )
+                return False
+
+            return True
+
+        def fix(self):
+            lines = self.read_lines()
+            spdx_index, _ = get_spdx_info(lines)
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+
+            if spdx_index == -1:
+                self.log(
+                    f"Cannot auto-fix {display_path}: SPDX-License-Identifier is missing. "
+                    f"Please add it manually."
+                )
+                return False
+
+            expected = self._expected_spdx_line_index(lines)
+            if spdx_index == expected:
+                return True  # Already correct
+
+            # Move the SPDX line to the expected position
+            spdx_line = lines.pop(spdx_index)
+            lines.insert(expected, spdx_line)
+            self.write("".join(lines))
+            return True
 
 
 @register_beman_standard_check("file.copyright")

@@ -17,7 +17,7 @@ class CMakeBaseCheck(FileBaseCheck):
 # TODO cmake.default
 
 
-# TODO cmake.use_fetch_content
+# TODO cmake.use_find_package
 
 
 # TODO cmake.project_name

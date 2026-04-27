@@ -5,6 +5,7 @@ import importlib
 import inspect
 from pathlib import Path
 import re
+import logging
 
 
 def find_pytest_test_functions_for_check(check_pattern):
@@ -57,7 +58,7 @@ def find_pytest_test_functions_for_check(check_pattern):
                             )
 
                 except Exception as e:
-                    print(f"Error loading module {test_file}: {e}")
+                    logging.error(f"Error loading module {test_file}: {e}")
 
     return test_functions
 
