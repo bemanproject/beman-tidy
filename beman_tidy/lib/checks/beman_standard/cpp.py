@@ -99,6 +99,17 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             self.write_lines(new_lines)
             return True
 
+from beman_tidy.lib.checks.base.base_check import BaseCheck
+
 # TODO cpp.no_flag_forking
 
-# TODO cpp.extension_identifiers
+@register_beman_standard_check("cpp.extension_identifiers")
+class CppExtensionIdentifiersCheck(BaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def should_skip(self):
+        self.log(
+            "beman-tidy cannot accurately check cpp.extension_identifiers. Please ensure that extension identifiers are prefixed with 'ext_'."
+        )
+        return True
