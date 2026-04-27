@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 authors = [{ name = "Darius Neațu", email = "neatudarius@gmail.com" }]
 maintainers = [{ name = "Rishyak", email = "hello@rishyak.com" }]
-dependencies = ["gitpython==3.1.44", "pyyaml==6.0.2"]
+dependencies = ["gitpython==3.1.47", "pyyaml==6.0.2"]
 keywords = [
   "beman",
   "bemanproject",
