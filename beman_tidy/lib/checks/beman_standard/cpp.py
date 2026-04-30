@@ -111,6 +111,6 @@ class CppExtensionIdentifiersCheck(BaseCheck):
     def should_skip(self):
         self.log(
             "beman-tidy cannot actually check cpp.extension_identifiers. Please ensure that extension identifiers are prefixed with 'ext_'. "
-            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppextensionidentifiers for more information."
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppextension_identifiers for more information."
         )
         return True
