@@ -18,7 +18,10 @@ def validate_config(config):
     Ensures mandatory files are not ignored.
     Returns True if valid, False otherwise.
     """
-    ignored_paths = config.get("ignored_paths", [])
+    ignored_paths = config.get("ignored_paths")
+    if ignored_paths is None:
+        ignored_paths = []
+
     if not isinstance(ignored_paths, list):
         logging.error(f"Error: 'ignored_paths' in .beman-tidy.yaml must be a list, but got {type(ignored_paths).__name__}.")
         return False
@@ -52,7 +55,10 @@ def _validate_disabled_rules(config):
     Validate the 'disabled_rules' configuration.
     Returns True if valid, False otherwise.
     """
-    disabled_rules = config.get("disabled_rules", [])
+    disabled_rules = config.get("disabled_rules")
+    if disabled_rules is None:
+        disabled_rules = []
+
     if not disabled_rules:
         return True
 
@@ -79,7 +85,7 @@ def get_disabled_rules(repo_info, known_rule_names):
     @return: A set of rule names to disable.
     """
     config = repo_info.get("config", {})
-    raw_patterns = config.get("disabled_rules", [])
+    raw_patterns = config.get("disabled_rules") or []
     if not raw_patterns:
         return set()
 
@@ -160,7 +166,7 @@ def get_ignores(repo_info):
     """
 
     default_ignores = get_repo_ignorable_subdirectories()
-    user_ignores = repo_info.get("config", {}).get("ignored_paths", [])
+    user_ignores = repo_info.get("config", {}).get("ignored_paths") or []
     return list(default_ignores) + user_ignores
 
 
