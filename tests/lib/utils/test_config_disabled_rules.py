@@ -108,11 +108,11 @@ def test_get_disabled_rules_unmatched_warning(capsys):
 
 def test_is_rule_disabled():
     """Test the is_rule_disabled helper function."""
-    ignored = {"readme.title", "cmake.project_name"}
-    assert is_rule_disabled("readme.title", ignored) is True
-    assert is_rule_disabled("cmake.project_name", ignored) is True
-    assert is_rule_disabled("readme.badges", ignored) is False
-    assert is_rule_disabled("other.rule", ignored) is False
+    disabled = {"readme.title", "cmake.project_name"}
+    assert is_rule_disabled("readme.title", disabled) is True
+    assert is_rule_disabled("cmake.project_name", disabled) is True
+    assert is_rule_disabled("readme.badges", disabled) is False
+    assert is_rule_disabled("other.rule", disabled) is False
 
 
 

@@ -70,13 +70,13 @@ def _validate_disabled_rules(config):
 
 def get_disabled_rules(repo_info, known_rule_names):
     """
-    Get the expanded set of ignored rule names from the configuration.
+    Get the expanded set of disabled rule names from the configuration.
     Resolves glob patterns against the known rule names.
     Returns an empty set if no disabled_rules are configured.
 
     @param repo_info: The repository info dict containing the config.
     @param known_rule_names: A list/set of all known rule names to match against.
-    @return: A set of rule names to ignore.
+    @return: A set of rule names to disable.
     """
     config = repo_info.get("config", {})
     raw_patterns = config.get("disabled_rules", [])
@@ -104,7 +104,7 @@ def get_disabled_rules(repo_info, known_rule_names):
 
 def is_rule_disabled(rule_name, disabled_rules):
     """
-    Check if a specific rule name is in the set of ignored rules.
+    Check if a specific rule name is in the set of disabled rules.
     """
     return rule_name in disabled_rules
 
