@@ -1,0 +1,2 @@
+# wrong name: beman.exemplar2
+add_library(beman.exemplar2 INTERFACE)

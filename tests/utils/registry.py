@@ -46,7 +46,7 @@ def find_pytest_test_functions_for_check(check_pattern):
                         if (
                             inspect.isfunction(obj)
                             and name.startswith("test__")
-                            and check_pattern in name
+                            and name.startswith(check_pattern, 6)
                         ):
                             test_functions.append(
                                 {
