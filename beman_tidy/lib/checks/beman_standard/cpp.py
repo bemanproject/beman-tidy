@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import re
+from beman_tidy.lib.checks.base.base_check import BaseCheck
 from beman_tidy.lib.checks.base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from beman_tidy.lib.checks.system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.file import get_beman_include_headers
@@ -99,6 +100,17 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             self.write_lines(new_lines)
             return True
 
+
 # TODO cpp.no_flag_forking
 
-# TODO cpp.extension_identifiers
+@register_beman_standard_check("cpp.extension_identifiers")
+class CppExtensionIdentifiersCheck(BaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def should_skip(self):
+        self.log(
+            "beman-tidy cannot actually check cpp.extension_identifiers. Please ensure that extension identifiers are prefixed with 'ext_'. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppextension_identifiers for more information."
+        )
+        return True
