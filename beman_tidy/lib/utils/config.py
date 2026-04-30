@@ -87,7 +87,7 @@ def get_disabled_rules(repo_info, known_rule_names):
     for pattern in raw_patterns:
         if "*" in pattern:
             # Expand glob pattern
-            matched = {name for name in known_rule_names if fnmatch.fnmatch(name, pattern)}
+            matched = {name for name in known_rule_names if fnmatch.fnmatchcase(name, pattern)}
             if not matched:
                 logging.warning(f"Warning: disabled_rules pattern '{pattern}' does not match any known rule. Skipping.")
             else:
