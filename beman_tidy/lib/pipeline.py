@@ -6,7 +6,7 @@ import logging
 
 from .checks.system.registry import get_registered_beman_standard_checks
 from .checks.system.git import DisallowFixInplaceAndUnstagedChangesCheck
-from .utils.config import get_ignored_rules, is_rule_ignored
+from .utils.config import get_disabled_rules, is_rule_disabled
 from .utils.string import (
     red_color,
     green_color,
@@ -132,15 +132,15 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         }
 
         # Resolve ignored from config.
-        ignored_rules = get_ignored_rules(args.repo_info, checks_to_run)
+        disabled_rules = get_disabled_rules(args.repo_info, checks_to_run)
 
         # Run the checks.
         for check_name in checks_to_run:
             if check_name not in implemented_checks:
                 continue
 
-            # Skip ignoredd.
-            if is_rule_ignored(check_name, ignored_rules):
+            # Skip ignored.
+            if is_rule_disabled(check_name, disabled_rules):
                 check_type = (
                     beman_standard_check_config[check_name]["type"]
                     if not args.require_all

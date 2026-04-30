@@ -198,7 +198,7 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
     - include/beman/optional/another_dir
   ```
 
-- `ignored_rules` - A list of rule names (or patterns) to be completely skipped during checks.
+- `disabled_rules` - A list of rule names (or patterns) to be completely skipped during checks.
   - To ignore a specific rule, provide its exact name (e.g., `readme.title`).
   - To ignore all rules in a category, use a glob pattern with `*` (e.g., `readme.*` to skip all readme checks).
   - To ignore a specific rule across all categories, use `*.rule_name` (e.g., `*.title`).
@@ -207,7 +207,7 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
 
 - Example:
   ```yaml
-  ignored_rules:
+  disabled_rules:
     # Ignores a single rule
     - readme.title
 
@@ -231,7 +231,7 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
 - How do I ignore files/directories?
   - Use `ignored_paths` in `.beman-tidy.yaml`.
 - How do I ignore specific rules?
-  - Use `ignored_rules` in `.beman-tidy.yaml`. You can specify exact rule names or glob patterns like `readme.*`.
+  - Use `disabled_rules` in `.beman-tidy.yaml`. You can specify exact rule names or glob patterns like `readme.*`.
 - How do I get more detail?
   - Run with `--verbose` to print per-check diagnostics.
 
