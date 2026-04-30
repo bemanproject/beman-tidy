@@ -197,11 +197,27 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
     log("\nbeman-tidy pipeline finished.\n")
 
     # Always print the summary.
-    logging.info(
-        f"Summary    Requirement: {green_color} {cnt_passed_checks['Requirement']} checks passed{no_color}, {red_color}{cnt_failed_checks['Requirement']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Requirement']} checks skipped, {no_color} {cnt_not_implemented_checks['Requirement']} checks not implemented{f', {no_color}{cnt_disabled_checks['Requirement']} checks disabled' if cnt_disabled_checks['Requirement'] > 0 else ''}."
+    disabled_req_summary_suffix = (
+        f", {no_color}{cnt_disabled_checks['Requirement']} checks disabled"
+        if cnt_disabled_checks["Requirement"] > 0
+        else ""
     )
     logging.info(
-        f"Summary Recommendation: {green_color} {cnt_passed_checks['Recommendation']} checks passed{no_color}, {red_color}{cnt_failed_checks['Recommendation']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Recommendation']} checks skipped, {no_color} {cnt_not_implemented_checks['Recommendation']} checks not implemented{f', {no_color}{cnt_disabled_checks['Recommendation']} checks disabled' if cnt_disabled_checks['Recommendation'] > 0 else ''}."
+        f"Summary    Requirement: {green_color} {cnt_passed_checks['Requirement']} checks passed{no_color}, "
+        f"{red_color}{cnt_failed_checks['Requirement']} checks failed{no_color}, "
+        f"{gray_color}{cnt_skipped_checks['Requirement']} checks skipped, "
+        f"{no_color} {cnt_not_implemented_checks['Requirement']} checks not implemented{disabled_req_summary_suffix}."
+    )
+    disabled_rec_summary_suffix = (
+        f", {no_color}{cnt_disabled_checks['Recommendation']} checks disabled"
+        if cnt_disabled_checks["Recommendation"] > 0
+        else ""
+    )
+    logging.info(
+        f"Summary Recommendation: {green_color} {cnt_passed_checks['Recommendation']} checks passed{no_color}, "
+        f"{red_color}{cnt_failed_checks['Recommendation']} checks failed{no_color}, "
+        f"{gray_color}{cnt_skipped_checks['Recommendation']} checks skipped, "
+        f"{no_color} {cnt_not_implemented_checks['Recommendation']} checks not implemented{disabled_rec_summary_suffix}."
     )
 
     # Always print the coverage.
@@ -256,15 +272,33 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
     total_implemented = total_implemented_requirement + total_implemented_recommendation
     total_coverage = round((total_passed) / (total_implemented) * 100, 2) if total_implemented > 0 else 0
     
-    logging.info(
-        f"\n{calculate_coverage_color(coverage_requirement)}Coverage    Requirement: {coverage_requirement:{6}.2f}% ({cnt_passed_requirement}/{total_implemented_requirement} checks passed){f' {yellow_color}({disabled_req_total} disabled){calculate_coverage_color(coverage_requirement)}' if disabled_req_total > 0 else ''}.{no_color}"
+    disabled_req_coverage_suffix = (
+        f" {yellow_color}({disabled_req_total} disabled){calculate_coverage_color(coverage_requirement)}"
+        if disabled_req_total > 0
+        else ""
     )
     logging.info(
-        f"{calculate_coverage_color(coverage_recommendation, no_color=args.require_all)}Coverage Recommendation: {coverage_recommendation:{6}.2f}% ({cnt_passed_recommendation}/{total_implemented_recommendation} checks passed){f' {yellow_color}({disabled_rec_total} disabled){calculate_coverage_color(coverage_recommendation, no_color=args.require_all)}' if disabled_rec_total > 0 else ''}.{no_color}"
+        f"\n{calculate_coverage_color(coverage_requirement)}Coverage    Requirement: {coverage_requirement:{6}.2f}% "
+        f"({cnt_passed_requirement}/{total_implemented_requirement} checks passed){disabled_req_coverage_suffix}.{no_color}"
+    )
+    disabled_rec_coverage_suffix = (
+        f" {yellow_color}({disabled_rec_total} disabled){calculate_coverage_color(coverage_recommendation, no_color=args.require_all)}"
+        if disabled_rec_total > 0
+        else ""
+    )
+    logging.info(
+        f"{calculate_coverage_color(coverage_recommendation, no_color=args.require_all)}Coverage Recommendation: {coverage_recommendation:{6}.2f}% "
+        f"({cnt_passed_recommendation}/{total_implemented_recommendation} checks passed){disabled_rec_coverage_suffix}.{no_color}"
     )
     total_disabled = cnt_disabled_checks["Requirement"] + cnt_disabled_checks["Recommendation"]
+    disabled_total_coverage_suffix = (
+        f" {yellow_color}({total_disabled} disabled){calculate_coverage_color(total_coverage)}"
+        if total_disabled > 0
+        else ""
+    )
     logging.info(
-        f"{calculate_coverage_color(total_coverage)}Coverage          TOTAL: {total_coverage:{6}.2f}% ({total_passed}/{total_implemented} checks passed){f' {yellow_color}({total_disabled} disabled){calculate_coverage_color(total_coverage)}' if total_disabled > 0 else ''}.{no_color}"
+        f"{calculate_coverage_color(total_coverage)}Coverage          TOTAL: {total_coverage:{6}.2f}% "
+        f"({total_passed}/{total_implemented} checks passed){disabled_total_coverage_suffix}.{no_color}"
     )
 
     # else:
