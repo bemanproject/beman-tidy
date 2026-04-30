@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import re
+from beman_tidy.lib.checks.base.base_check import BaseCheck
 from beman_tidy.lib.checks.base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from beman_tidy.lib.checks.system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.file import get_beman_include_headers
@@ -99,7 +100,6 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             self.write_lines(new_lines)
             return True
 
-from beman_tidy.lib.checks.base.base_check import BaseCheck
 
 # TODO cpp.no_flag_forking
 
