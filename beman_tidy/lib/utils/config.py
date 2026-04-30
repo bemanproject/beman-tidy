@@ -33,13 +33,13 @@ def validate_config(config):
         clean_path = path.rstrip("/")
         # Check for exact match
         if clean_path in mandatory_files:
-             logging.error(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yaml")
-             return False
+            logging.error(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yaml")
+            return False
         
         # Check if ignoring root directory
         if clean_path == "." or clean_path == "":
-             logging.error("Error: Cannot ignore root directory in .beman-tidy.yaml")
-             return False
+            logging.error("Error: Cannot ignore root directory in .beman-tidy.yaml")
+            return False
              
     if not _validate_disabled_rules(config):
         return False
