@@ -126,7 +126,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
             "Recommendation": 0,
         }
         # All checks that were ignored in config.
-        cnt_ignored_checks = {
+        cnt_disabled_checks = {
             "Requirement": 0,
             "Recommendation": 0,
         }
@@ -146,7 +146,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
                     if not args.require_all
                     else "Requirement"
                 )
-                log(f"Running check [{check_type}][{check_name}] ... {gray_color}ignored (by config){no_color}\n")
+                log(f"Running check [{check_type}][{check_name}] ... {gray_color}disabled (by own repo config){no_color}\n")
                 cnt_ignored_checks[check_type] += 1
                 continue
 
@@ -198,7 +198,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
 
     # Always print the summary.
     logging.info(
-        f"Summary    Requirement: {green_color} {cnt_passed_checks['Requirement']} checks passed{no_color}, {red_color}{cnt_failed_checks['Requirement']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Requirement']} checks skipped, {no_color} {cnt_not_implemented_checks['Requirement']} checks not implemented{f', {no_color}{cnt_ignored_checks['Requirement']} checks ignored' if cnt_ignored_checks['Requirement'] > 0 else ''}."
+        f"Summary    Requirement: {green_color} {cnt_passed_checks['Requirement']} checks passed{no_color}, {red_color}{cnt_failed_checks['Requirement']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Requirement']} checks skipped, {no_color} {cnt_not_implemented_checks['Requirement']} checks not implemented{f', {no_color}{cnt_ignored_checks['Requirement']} checks disabled' if cnt_disabled_checks['Requirement'] > 0 else ''}."
     )
     logging.info(
         f"Summary Recommendation: {green_color} {cnt_passed_checks['Recommendation']} checks passed{no_color}, {red_color}{cnt_failed_checks['Recommendation']} checks failed{no_color}, {gray_color}{cnt_skipped_checks['Recommendation']} checks skipped, {no_color} {cnt_not_implemented_checks['Recommendation']} checks not implemented{f', {no_color}{cnt_ignored_checks['Recommendation']} checks ignored' if cnt_ignored_checks['Recommendation'] > 0 else ''}."
@@ -218,7 +218,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         if not args.require_all
         else cnt_implemented_checks["Requirement"]
     )
-    # Exclude ignored checks from the total implemented count for coverage.
+    # Exclude disabled checks from the total implemented count for coverage.
     ignored_req_total = cnt_ignored_checks["Requirement"] + (cnt_ignored_checks["Recommendation"] if args.require_all else 0)
     total_implemented_requirement -= ignored_req_total
 

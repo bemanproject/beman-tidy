@@ -208,13 +208,13 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
 - Example:
   ```yaml
   disabled_rules:
-    # Ignores a single rule
+    # Disable a single rule
     - readme.title
 
-    # Ignores all readme checks
+    # Disable all readme checks
     - readme.*
 
-    # Ignores all rules named "title" across categories
+    # Disable all rules named "title" across categories
     - "*.title"
   ```
 
