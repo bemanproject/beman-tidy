@@ -132,7 +132,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         }
 
         # Resolve disabled from config.
-        disabled_rules = get_disabled_rules(args.repo_info, checks_to_run)
+        disabled_rules = get_disabled_rules(args.repo_info, beman_standard_check_config.keys())
 
         # Run the checks.
         for check_name in checks_to_run:
