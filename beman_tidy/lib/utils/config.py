@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import fnmatch
 import sys
 import yaml
 import logging
@@ -18,9 +19,6 @@ def validate_config(config):
     Returns True if valid, False otherwise.
     """
     ignored_paths = config.get("ignored_paths", [])
-    if not ignored_paths:
-        return True
-
     if not isinstance(ignored_paths, list):
         logging.error(f"Error: 'ignored_paths' in .beman-tidy.yaml must be a list, but got {type(ignored_paths).__name__}.")
         return False
@@ -35,15 +33,80 @@ def validate_config(config):
         clean_path = path.rstrip("/")
         # Check for exact match
         if clean_path in mandatory_files:
-             logging.error(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yaml")
-             return False
+            logging.error(f"Error: Cannot ignore mandatory file '{clean_path}' in .beman-tidy.yaml")
+            return False
         
         # Check if ignoring root directory
         if clean_path == "." or clean_path == "":
-             logging.error("Error: Cannot ignore root directory in .beman-tidy.yaml")
-             return False
-        
+            logging.error("Error: Cannot ignore root directory in .beman-tidy.yaml")
+            return False
+             
+    if not _validate_disabled_rules(config):
+        return False
+
     return True
+
+
+def _validate_disabled_rules(config):
+    """
+    Validate the 'disabled_rules' configuration.
+    Returns True if valid, False otherwise.
+    """
+    disabled_rules = config.get("disabled_rules", [])
+    if not disabled_rules:
+        return True
+
+    if not isinstance(disabled_rules, list):
+        logging.error(f"Error: 'disabled_rules' in .beman-tidy.yaml must be a list, but got {type(disabled_rules).__name__}.")
+        return False
+
+    for entry in disabled_rules:
+        if not isinstance(entry, str):
+            logging.error(f"Error: Invalid entry in 'disabled_rules': {entry}. Must be a string.")
+            return False
+
+    return True
+
+
+def get_disabled_rules(repo_info, known_rule_names):
+    """
+    Get the expanded set of disabled rule names from the configuration.
+    Resolves glob patterns against the known rule names.
+    Returns an empty set if no disabled_rules are configured.
+
+    @param repo_info: The repository info dict containing the config.
+    @param known_rule_names: A list/set of all known rule names to match against.
+    @return: A set of rule names to disable.
+    """
+    config = repo_info.get("config", {})
+    raw_patterns = config.get("disabled_rules", [])
+    if not raw_patterns:
+        return set()
+
+    all_matched = set()
+    for pattern in raw_patterns:
+        if "*" in pattern:
+            # Expand glob pattern
+            matched = {name for name in known_rule_names if fnmatch.fnmatchcase(name, pattern)}
+            if not matched:
+                logging.warning(f"Warning: disabled_rules pattern '{pattern}' does not match any known rule. Skipping.")
+            else:
+                all_matched.update(matched)
+        else:
+            # Exact match
+            if pattern in known_rule_names:
+                all_matched.add(pattern)
+            else:
+                logging.warning(f"Warning: disabled_rules pattern '{pattern}' does not match any known rule. Skipping.")
+
+    return all_matched
+
+
+def is_rule_disabled(rule_name, disabled_rules):
+    """
+    Check if a specific rule name is in the set of disabled rules.
+    """
+    return rule_name in disabled_rules
 
 
 def get_default_config_path():
