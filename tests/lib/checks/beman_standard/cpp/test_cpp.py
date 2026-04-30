@@ -4,7 +4,7 @@
 import shutil
 from pathlib import Path
 
-from beman_tidy.lib.checks.beman_standard.cpp import CppNamespaceCheck
+from beman_tidy.lib.checks.beman_standard.cpp import CppNamespaceCheck, CppExtensionIdentifiersCheck
 
 test_data_prefix = Path("tests/lib/checks/beman_standard/cpp/namespace")
 valid_prefix = test_data_prefix / "valid"
@@ -37,3 +37,10 @@ def test__cpp_namespace__fix_inplace(repo_info, beman_standard_check_config, tmp
     assert check.fix() is True
     
     assert check.check() is True
+
+
+def test__cpp_extension_identifiers__is_always_skipped(repo_info, beman_standard_check_config):
+    """
+    Test that cpp.extension_identifiers is always skipped.
+    """
+    assert CppExtensionIdentifiersCheck(repo_info, beman_standard_check_config).should_skip()
