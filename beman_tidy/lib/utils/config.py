@@ -57,12 +57,12 @@ def _validate_disabled_rules(config):
         return True
 
     if not isinstance(disabled_rules, list):
-        print(f"Error: 'disabled_rules' in .beman-tidy.yaml must be a list, but got {type(disabled_rules).__name__}.")
+        logging.error(f"Error: 'disabled_rules' in .beman-tidy.yaml must be a list, but got {type(disabled_rules).__name__}.")
         return False
 
     for entry in disabled_rules:
         if not isinstance(entry, str):
-            print(f"Error: Invalid entry in 'disabled_rules': {entry}. Must be a string.")
+            logging.error(f"Error: Invalid entry in 'disabled_rules': {entry}. Must be a string.")
             return False
 
     return True
