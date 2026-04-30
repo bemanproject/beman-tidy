@@ -24,7 +24,7 @@ def test__cmake_library_name__valid(repo_info, beman_standard_check_config):
     """
     valid_cmake_paths = [
         # CMakeLists.txt from beman.exemplar
-        Path(f"{valid_prefix}/valid-CMakeLists-v1")
+        Path(f"{valid_prefix}/CMakeLists-v1.txt")
 	]
 
     run_check_for_each_path(
@@ -42,9 +42,11 @@ def test__cmake_library_name__invalid(repo_info, beman_standard_check_config):
     """
     invalid_cmake_paths = [
         # CMakeLists.txt missing library name
-        Path(f"{invalid_prefix}/invalid-CMakeLists-v1"),
+        Path(f"{invalid_prefix}/invalid-CMakeLists-v1.txt"),
         # CMakeLists.txt with invalid library name
-		Path(f"{invalid_prefix}/invalid-CMakeLists-v2")
+		Path(f"{invalid_prefix}/invalid-CMakeLists-v2.txt"),
+        # CMakeLists.txt with another invalid library name
+        Path(f"{invalid_prefix}/invalid-CMakeLists-v3.txt")
     ]
 
     run_check_for_each_path(

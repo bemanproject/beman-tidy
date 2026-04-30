@@ -281,6 +281,7 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#directorydocs for more information."
         )
 
+        return True
 
 @register_beman_standard_check("directory.papers")
 class DirectoryPapersCheck(DirectoryBaseCheck):

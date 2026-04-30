@@ -20,37 +20,35 @@ class CMakeBaseCheck(FileBaseCheck):
     files in the context of a repository. It provides functionality
     to parse CMake files and extract specific data.
 
+    Methods:
+    -------
+    - parse_raw and parse_tree (Core functionality for parsing CMake code):
+    parse_raw:
+        - Returns a simplified AST containing Command and Comment nodes
+        - (Command - Generic representation of a single CMake instruction; Comment - CMake comment)
+        - Hierarchical structures such as if() or function() blocks are not resolved
+
+    parse_tree:
+        - Returns a fully constructed AST.
+        - Resolves block structures such as function(), if(), include() and more.
+        - The block structures return specialized AST nodes (e.g., Function, If, Include, etc.).
+
+    See more here: https://roehling.github.io/cmake_parser/api/parser.html
+
     Attributes:
         repo_info: Contains information about the repository being checked.
-        beman_standard_check_config: Configuration settings for the
-            Beman standard checks.
+        beman_standard_check_config: Configuration settings for the Beman standard checks.
     """
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config, "CMakeLists.txt")
 
-    """
-    parse_raw and parse_tree:
-    Core functionality for parsing CMake code.
-    
-    parsed_raw: 
-    - Returns a simplified AST containing Command and Comment nodes.
-    - (Command - Generic representation of a single CMake instruction; Comment - CMake comment).
-    - Hierarchical structures such as if() or function() blocks are not resolved.
-    
-    parsed_tree: 
-    - Returns a fully constructed AST.
-    - Resolves block structures such as function(), if(), include () and more.
-    - The block structures return specialized AST nodes (e.g., Function, If, Include, etc.).
-    
-    See more here: https://roehling.github.io/cmake_parser/api/parser.html
-    """
-    def _get_cmake_parse_raw(self):
+    def get_cmake_parse_raw(self):
         return cmake_parser.parser.parse_raw(self.read(), skip_comments=True)
 
-    def _get_cmake_parse_tree(self):
+    def get_cmake_parse_tree(self):
         return cmake_parser.parser.parse_tree(self.read(), skip_comments=True)
 
-    def _get_cmake_library_name(self, ast):
+    def get_cmake_library_name(self, ast):
         cmake_library_name = None
 
         for item in ast:
@@ -73,28 +71,25 @@ class CMakeBaseCheck(FileBaseCheck):
 # TODO cmake.passive_projects
 
 
-# TODO cmake.library_name
 @register_beman_standard_check("cmake.library_name")
 class CMakeLibraryNameCheck(CMakeBaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config)
 
     def check(self):
-        ast = self._get_cmake_parse_raw()
-
-        cmake_library_name = self._get_cmake_library_name(ast)
+        ast = self.get_cmake_parse_raw()
+        cmake_library_name = self.get_cmake_library_name(ast)
 
         if cmake_library_name is None:
-            log_message = "CMake library target name is not found. "
-        elif cmake_library_name != self.library_name:
-            log_message = f"CMake library target name: {cmake_library_name} does not match library name: {self.library_name}. "
+            self.log("CMake library target name not found. "
+                     "Please update the CMakeLists.txt file according to the Beman Standard. "
+                     "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information.")
+            return False
 
-        if cmake_library_name != self.library_name or cmake_library_name is None:
-            log_message += "Please update the CMakeLists.txt file according to the Beman Standard. "
-            log_message += "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information."
-
-            self.log(log_message)
-
+        if cmake_library_name != self.library_name:
+            self.log(f"CMake library target name: {cmake_library_name} does not match library name: {self.library_name}. "
+                     "Please update the CMakeLists.txt file according to the Beman Standard. "
+                     "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information.")
             return False
 
         return True
@@ -104,6 +99,7 @@ class CMakeLibraryNameCheck(CMakeBaseCheck):
             "Please update the CMakeLists.txt file so that the CMake library target's name is identical to the library name. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information."
         )
+        return True
 
 
 # TODO cmake.library_alias
