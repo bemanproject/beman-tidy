@@ -65,9 +65,10 @@ class LicenseApacheLLVMCheck(LicenseBaseCheck):
 
     def check(self):
         # Compare LICENSE file stored at self.path with the reference one.
-        target_license = self.path
-        ref_license = get_beman_recommendated_license_path()
-        if not filecmp.cmp(target_license, ref_license, shallow=False):
+        target_content = self.read().splitlines()
+        ref_content = get_beman_recommendated_license_path().read_text(encoding="utf-8").splitlines()
+
+        if target_content != ref_content:
             self.log(
                 "Please update the LICENSE file to include the Apache License v2.0 with LLVM Exceptions. "
                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#licenseapache_llvm for more information."
