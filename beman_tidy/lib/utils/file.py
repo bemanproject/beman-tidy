@@ -10,7 +10,20 @@ def get_repo_ignorable_subdirectories():
     """
     Returns a set of common build and IDE directories to ignore.
     """
-    return {".git/", "build/", ".idea/", ".vscode/", "__pycache__/", "venv/", "env/"}
+    return {
+        ".git/",
+        "build/",
+        "cmake-build-debug/",
+        "cmake-build-release/",
+        ".idea/",
+        ".vscode/",
+        "__pycache__/",
+        ".pytest_cache/",
+        ".ruff_cache/",
+        "node_modules/",
+        "venv/",
+        "env/",
+    }
 
 
 def get_cpp_header_extensions():
