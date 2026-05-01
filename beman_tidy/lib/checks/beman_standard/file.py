@@ -47,6 +47,14 @@ class FileTestNamesCheck(BatchFileBaseCheck):
                 return False
             return True
 
+        def fix(self):
+            # Renaming files automatically would require updating build systems.
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(
+                f"Please manually rename {display_path} to follow the *.test.cpp naming convention."
+            )
+            return False
+
 
 @register_beman_standard_check("file.license_id")
 class FileLicenseIdCheck(BatchFileBaseCheck):
