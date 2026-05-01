@@ -253,7 +253,7 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
         misplaced_md_files = [
             p
             for p in self.repo_path.rglob("*.md")
-            if not any(excluded in p.parts for excluded in exclude_dirs)
+            if not any(excluded in p.relative_to(self.repo_path).as_posix().split('/') for excluded in exclude_dirs)
             and p.name not in tolerated_files
             and not is_ignored(self.repo_info, p.relative_to(self.repo_path))
         ]
