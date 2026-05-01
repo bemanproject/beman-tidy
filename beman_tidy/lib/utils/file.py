@@ -162,3 +162,11 @@ def get_spdx_info(lines):
 
     comment_info = determine_comment_type(lines, spdx_index)
     return spdx_index, comment_info
+
+
+def get_test_files(repo_path, ignores=None):
+    """
+    Get all C++ files in the tests/ directory.
+    """
+    all_cpp_files = get_cpp_files(repo_path, ignores=ignores)
+    return [p for p in all_cpp_files if "tests" in p.parts]
