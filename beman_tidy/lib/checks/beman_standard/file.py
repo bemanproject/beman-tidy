@@ -15,7 +15,7 @@ from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_ST
 class FileNamesCheck(BatchFileBaseCheck):
     """
     [file.names]
-    Requirement: File names must be lowercase and use snake_case.
+    Recommendation: File names must be lowercase and use snake_case.
     """
 
     def __init__(self, repo_info, beman_standard_check_config):
