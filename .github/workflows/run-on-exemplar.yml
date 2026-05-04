@@ -31,10 +31,14 @@ jobs:
           uv tool install --force dist/*.whl
           beman-tidy --help
 
-      - name: Run installed beman-tidy on exemplar repo
+      - name: Run installed beman-tidy on cookiecutter output
         run: |
-          git clone https://github.com/bemanproject/exemplar.git
-          cd exemplar/ # Testing that beman-tidy can be run from any path, e.g. from the exemplar repo.
+          git clone --depth=1 https://github.com/bemanproject/exemplar.git exemplar_repo
+          cd exemplar_repo
+          ./stamp.sh project_name="cookiecutter_test" description="Test project" --no-input
+          cd ..
+          mv exemplar_repo cookiecutter_test
+          cd cookiecutter_test
           beman-tidy --verbose --require-all .
 
   create-issue-when-fault:
