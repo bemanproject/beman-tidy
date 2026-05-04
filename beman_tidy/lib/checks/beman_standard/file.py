@@ -11,7 +11,51 @@ from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_ST
 # All checks in this file extend the BaseCheck class.
 
 
-# TODO file.names
+@register_beman_standard_check("file.names")
+class FileNamesCheck(BatchFileBaseCheck):
+    """
+    [file.names]
+    Recommendation: File names must be lowercase and use snake_case.
+    """
+
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+        self.file_check_class = self.FileNamesCheckImpl
+        self.file_path_generator = get_cpp_files
+
+    class FileNamesCheckImpl(FileBaseCheck):
+        """
+        Implementation of the "file.names" check for a single file.
+        """
+
+        def __init__(self, repo_info, beman_standard_check_config, relative_path):
+            super().__init__(
+                repo_info, beman_standard_check_config, relative_path, name="file.names"
+            )
+
+        def check(self):
+            filename_stem = self.path.stem
+
+            # lowercase and snake_case
+            is_valid = filename_stem == filename_stem.lower() and all(
+                c.isalnum() or c == "_" for c in filename_stem
+            )
+
+            if not is_valid:
+                display_path = normalize_path_for_display(self.path, self.repo_path)
+                self.log(
+                    f"File name {display_path} does not follow the snake_case naming convention. "
+                    f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#filenames"
+                )
+                return False
+            return True
+
+        def fix(self):
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(
+                f"Please manually rename {display_path} to follow the snake_case naming convention."
+            )
+            return False
 
 
 @register_beman_standard_check("file.test_names")
