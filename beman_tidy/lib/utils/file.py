@@ -92,6 +92,20 @@ def get_cpp_files(repo_path, ignores=None):
     return get_matched_paths(repo_path, get_cpp_extensions(), ignores=ignores)
 
 
+def get_non_test_cpp_files(repo_path, ignores=None):
+    """
+    Get all C++ source and header files NOT under a tests/ directory.
+    """
+    all_files = get_cpp_files(repo_path, ignores=ignores)
+
+    non_test_files = []
+    for path in all_files:
+        if "tests" not in path.parts:
+            non_test_files.append(path)
+
+    return non_test_files
+
+
 def get_beman_include_headers(repo_path, ignores=None):
     """
     Get all header files in the repository under an include/beman directory.

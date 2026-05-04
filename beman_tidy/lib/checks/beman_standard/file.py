@@ -3,7 +3,7 @@
 
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
-from ...utils.file import get_cpp_files, get_spdx_info, get_commentable_files
+from ...utils.file import get_cpp_files, get_spdx_info, get_commentable_files, get_non_test_cpp_files
 from ...utils.string import normalize_path_for_display
 from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_STARTS, LINE_PREFIXES
 
@@ -21,7 +21,7 @@ class FileNamesCheck(BatchFileBaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config)
         self.file_check_class = self.FileNamesCheckImpl
-        self.file_path_generator = get_cpp_files
+        self.file_path_generator = get_non_test_cpp_files
 
     class FileNamesCheckImpl(FileBaseCheck):
         """
