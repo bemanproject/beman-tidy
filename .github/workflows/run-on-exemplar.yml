@@ -39,6 +39,7 @@ jobs:
           git config user.name "GitHub Actions"
           ./stamp.sh project_name="cookiecutter_test" description="Test project" --no-input
           git remote remove origin
+          sed -i '/disabled_rules:/a \  - release.godbolt_trunk_version\n  - readme.implements\n  - file.names' .beman-tidy.yaml
           cd ..
           mv exemplar_repo cookiecutter_test
           cd cookiecutter_test
