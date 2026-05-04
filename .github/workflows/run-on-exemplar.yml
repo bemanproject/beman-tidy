@@ -35,6 +35,8 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/bemanproject/exemplar.git exemplar_repo
           cd exemplar_repo
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
           ./stamp.sh project_name="cookiecutter_test" description="Test project" --no-input
           cd ..
           mv exemplar_repo cookiecutter_test
