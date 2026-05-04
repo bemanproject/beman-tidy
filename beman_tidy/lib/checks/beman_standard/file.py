@@ -3,7 +3,7 @@
 
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
-from ...utils.file import get_cpp_files, get_spdx_info, get_commentable_files, get_non_test_cpp_files
+from ...utils.file import get_cpp_files, get_spdx_info, get_commentable_files, get_non_test_cpp_files, get_test_files
 from ...utils.string import normalize_path_for_display
 from ...utils.comments import find_in_comment, CommentType, BLOCK_ENDS, BLOCK_STARTS, LINE_PREFIXES
 
@@ -58,7 +58,46 @@ class FileNamesCheck(BatchFileBaseCheck):
             return False
 
 
-# TODO file.test_names
+@register_beman_standard_check("file.test_names")
+class FileTestNamesCheck(BatchFileBaseCheck):
+    """
+    [file.test_names]
+    Requirement: Test source code files must use the *.test.cpp naming convention.
+    """
+
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+        self.file_check_class = self.FileTestNamesCheckImpl
+        self.file_path_generator = get_test_files
+
+    class FileTestNamesCheckImpl(FileBaseCheck):
+        """
+        Implementation of the "file.test_names" check for a single file.
+        """
+
+        def __init__(self, repo_info, beman_standard_check_config, relative_path):
+            super().__init__(
+                repo_info, beman_standard_check_config, relative_path, name="file.test_names"
+            )
+
+        def check(self):
+            filename = self.path.name
+            if filename.endswith(".cpp") and not filename.endswith(".test.cpp"):
+                display_path = normalize_path_for_display(self.path, self.repo_path)
+                self.log(
+                    f"Test source code file {display_path} does not follow the *.test.cpp naming convention. "
+                    f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#filetest_names"
+                )
+                return False
+            return True
+
+        def fix(self):
+            # Renaming files automatically would require updating build systems.
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(
+                f"Please manually rename {display_path} to follow the *.test.cpp naming convention."
+            )
+            return False
 
 
 @register_beman_standard_check("file.license_id")

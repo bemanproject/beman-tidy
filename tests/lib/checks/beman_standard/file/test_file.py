@@ -5,7 +5,7 @@ import pytest
 import shutil
 from pathlib import Path
 
-from beman_tidy.lib.checks.beman_standard.file import FileCopyrightCheck, FileLicenseIdCheck, FileNamesCheck
+from beman_tidy.lib.checks.beman_standard.file import FileCopyrightCheck, FileLicenseIdCheck, FileNamesCheck, FileTestNamesCheck
 
 # Workaround to test for both normal and block comments.
 test_data_prefix = Path("tests/lib/checks/beman_standard/file/data")
@@ -14,6 +14,8 @@ valid_prefix = test_data_prefix / "valid"
 invalid_prefix = test_data_prefix / "invalid"
 valid_block_prefix = test_data_prefix / "valid_block"
 invalid_block_prefix = test_data_prefix / "invalid_block"
+
+# --- file.copyright tests ---
 
 def test__file_copyright__valid(repo_info, beman_standard_check_config):
     repo_info["top_level"] = valid_prefix
@@ -144,8 +146,7 @@ def test__file_license_id__fix_inplace(repo_info, beman_standard_check_config, t
 
     assert check.check() is False
     assert check.fix() is False
-
-
+  
 # --- file.names tests ---
 
 file_names_prefix = Path("tests/lib/checks/beman_standard/file/data/names")
@@ -165,4 +166,21 @@ def test__file_names__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__file_names__fix_inplace(repo_info, beman_standard_check_config):
-    pass
+
+# --- file.test_names tests ---
+
+test_names_prefix = Path("tests/lib/checks/beman_standard/file/data/test_names")
+
+
+def test__file_test_names__valid(repo_info, beman_standard_check_config):
+    repo_info["top_level"] = test_names_prefix / "valid"
+    check = FileTestNamesCheck(repo_info, beman_standard_check_config)
+    assert check.check() is True
+
+
+def test__file_test_names__invalid(repo_info, beman_standard_check_config):
+    repo_info["top_level"] = test_names_prefix / "invalid"
+    check = FileTestNamesCheck(repo_info, beman_standard_check_config)
+    
+@pytest.mark.skip(reason="not implemented")
+def test__file_test_names__fix_inplace(repo_info, beman_standard_check_config):
