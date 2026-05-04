@@ -34,7 +34,9 @@ class FileNamesCheck(BatchFileBaseCheck):
             )
 
         def check(self):
-            filename_stem = self.path.stem
+            # Use only the base name before the first dot to handle compound
+            # extensions like ".test.cpp" (e.g. "identity.test.cpp" -> "identity").
+            filename_stem = self.path.name.split(".")[0]
 
             # lowercase and snake_case
             is_valid = filename_stem == filename_stem.lower() and all(
