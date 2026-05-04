@@ -37,7 +37,7 @@ class FileNamesCheck(BatchFileBaseCheck):
             filename_stem = self.path.stem
 
             # lowercase and snake_case
-            is_valid = (not filename_stem or filename_stem.islower() or filename_stem.isdigit()) and all(
+            is_valid = filename_stem == filename_stem.lower() and all(
                 c.isalnum() or c == "_" for c in filename_stem
             )
 
