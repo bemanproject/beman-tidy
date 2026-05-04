@@ -166,6 +166,7 @@ def test__file_names__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__file_names__fix_inplace(repo_info, beman_standard_check_config):
+    pass
 
 # --- file.test_names tests ---
 
@@ -181,6 +182,8 @@ def test__file_test_names__valid(repo_info, beman_standard_check_config):
 def test__file_test_names__invalid(repo_info, beman_standard_check_config):
     repo_info["top_level"] = test_names_prefix / "invalid"
     check = FileTestNamesCheck(repo_info, beman_standard_check_config)
+    assert check.check() is False
     
 @pytest.mark.skip(reason="not implemented")
 def test__file_test_names__fix_inplace(repo_info, beman_standard_check_config):
+    pass
