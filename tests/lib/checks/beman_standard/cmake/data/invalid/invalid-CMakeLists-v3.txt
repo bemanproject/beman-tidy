@@ -1,2 +1,10 @@
-# wrong name: beman_exemplar
+# wrong project name: beman_exemplar
+project(
+    beman_exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 2.4.0
+)
+
+# wrong library target name: beman_exemplar
 add_library(beman_exemplar INTERFACE)

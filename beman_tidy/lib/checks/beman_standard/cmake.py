@@ -42,11 +42,11 @@ class CMakeBaseCheck(FileBaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config, "CMakeLists.txt")
 
-    def get_cmake_parse_raw(self):
-        return cmake_parser.parser.parse_raw(self.read(), skip_comments=True)
+    def get_cmake_parse_raw(self, skip_comments=True):
+        return cmake_parser.parser.parse_raw(self.read(), skip_comments=skip_comments)
 
-    def get_cmake_parse_tree(self):
-        return cmake_parser.parser.parse_tree(self.read(), skip_comments=True)
+    def get_cmake_parse_tree(self, skip_comments=True):
+        return cmake_parser.parser.parse_tree(self.read(), skip_comments=skip_comments)
 
     def get_cmake_library_name(self, ast):
         cmake_library_name = None
@@ -58,6 +58,16 @@ class CMakeBaseCheck(FileBaseCheck):
 
         return cmake_library_name
 
+    def get_cmake_project_name(self, ast):
+        cmake_project_name = None
+
+        for item in ast:
+            if item.identifier == "project":
+                cmake_project_name = item.args[0].value
+                break
+
+        return cmake_project_name
+
 
 # TODO cmake.default
 
@@ -65,7 +75,35 @@ class CMakeBaseCheck(FileBaseCheck):
 # TODO cmake.use_find_package
 
 
-# TODO cmake.project_name
+@register_beman_standard_check("cmake.project_name")
+class CMakeProjectNameCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def check(self):
+        ast = self.get_cmake_parse_raw()
+        cmake_project_name = self.get_cmake_project_name(ast)
+
+        if cmake_project_name is None:
+            self.log("CMake project name not found. "
+                     "Please update the CMakeLists.txt file according to the Beman Standard. "
+                     "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeproject_name for more information.")
+            return False
+
+        if cmake_project_name != self.library_name:
+            self.log(f"CMake project name: {cmake_project_name} does not match Beman library name: {self.library_name}. "
+                     "Please update the CMakeLists.txt file according to the Beman Standard. "
+                     "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeproject_name for more information.")
+            return False
+
+        return True
+
+    def fix(self):
+        self.log(
+            "Please update the CMakeLists.txt file so that the CMake project name is identical to the Beman library name. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeproject_name for more information."
+        )
+        return True
 
 
 # TODO cmake.passive_projects
@@ -96,7 +134,7 @@ class CMakeLibraryNameCheck(CMakeBaseCheck):
 
     def fix(self):
         self.log(
-            "Please update the CMakeLists.txt file so that the CMake library target's name is identical to the library name. "
+            "Please update the CMakeLists.txt file so that the CMake library target's name is identical to the Beman library name. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information."
         )
         return True

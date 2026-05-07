@@ -1,2 +1,12 @@
+# missing 'project' from next line
+#[===[
+project(
+    beman.exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 2.4.0
+)
+]===]
+
 # missing add_library from next line
 # add_library(beman.exemplar INTERFACE)
