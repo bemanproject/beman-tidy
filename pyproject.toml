@@ -8,7 +8,7 @@ authors = [{ name = "Darius Neațu", email = "neatudarius@gmail.com" }]
 maintainers = [{ name = "Rishyak", email = "hello@rishyak.com" }]
 dependencies = [
     "cmake-parser>=0.9.2",
-    "gitpython==3.1.47",
+    "gitpython==3.1.50",
     "pyyaml==6.0.2",
 ]
 keywords = [
