@@ -53,8 +53,9 @@ class CMakeBaseCheck(FileBaseCheck):
 
         for item in ast:
             if item.identifier == "add_library":
-                cmake_library_name = item.args[0].value
-                break
+                if item.args:
+                    cmake_library_name = item.args[0].value
+                    break
 
         return cmake_library_name
 
@@ -63,8 +64,9 @@ class CMakeBaseCheck(FileBaseCheck):
 
         for item in ast:
             if item.identifier == "project":
-                cmake_project_name = item.args[0].value
-                break
+                if item.args:
+                    cmake_project_name = item.args[0].value
+                    break
 
         return cmake_project_name
 
@@ -86,12 +88,13 @@ class CMakeProjectNameCheck(CMakeBaseCheck):
 
         if cmake_project_name is None:
             self.log("CMake project name not found. "
+                     f"Expected project name: '{self.library_name}'"
                      "Please update the CMakeLists.txt file according to the Beman Standard. "
                      "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeproject_name for more information.")
             return False
 
         if cmake_project_name != self.library_name:
-            self.log(f"CMake project name: {cmake_project_name} does not match Beman library name: {self.library_name}. "
+            self.log(f"Invalid CMake project name - got: '{cmake_project_name}', expected: '{self.library_name}'. "
                      "Please update the CMakeLists.txt file according to the Beman Standard. "
                      "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeproject_name for more information.")
             return False
@@ -100,10 +103,10 @@ class CMakeProjectNameCheck(CMakeBaseCheck):
 
     def fix(self):
         self.log(
-            "Please update the CMakeLists.txt file so that the CMake project name is identical to the Beman library name. "
+            "Please update the CMakeLists.txt file so that the CMake project name is identical to the Beman project name. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeproject_name for more information."
         )
-        return True
+        return False
 
 
 # TODO cmake.passive_projects
@@ -117,15 +120,19 @@ class CMakeLibraryNameCheck(CMakeBaseCheck):
     def check(self):
         ast = self.get_cmake_parse_raw()
         cmake_library_name = self.get_cmake_library_name(ast)
+        cmake_library_name2 = self.get_cmake_library_name(ast)
+
+        self.log(f"{cmake_library_name} -> {cmake_library_name2}")
 
         if cmake_library_name is None:
             self.log("CMake library target name not found. "
+                     f"Expected library target name: '{self.library_name}'"
                      "Please update the CMakeLists.txt file according to the Beman Standard. "
                      "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information.")
             return False
 
         if cmake_library_name != self.library_name:
-            self.log(f"CMake library target name: {cmake_library_name} does not match library name: {self.library_name}. "
+            self.log(f"Invalid CMake library target name - got: '{cmake_library_name}', expected: '{self.library_name}'. "
                      "Please update the CMakeLists.txt file according to the Beman Standard. "
                      "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information.")
             return False
@@ -137,7 +144,7 @@ class CMakeLibraryNameCheck(CMakeBaseCheck):
             "Please update the CMakeLists.txt file so that the CMake library target's name is identical to the Beman library name. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information."
         )
-        return True
+        return False
 
 
 # TODO cmake.library_alias
