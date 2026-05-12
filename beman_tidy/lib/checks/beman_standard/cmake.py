@@ -88,7 +88,7 @@ class CMakeProjectNameCheck(CMakeBaseCheck):
 
         if cmake_project_name is None:
             self.log("CMake project name not found. "
-                     f"Expected project name: '{self.library_name}'"
+                     f"Expected project name: '{self.library_name}'. "
                      "Please update the CMakeLists.txt file according to the Beman Standard. "
                      "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeproject_name for more information.")
             return False
@@ -120,13 +120,10 @@ class CMakeLibraryNameCheck(CMakeBaseCheck):
     def check(self):
         ast = self.get_cmake_parse_raw()
         cmake_library_name = self.get_cmake_library_name(ast)
-        cmake_library_name2 = self.get_cmake_library_name(ast)
-
-        self.log(f"{cmake_library_name} -> {cmake_library_name2}")
 
         if cmake_library_name is None:
             self.log("CMake library target name not found. "
-                     f"Expected library target name: '{self.library_name}'"
+                     f"Expected library target name: '{self.library_name}'. "
                      "Please update the CMakeLists.txt file according to the Beman Standard. "
                      "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_name for more information.")
             return False
