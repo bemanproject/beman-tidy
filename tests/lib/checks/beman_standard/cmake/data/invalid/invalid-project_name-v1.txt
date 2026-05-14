@@ -1,0 +1,9 @@
+# missing 'project' from next line
+#[===[
+project(
+    beman.exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 2.4.0
+)
+]===]

@@ -1,0 +1,7 @@
+# wrong project name: beman_exemplar
+project(
+    beman_exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 2.4.0
+)
