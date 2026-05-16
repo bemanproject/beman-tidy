@@ -14,8 +14,15 @@ on:
 
 jobs:
   run_on_exemplar:
-    name: Run on beman.exemplar
-    runs-on: ubuntu-latest
+    name: Run on beman.exemplar (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -37,9 +44,9 @@ jobs:
           cd exemplar_repo
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          ./stamp.sh project_name="cookiecutter_test" description="Test project" --no-input
+          bash ./stamp.sh project_name="cookiecutter_test" description="Test project" --no-input
           git remote remove origin
-          sed -i '/disabled_rules:/a \  - release.godbolt_trunk_version\n  - readme.implements' .beman-tidy.yaml
+          python -c "import sys; lines = open('.beman-tidy.yaml').readlines(); f = open('.beman-tidy.yaml', 'w'); [f.write(l + '  - release.godbolt_trunk_version\n  - readme.implements\n' if 'disabled_rules:' in l else l) for l in lines]; f.close()"
           cd ..
           mv exemplar_repo cookiecutter_test
           cd cookiecutter_test
