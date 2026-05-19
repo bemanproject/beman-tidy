@@ -144,7 +144,49 @@ class CMakeLibraryNameCheck(CMakeBaseCheck):
         return False
 
 
-# TODO cmake.library_alias
+@register_beman_standard_check("cmake.library_alias")
+class CMakeLibraryAliasCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def check(self):
+        ast = self.get_cmake_parse_raw()
+
+        expected_library_alias = "beman::" + self.short_name
+
+        for item in ast:
+            if item.identifier == "add_library":
+                args = [arg.value for arg in item.args]
+
+                # Check that there are 3 args [library_alias, 'ALIAS', library_name]
+                if len(args) != 3:
+                    continue
+
+                # Check that the 2nd arg is 'ALIAS'
+                if args[1] != "ALIAS":
+                    continue
+
+                # Check that 1st argument stripped of the prefix matches the 2nd arg stripped
+                if list(filter(None, args[0].split(":"))) != args[2].split("."):
+                    # self.log(list(filter(None, args[0].split(":"))))
+                    # self.log(args[2].split("."))
+                    # self.log(args[0] + " " + args[2])
+                    continue
+
+                if args[0] == expected_library_alias:
+                    return True
+
+        self.log("Missing or invalid CMake library alias target. "
+                 "Please update the CMakeLists.txt file according to the Beman Standard. "
+                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_alias for more information.")
+        return False
+
+    def fix(self):
+        self.log(
+            "Please update the CMakeLists.txt file so that it creates an alias of the library target named 'beman::<short_name>'. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_alias for more information."
+        )
+        return False
 
 
 # TODO cmake.target_names

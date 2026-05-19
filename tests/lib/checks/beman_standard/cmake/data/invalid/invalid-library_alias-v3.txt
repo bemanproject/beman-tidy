@@ -1,0 +1,2 @@
+# library alias and library name mismatch
+add_library(beman::exemplar ALIAS beman.exemplar67)

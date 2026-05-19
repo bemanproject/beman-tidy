@@ -12,6 +12,7 @@ from tests.utils.path_runners import (
 from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeProjectNameCheck,
     CMakeLibraryNameCheck,
+    CMakeLibraryAliasCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -110,6 +111,55 @@ def test__cmake_library_name__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_library_name__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_library_alias__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.library_alias check.
+    """
+    valid_cmake_paths = [
+        # CMakeLists.txt from beman.exemplar
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+	]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeLibraryAliasCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_library_alias__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.library_alias check.
+    """
+    invalid_cmake_paths = [
+        # CMakeLists.txt missing library alias
+        Path(f"{invalid_prefix}/invalid-library_alias-v1.txt"),
+        # CMakeLists.txt with invalid library alias
+        Path(f"{invalid_prefix}/invalid-library_alias-v2.txt"),
+        # CMakeLists.txt with another invalid library alias
+        Path(f"{invalid_prefix}/invalid-library_alias-v3.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeLibraryAliasCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_library_alias__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.

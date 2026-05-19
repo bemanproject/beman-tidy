@@ -1,0 +1,2 @@
+# wrong library alias: beman::exemplar2
+add_library(beman::exemplar2 ALIAS beman.exemplar)
