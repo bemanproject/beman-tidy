@@ -166,17 +166,15 @@ class CMakeLibraryAliasCheck(CMakeBaseCheck):
                 if args[1] != "ALIAS":
                     continue
 
-                # Check that 1st argument stripped of the prefix matches the 2nd arg stripped
+                # Check that the 1st argument stripped of the prefix matches the 3rd arg stripped
                 if list(filter(None, args[0].split(":"))) != args[2].split("."):
-                    # self.log(list(filter(None, args[0].split(":"))))
-                    # self.log(args[2].split("."))
-                    # self.log(args[0] + " " + args[2])
                     continue
 
                 if args[0] == expected_library_alias:
                     return True
 
         self.log("Missing or invalid CMake library alias target. "
+                 "Expected alias target: '{expected_library_alias}'. "
                  "Please update the CMakeLists.txt file according to the Beman Standard. "
                  "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_alias for more information.")
         return False
