@@ -174,7 +174,7 @@ class CMakeLibraryAliasCheck(CMakeBaseCheck):
                     return True
 
         self.log("Missing or invalid CMake library alias target. "
-                 "Expected alias target: '{expected_library_alias}'. "
+                 f"Expected alias target: '{expected_library_alias}'. "
                  "Please update the CMakeLists.txt file according to the Beman Standard. "
                  "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakelibrary_alias for more information.")
         return False
