@@ -2,8 +2,11 @@
 
 <!-- SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception -->
 
-<!-- markdownlint-disable-next-line line-length -->
-![Continuous Integration Tests](https://github.com/bemanproject/exemplar/actions/workflows/ci_tests.yml/badge.svg) ![Lint Check (pre-commit)](https://github.com/bemanproject/exemplar/actions/workflows/pre-commit.yml/badge.svg) ![Standard Target](https://github.com/bemanproject/beman/blob/main/images/badges/cpp26.svg)
+<!-- markdownlint-disable line-length -->
+[![Continuous Integration Tests](https://github.com/bemanproject/exemplar/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/bemanproject/exemplar/actions/workflows/ci_tests.yml)
+[![Lint Check (pre-commit)](https://github.com/bemanproject/exemplar/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/bemanproject/exemplar/actions/workflows/pre-commit.yml)
+![Standard Target](https://github.com/bemanproject/beman/blob/main/images/badges/cpp26.svg)
+<!-- markdownlint-restore -->
 
 <!-- markdownlint-disable-next-line line-length -->
 `beman.exemplar` is a minimal C++ library conforming to [The Beman Standard](https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md). This can be used as a template for those intending to write Beman libraries. It may also find use as a minimal and modern  C++ project structure.
