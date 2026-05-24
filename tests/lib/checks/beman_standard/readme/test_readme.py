@@ -140,6 +140,8 @@ def test__readme_badges__invalid(repo_info, beman_standard_check_config):
         Path(f"{invalid_prefix}/invalid-badge-v7.md"),
         # Badges: 1/2 badges are missing (library status)
         Path(f"{invalid_prefix}/invalid-badge-v8.md"),
+        # Badges: library status badge links to wrong maturity model anchor
+        Path(f"{invalid_prefix}/invalid-badge-v9.md"),
     ]
 
     run_check_for_each_path(
