@@ -48,19 +48,22 @@ beman-tidy --help
 
 ```shell
 $ beman-tidy --help
-usage: beman-tidy [-h] [--fix-inplace | --no-fix-inplace] [--verbose | --no-verbose] [--require-all | --no-require-all] [--checks CHECKS] [--config CONFIG] repo_path
+usage: beman-tidy [-h] [--version] [--fix-inplace | --no-fix-inplace] [--verbose | --no-verbose] [--require-all | --no-require-all] [--list-checks] [--checks CHECKS] [--config CONFIG]
+                  repo_path
 
 positional arguments:
   repo_path             path to the repository to check
 
 options:
   -h, --help            show this help message and exit
+  --version             show program's version number and exit
   --fix-inplace, --no-fix-inplace
-                        Try to automatically fix found issues
+                        try to automatically fix found issues
   --verbose, --no-verbose
                         print verbose output for each check
   --require-all, --no-require-all
-                        all checks are required regardless of the check type (e.g., Recommendation becomes Requirement)
+                        all checks are required regardless of their type (e.g., all RECOMMENDATIONs become REQUIREMENTs)
+  --list-checks         list all implemented checks
   --checks CHECKS       array of checks to run
   --config CONFIG       path to the configuration file (default: .beman-tidy.yaml in repo root)
 ```
