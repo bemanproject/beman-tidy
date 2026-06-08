@@ -37,7 +37,7 @@ class ListChecksAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         beman_standard_check_config = load_beman_standard_config()
         if not beman_standard_check_config or len(beman_standard_check_config) == 0:
-            parser.exit(status=1, message="Failed to download the beman standard. STOP.\n")
+            parser.exit(status=1, message="Failed to load the Beman Standard configuration.\n")
 
         list_checks(beman_standard_check_config)
         parser.exit()
@@ -54,7 +54,11 @@ def parse_args():
         action="version",
         version=f"beman-tidy {_pkg_version('beman-tidy')}",
     )
-    parser.add_argument("repo_path", help="path to the repository to check", type=str)
+    parser.add_argument(
+        "repo_path",
+        help="path to the repository to check; required unless --list-checks is used",
+        type=str
+    )
     parser.add_argument(
         "--fix-inplace",
         help="try to automatically fix found issues",
