@@ -1,0 +1,2 @@
+# wrong 'add_executable' target name
+add_executable(beman.exemplary.examples.basic)

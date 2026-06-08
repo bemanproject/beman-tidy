@@ -1,0 +1,3 @@
+# multiple wrong target names
+add_library(beman.exemplar2)
+add_executable(beman.exemplary.tests.67)

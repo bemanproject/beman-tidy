@@ -77,6 +77,8 @@ class BaseCheck(ABC):
         assert self.repo_path is not None
         self.library_name = f"beman.{self.short_name}"
         assert self.library_name is not None
+        self.library_alias = f"beman::{self.short_name}"
+        assert self.library_alias is not None
 
         # set beman library maturity model
         beman_library_maturity_model = beman_standard_check_config[
