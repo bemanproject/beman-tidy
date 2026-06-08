@@ -51,7 +51,7 @@ class ReleaseGodboltTrunkVersionCheck(ReadmeBaseCheck):
         Check that the Godbolt badge is present in the root README.md file.
         If present, this assumes that the trunk version is available on Godbolt.
 
-        e.g. [![Compiler Explorer Example](https://img.shields.io/badge/Try%20it%20on%20Compiler%20Explorer-grey?logo=compilerexplorer&logoColor=67c52a)](https://godbolt.org/z/Gc6Y9j6zf)
+        E.g. [![Compiler Explorer Example](https://img.shields.io/badge/Try%20it%20on%20Compiler%20Explorer-grey?logo=compilerexplorer&logoColor=67c52a)](https://godbolt.org/z/Gc6Y9j6zf)
         Note: Only the suffix of the https://godbolt.org/z/* has dynamic content.
         """
 

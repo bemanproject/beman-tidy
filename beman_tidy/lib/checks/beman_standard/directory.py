@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from abc import ABC
+
 from ..base.directory_base_check import DirectoryBaseCheck
 from ..system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.string import normalize_path_for_display
@@ -11,7 +13,7 @@ from ...utils.config import is_ignored
 # All checks in this file extend the DirectoryBaseCheck class.
 #
 # Note: DirectoryBaseCheck is not a registered check!
-class BemanTreeDirectoryCheck(DirectoryBaseCheck):
+class BemanTreeDirectoryCheck(DirectoryBaseCheck, ABC):
     """
     Beman tree: ${prefix_path}/beman/${short_name}.
     Available via member: self.path
@@ -74,7 +76,7 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
 
     def pre_check(self):
         # Need to override this, because directory.sources is conditional
-        # (a repo without any source files location is still valid - header only libraries)
+        # (a repo without any source files location is still valid - header-only libraries)
         return True
 
     def check(self):
@@ -112,27 +114,29 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
 @register_beman_standard_check("directory.tests")
 class DirectoryTestsCheck(BemanTreeDirectoryCheck):
     """
-    Check if all test files reside within tests/beman/<short_name> directory.
-    Examples:
-    tests
-    └── beman
-        └── exemplar
-            └── identity.test.cpp
+    Check if all test files reside within the tests /beman/<short_name> directory.
 
-    tests
-    └── beman
-        └── optional
-            ├── CMakeLists.txt
-            ├── detail
-            |   └── iterator.test.cpp
-            ├── optional.test.cpp
-            ├── optional_constexpr.test.cpp
-            ├── optional_monadic.test.cpp
-            ├── optional_range_support.test.cpp
-            ├── test_types.cpp
-            ├── test_types.hpp
-            ├── test_utilities.cpp
-            └── test_utilities.hpp
+    Examples::
+
+        tests
+        └── beman
+            └── exemplar
+                └── identity.test.cpp
+
+        tests
+        └── beman
+            └── optional
+                ├── CMakeLists.txt
+                ├── detail
+                │    └── iterator.test.cpp
+                ├── optional.test.cpp
+                ├── optional_constexpr.test.cpp
+                ├── optional_monadic.test.cpp
+                ├── optional_range_support.test.cpp
+                ├── test_types.cpp
+                ├── test_types.hpp
+                ├── test_utilities.cpp
+                └── test_utilities.hpp
     """
 
     def __init__(self, repo_info, beman_standard_check_config):
@@ -286,7 +290,7 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
 @register_beman_standard_check("directory.papers")
 class DirectoryPapersCheck(DirectoryBaseCheck):
     """
-    Check if the all paper related files reside within papers/ directory.
+    Check if all paper-related files reside within papers/ directory.
     """
 
     def __init__(self, repo_info, beman_standard_check_config):
@@ -299,7 +303,7 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
 
     def check(self):
         """
-        If present, all paper related files (e.g., WIP LaTeX/Markdown projects for ISO Standardization), must reside within the top-level papers/ directory.
+        If present, all paper-related files (e.g., WIP LaTeX/Markdown projects for ISO Standardization) must reside within the top-level papers/ directory.
         Tree Example:
         papers/
         └── P2988

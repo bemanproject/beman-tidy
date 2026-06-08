@@ -34,7 +34,7 @@ beman-tidy --help
 ## Requirements
 
 - Python 3.12+
-- `uv` (Python package and project manager - [Installation](https://docs.astral.sh/uv/getting-started/installation/))
+- `uv` (Python package and project manager – [Installation](https://docs.astral.sh/uv/getting-started/installation/))
 
 ## Compatibility
 
@@ -237,11 +237,11 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
 
 ## Integrating beman-tidy into Your Library
 
-Please refer to the [How to Integrate beman-tidy pre-commit Hook in Your Library](./docs/pre-commit.md) for more details.
+Please refer to the [How to Integrate beman-tidy pre-commit Hook in Your Library](docs/pre-commit.md) for more details.
 
 ## Contributing on beman-tidy
 
-Please refer to the [Beman Tidy Development Guide](./docs/dev-guide.md) for more details.
+Please refer to the [Beman Tidy Development Guide](docs/dev-guide.md) for more details.
 
 ## License
 

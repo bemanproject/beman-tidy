@@ -62,11 +62,11 @@ def test__readme_title__invalid(repo_info, beman_standard_check_config):
     invalid_readme_paths = [
         # Title: Wrong Title Format
         Path(f"{invalid_prefix}/invalid.md"),
-        # Title: Missing . in beman.exemplar
+        # Title: Missing dot(.) in beman.exemplar
         Path(f"{invalid_prefix}/invalid-title-v1.md"),
         # Title: Missing : after beman.exemplar
         Path(f"{invalid_prefix}/invalid-title-v2.md"),
-        # Title: Wromg name beman.exemaplar vs beman.optional
+        # Title: Wrong name beman.exemaplar vs beman.optional
         Path(f"{invalid_prefix}/invalid-title-v3.md"),
     ]
 
@@ -96,10 +96,10 @@ def test__readme_title__fix_inplace(repo_info, beman_standard_check_config):
 
 def test__readme_badges__valid(repo_info, beman_standard_check_config):
     """
-    Test that a valid README.md badges passes the check.
+    Test that a valid README.md with badges passes the check.
     """
     valid_readme_paths = [
-        # Badges: under development status and cpp26 target
+        # Badges: underdevelopment status and cpp26 target
         Path(f"{valid_prefix}/README-v1.md"),
         # Badges: production ready (api may undergo changes) status and cpp26 target
         Path(f"{valid_prefix}/README-v2.md"),
@@ -120,7 +120,7 @@ def test__readme_badges__valid(repo_info, beman_standard_check_config):
 
 def test__readme_badges__invalid(repo_info, beman_standard_check_config):
     """
-    Test that an invalid README.md badges fails the check.
+    Test that an invalid README.md with badges fails the check.
     """
     invalid_readme_paths = [
         Path(f"{invalid_prefix}/invalid.md"),
@@ -132,9 +132,9 @@ def test__readme_badges__invalid(repo_info, beman_standard_check_config):
         Path(f"{invalid_prefix}/invalid-badge-v3.md"),
         # Badges: other description in badge for standard target
         Path(f"{invalid_prefix}/invalid-badge-v4.md"),
-        # Badges: non-sense badge for library status (broken badge URL)
+        # Badges: nonsense badge for library status (broken badge URL)
         Path(f"{invalid_prefix}/invalid-badge-v5.md"),
-        # Badges: non-sense badge for standard target (broken badge URL)
+        # Badges: nonsense badge for standard target (broken badge URL)
         Path(f"{invalid_prefix}/invalid-badge-v6.md"),
         # Badges: 1/2 badges are missing (standard target)
         Path(f"{invalid_prefix}/invalid-badge-v7.md"),
@@ -156,7 +156,7 @@ def test__readme_badges__invalid(repo_info, beman_standard_check_config):
 @pytest.mark.skip(reason="not implemented")
 def test__readme_badges__fix_inplace(repo_info, beman_standard_check_config):
     """
-    Test that the fix method corrects an invalid README.md badges.
+    Test that the fix method corrects an invalid README.md with badges.
     Note: Skipping this test as it is not implemented.
     """
     pass

@@ -9,7 +9,7 @@ def run_check_for_each_repo_info(
     expected_result, check_class, repo_infos, beman_standard_check_config
 ):
     """
-    Run repo-info-based check (check_class) for each given repo_info: evaluate check_class(repo_infos[i]).
+    Run a repo-info-based check (check_class) for each given repo_info: evaluate check_class(repo_infos[i]).
 
     This is useful for checks that work with repository metadata rather than file paths.
 
@@ -77,7 +77,7 @@ def run_fix_inplace_for_each_file_path(
     invalid_file_paths, check_class, repo_info, beman_standard_check_config
 ):
     """
-    Run multiple testcases for a file-based check, for each file starting with a file that is invalid,
+    Run multiple testcases for a file-based check, for each file starting with a file that is invalid
     and then fixing it.
 
     Example:

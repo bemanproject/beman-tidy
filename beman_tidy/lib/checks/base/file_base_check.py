@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from abc import abstractmethod
+from collections.abc import Callable, Iterable
 import re
 from pathlib import Path
 
@@ -19,7 +20,7 @@ class FileBaseCheck(BaseCheck):
         super().__init__(repo_info, beman_standard_check_config, name=name)
         self.relative_path = Path(relative_path)
 
-        # set path - e.g. "README.md"
+        # set a path - e.g. "README.md"
         self.path = self.repo_path / relative_path
 
     def pre_check(self):
@@ -57,18 +58,18 @@ class FileBaseCheck(BaseCheck):
     @abstractmethod
     def check(self):
         """
-        Override this method, make it abstract because this is style an abstract class.
+        Override method. Make it abstract because this is an abstract class.
         """
         pass
 
     @abstractmethod
     def fix(self):
         """
-        Override this method, make it abstract because this is style an abstract class.
+        Override method. Make it abstract because this is an abstract class.
         """
         pass
 
-    def read(self):
+    def read(self) -> str:
         """
         Read the file content.
         """
@@ -78,7 +79,7 @@ class FileBaseCheck(BaseCheck):
         except Exception:
             return ""
 
-    def read_lines(self):
+    def read_lines(self) -> list[str]:
         """
         Read the file content as lines.
         """
@@ -88,7 +89,7 @@ class FileBaseCheck(BaseCheck):
         except Exception:
             return []
 
-    def read_lines_strip(self):
+    def read_lines_strip(self) -> list[str]:
         """
         Read the file content as lines and strip them.
         """
@@ -125,14 +126,16 @@ class FileBaseCheck(BaseCheck):
         """
         return len(self.read()) == 0
 
-    def has_content(self, content_to_match):
+    def has_content(self, content_to_match) -> bool:
         """
         Check if the file contains the given content (literal string match).
         """
         readme_content = self.read()
         if not readme_content or len(readme_content) == 0:
             return False
-        return re.search(re.escape(content_to_match), readme_content) is not None
+
+        escaped_content_to_match: str = re.escape(str(content_to_match))
+        return re.search(escaped_content_to_match, readme_content) is not None
 
 
 class BatchFileBaseCheck(BaseCheck):
@@ -143,8 +146,8 @@ class BatchFileBaseCheck(BaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config)
         self.beman_standard_check_config = beman_standard_check_config
-        self.file_check_class = None
-        self.file_path_generator = None
+        self.file_check_class: type[FileBaseCheck] | None = None
+        self.file_path_generator: Callable[..., Iterable[Path | str]] | None = None
 
     def _validate(self):
         """
@@ -163,6 +166,7 @@ class BatchFileBaseCheck(BaseCheck):
             None, if it should be skipped, or
             False, if it failed pre_check.
         """
+        assert self.file_check_class is not None
         file_check = self.file_check_class(self.repo_info, self.beman_standard_check_config, relative_path)
         file_check.name = self.name
 
@@ -183,6 +187,7 @@ class BatchFileBaseCheck(BaseCheck):
         @return: True if all operations were successful.
         """
         self._validate()
+        assert self.file_path_generator is not None
 
         ignores = get_ignores(self.repo_info)
 
@@ -214,5 +219,5 @@ class BatchFileBaseCheck(BaseCheck):
         Runs the fix on all source files.
         Returns True if all files are fixed (or were already correct).
         """
-        # If check passes, it's good. If not, try fix.
+        # If the check passes, it's good. If not, try the fix.
         return self._run_batch_operation(lambda fc: fc.check() or fc.fix())

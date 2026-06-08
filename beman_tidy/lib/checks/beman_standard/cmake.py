@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from abc import ABC
+from collections.abc import Iterable
+
 import cmake_parser
+from cmake_parser.ast import AstNode, Command
 
 from ..system.registry import register_beman_standard_check
 from ..base.file_base_check import FileBaseCheck
@@ -10,9 +14,7 @@ from ..base.file_base_check import FileBaseCheck
 # All checks in this file extend the CMakeBaseCheck class.
 #
 # Note: CMakeBaseCheck is not a registered check!
-
-
-class CMakeBaseCheck(FileBaseCheck):
+class CMakeBaseCheck(FileBaseCheck, ABC):
     """
     Represents a base class for checks related to CMake files.
 
@@ -42,16 +44,20 @@ class CMakeBaseCheck(FileBaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config, "CMakeLists.txt")
 
-    def get_cmake_parse_raw(self, skip_comments=True):
+    def get_cmake_parse_raw(self, skip_comments=True) -> Iterable[AstNode]:
         return cmake_parser.parser.parse_raw(self.read(), skip_comments=skip_comments)
 
-    def get_cmake_parse_tree(self, skip_comments=True):
+    def get_cmake_parse_tree(self, skip_comments=True) -> Iterable[AstNode]:
         return cmake_parser.parser.parse_tree(self.read(), skip_comments=skip_comments)
 
-    def get_cmake_library_name(self, ast):
+    @staticmethod
+    def get_cmake_library_name(ast):
         cmake_library_name = None
 
         for item in ast:
+            if not isinstance(item, Command):
+                continue
+
             if item.identifier == "add_library":
                 if item.args:
                     cmake_library_name = item.args[0].value
@@ -59,10 +65,14 @@ class CMakeBaseCheck(FileBaseCheck):
 
         return cmake_library_name
 
-    def get_cmake_project_name(self, ast):
+    @staticmethod
+    def get_cmake_project_name(ast):
         cmake_project_name = None
 
         for item in ast:
+            if not isinstance(item, Command):
+                continue
+
             if item.identifier == "project":
                 if item.args:
                     cmake_project_name = item.args[0].value
@@ -155,6 +165,9 @@ class CMakeLibraryAliasCheck(CMakeBaseCheck):
         expected_library_alias = "beman::" + self.short_name
 
         for item in ast:
+            if not isinstance(item, Command):
+                continue
+
             if item.identifier == "add_library":
                 args = [arg.value for arg in item.args]
 

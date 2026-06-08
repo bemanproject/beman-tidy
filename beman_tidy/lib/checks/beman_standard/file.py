@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from typing import Optional
+
 from ..base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from ..system.registry import register_beman_standard_check
 from ...utils.file import get_cpp_files, get_spdx_info, get_commentable_files, get_non_test_cpp_files, get_test_files
@@ -105,7 +107,7 @@ class FileLicenseIdCheck(BatchFileBaseCheck):
     """
     [file.license_id]
     Requirement: The SPDX license identifier must be added within the first 25 lines
-    in all files which can contain a comment (C++, CMake, Python, shell, YAML, etc.).
+    in all files that can contain a comment (C++, CMake, Python, shell, YAML, etc.).
     """
 
     SPDX_MAX_LINE = 25
@@ -183,7 +185,7 @@ class FileCopyrightCheck(BatchFileBaseCheck):
 
     class FileCopyrightCheckImpl(FileBaseCheck):
         """
-        Implementation the "file.copyright" check for a single file.
+        Implementation of the "file.copyright" check for a single file.
         """
         def __init__(self, repo_info, beman_standard_check_config, relative_path):
             super().__init__(repo_info, beman_standard_check_config, relative_path, name="file.copyright")
@@ -243,16 +245,19 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             self.write("".join(new_lines))
             return True
 
-        def _has_valid_spdx(self, spdx_index, comment_type):
+        @staticmethod
+        def _has_valid_spdx(spdx_index, comment_type):
             return spdx_index != -1 and comment_type is not None
 
-        def _is_single_line_block_comment(self, lines, spdx_index, comment_info):
+        @staticmethod
+        def _is_single_line_block_comment(lines, spdx_index, comment_info):
             if comment_info == CommentType.BLOCK:
                 if any(end in lines[spdx_index] for end in BLOCK_ENDS):
                     return True
             return False
 
-        def _find_next_comment_start(self, lines, start_index):
+        @staticmethod
+        def _find_next_comment_start(lines, start_index):
             for i in range(start_index, len(lines)):
                 line = lines[i].strip()
                 if not line:
@@ -366,7 +371,8 @@ class FileCopyrightCheck(BatchFileBaseCheck):
 
             return line
 
-        def _reconstruct_block_end_line(self, pre, sep, post):
+        @staticmethod
+        def _reconstruct_block_end_line(pre, sep, post) -> Optional[str]:
             new_line_content = ""
 
             block_start = None
@@ -394,7 +400,8 @@ class FileCopyrightCheck(BatchFileBaseCheck):
             new_line_content += sep + post
             return new_line_content
 
-        def _contains_text(self, line, texts):
+        @staticmethod
+        def _contains_text(line, texts):
             lower_line = line.lower()
             for text in texts:
                 if text.lower() in lower_line:

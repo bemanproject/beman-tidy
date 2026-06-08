@@ -18,7 +18,7 @@ def pytest_configure(config):
 @pytest.fixture(autouse=True)
 def _setup_test_environment():
     """
-    Setup test environment variables and paths.
+    Set up test environment variables and paths.
     This runs automatically for all tests.
     """
     # Get the root directory of the project
