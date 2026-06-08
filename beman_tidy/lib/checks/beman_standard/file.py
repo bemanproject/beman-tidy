@@ -382,20 +382,20 @@ class FileCopyrightCheck(BatchFileBaseCheck):
                     break
 
             if block_start:
-                 start_index = pre.find(block_start)
+                start_index = pre.find(block_start)
 
-                 # Check if we can remove the line entirely
-                 if not pre[:start_index].strip() and not post.strip():
-                     return None
+                # Check if we can remove the line entirely
+                if not pre[:start_index].strip() and not post.strip():
+                    return None
 
-                 new_line_content += pre[:start_index + len(block_start)] + " "
+                new_line_content += pre[:start_index + len(block_start)] + " "
             else:
-                 stripped_pre = pre.strip()
-                 if stripped_pre.startswith("*"):
-                     indent = pre[:pre.find("*")+1]
-                     new_line_content += indent + " "
-                 else:
-                     new_line_content += pre[:len(pre)-len(pre.lstrip())]
+                stripped_pre = pre.strip()
+                if stripped_pre.startswith("*"):
+                    indent = pre[:pre.find("*")+1]
+                    new_line_content += indent + " "
+                else:
+                    new_line_content += pre[:len(pre)-len(pre.lstrip())]
 
             new_line_content += sep + post
             return new_line_content

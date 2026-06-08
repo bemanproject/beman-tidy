@@ -114,7 +114,7 @@ class DirectorySourcesCheck(BemanTreeDirectoryCheck):
 @register_beman_standard_check("directory.tests")
 class DirectoryTestsCheck(BemanTreeDirectoryCheck):
     """
-    Check if all test files reside within the tests /beman/<short_name> directory.
+    Check if all test files reside within the tests/beman/<short_name> directory.
 
     Examples::
 
@@ -250,7 +250,7 @@ class DirectoryDocsCheck(DirectoryBaseCheck):
             exclude_dirs.append("docs")
         if self.short_name == "exemplar":
             exclude_dirs.append("cookiecutter")
-        
+
         tolerated_files = _get_tolerated_root_files()
 
         # Find all MD files in the repository.

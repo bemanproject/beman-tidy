@@ -99,7 +99,7 @@ def test__readme_badges__valid(repo_info, beman_standard_check_config):
     Test that a valid README.md with badges passes the check.
     """
     valid_readme_paths = [
-        # Badges: underdevelopment status and cpp26 target
+        # Badges: under development status and cpp26 target
         Path(f"{valid_prefix}/README-v1.md"),
         # Badges: production ready (api may undergo changes) status and cpp26 target
         Path(f"{valid_prefix}/README-v2.md"),

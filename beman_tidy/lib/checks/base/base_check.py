@@ -177,8 +177,8 @@ class BaseCheck(ABC):
     def log(self, message, enabled=True, log_level=None):
         """
         Logs a message with the check's log level.
-        E.g. [WARN][repository.name]: The name "${name}" should be snake_case.'
-        E.g. [error][toplevel.cmake]: Missing top level 'CMakeLists.txt'
+        E.g., [warning][file.names]: File name "${name}" does not follow the snake_case naming convention.
+        E.g., [error][toplevel.cmake]: The file 'CMakeLists.txt' does not exist.
         """
 
         if self.log_enabled and enabled:
