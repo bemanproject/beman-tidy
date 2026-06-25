@@ -125,7 +125,7 @@ class ReadmeImplementsCheck(ReadmeBaseCheck):
         # **Implements**: [Give *std::optional* Range Support (P3168R2)](https://wg21.link/p3168r2) and [`std::optional<T&>` (p2988r5)](https://wg21.link/P2988R5)
         # **Implements**: [.... (P0000)](https://wg21.link/p0000), [.... (P1111R1)](https://wg21.link/p1111r1), and [.... (P2222)](https://wg21.link/p2222),
 
-        regex = r"^\*\*Implements\*\*:\s+.*\b[pP]\d{4}(?:[rR]\d+)?\b.*wg21\.link/[pP]\d{4}(?:[rR]\d+)?\b"
+        regex = r"^\*\*Implements\*\*:\s+.*\b[pP]\d{4}(?:[rR]\d+)?\b.*(?:wg21\.link|isocpp\.org/files/papers)/[pP]\d{4}(?:[rR]\d+)?\b"
         # Count the number of lines that match the regex
         implement_lines = 0
         for line in lines:
