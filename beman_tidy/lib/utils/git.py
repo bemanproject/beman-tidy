@@ -135,7 +135,7 @@ def get_beman_standard_config_path():
     return Path(__file__).parent.parent.parent / ".beman-standard.yaml"
 
 
-def get_beman_recommendated_license_path():
+def get_beman_recommended_license_path():
     """
     Get the path to the Beman recommended license file.
     """
