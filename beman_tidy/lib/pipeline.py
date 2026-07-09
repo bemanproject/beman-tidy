@@ -301,8 +301,6 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         f"({total_passed}/{total_implemented} checks passed){disabled_total_coverage_suffix}.{no_color}"
     )
 
-    # else:
-    #     logging.info("Note: RECOMMENDATIONs are not included (--require-all NOT set).")
     total_cnt_failed = cnt_failed_checks["Requirement"] + (
         cnt_failed_checks["Recommendation"] if args.require_all else 0
     )
