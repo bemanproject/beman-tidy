@@ -84,6 +84,7 @@ def test__readme_title__fix_inplace(repo_info, beman_standard_check_config):
     Test that the fix method corrects an invalid README.md title.
     """
     invalid_readme_paths = [
+        Path(f"{invalid_prefix}/invalid.md"),
         Path(f"{invalid_prefix}/invalid-title-v1.md"),
         Path(f"{invalid_prefix}/invalid-title-v2.md"),
         Path(f"{invalid_prefix}/invalid-title-v3.md"),
