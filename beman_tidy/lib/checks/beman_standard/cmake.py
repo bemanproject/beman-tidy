@@ -211,6 +211,9 @@ class CMakeLibraryAliasCheck(CMakeBaseCheck):
         return False
 
 
+# Note: this check currently parses only the top-level CMakeLists.txt,
+# so it will not see targets defined in add_subdirectory() files.
+# TODO: extend check to recurse into subdirectories for full coverage
 @register_beman_standard_check("cmake.target_names")
 class CMakeTargetNamesCheck(CMakeBaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):

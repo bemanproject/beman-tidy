@@ -52,5 +52,6 @@ if(BEMAN_EXEMPLAR_BUILD_TESTS)
 endif()
 
 if(BEMAN_EXEMPLAR_BUILD_EXAMPLES)
+    add_executable(beman.exemplar.examples.basic)
     add_subdirectory(examples)
 endif()
