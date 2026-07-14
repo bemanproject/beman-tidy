@@ -34,7 +34,7 @@ beman-tidy --help
 ## Requirements
 
 - Python 3.12+
-- `uv` (Python package and project manager – [Installation](https://docs.astral.sh/uv/getting-started/installation/))
+- `uv` (Python package and project manager - [Installation](https://docs.astral.sh/uv/getting-started/installation/))
 
 ## Compatibility
 

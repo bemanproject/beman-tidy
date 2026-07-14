@@ -20,7 +20,7 @@
 Find an unimplemented check in the [beman_standard.md](https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md) file and check that is not already assigned in [Planning for beman-tidy: The Codebase Bemanification Tool](https://github.com/orgs/bemanproject/projects/8/views/1).
 
 
-Check this PR example: [beman-tidy: add check – readme.library_status](https://github.com/bemanproject/beman-tidy/pull/35).
+Check this PR example: [beman-tidy: add check - readme.library_status](https://github.com/bemanproject/beman-tidy/pull/35).
 
 <details>
 <summary>Step by step tutorial: add a new check</summary>
@@ -31,7 +31,7 @@ Check this PR example: [beman-tidy: add check – readme.library_status](https:/
     if not already implemented. Checks for TODOs in `load_beman_standard_config()`.
 * `[mandatory]` Add the check to the `beman_tidy/lib/checks/beman_standard/` directory.
   * `[mandatory]` e.g., `readme.*` checks will most likely go to a path similar to `beman_tidy/lib/checks/beman_standard/readme.py`.
-  * `[mandatory]` Use an appropriate base class – e.g., defaults like `FileBaseCheck` / `DirectoryBaseCheck` or create
+  * `[mandatory]` Use an appropriate base class - e.g., defaults like `FileBaseCheck` / `DirectoryBaseCheck` or create
     specializations for reusing code - e.g.,  `ReadmeBaseCheck(FileBaseCheck)` / `CmakeBaseCheck(FileBaseCheck)` /
     `CppBaseCheck(FileBaseCheck)` etc.
   * `[mandatory]` Register the new check via `@register_beman_standard_check` decorator - e.g.,
