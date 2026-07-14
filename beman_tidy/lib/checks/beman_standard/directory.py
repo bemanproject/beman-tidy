@@ -312,7 +312,7 @@ class DirectoryPapersCheck(DirectoryBaseCheck):
             └── abstract.bst
         """
         # Exclude directories that are not part of the papers/ directory.
-        exclude_dirs = ["src", "docs", "examples", ".github", "infra"]
+        exclude_dirs = ["src", "docs", "examples", ".github", "infra", "antora"]
         if self.path.exists():
             exclude_dirs.append("papers")
         if self.short_name == "exemplar":

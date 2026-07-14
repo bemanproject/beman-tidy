@@ -93,7 +93,9 @@ class LicenseCriteriaCheck(BaseCheck):
         # Cannot actually implement license.criteria, so skip it.
         # No need to run pre_check() and check() as well, as they are not implemented.
         self.log(
-            "beman-tidy cannot actually check license.criteria. Please ignore this message if license.approved has passed. "
-            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#licensecriteria for more information."
+            "Skipping license.criteria: beman-tidy cannot reliably automate this policy-level review. "
+            "Please manually verify that your project license and usage satisfy the license.criteria requirements; "
+            "note that license.approved only checks for an approved LICENSE text and does not prove full criteria compliance. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#licensecriteria for guidance."
         )
         return True
