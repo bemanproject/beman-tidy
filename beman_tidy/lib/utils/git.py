@@ -48,7 +48,7 @@ def parse_repo_name_from_remote_url(remote_url: str) -> str | None:
     return None
 
 
-def get_repo_info(path: str, config_path: str = None):
+def get_repo_info(path: str, config_path: str | None = None):
     """
     Get information about the repository at the given path.
     Returns data as a dictionary.
@@ -71,9 +71,9 @@ def get_repo_info(path: str, config_path: str = None):
         #       which would be more robust for forks with renamed repositories
         remote_url = None
         if "upstream" in repo.remotes:
-            remote_url = repo.remotes.upstream.url
+            remote_url = repo.remote("upstream").url
         elif "origin" in repo.remotes:
-            remote_url = repo.remotes.origin.url
+            remote_url = repo.remote("origin").url
 
         # Get the repository short name from remote URL (actual repo name, not checkout dir)
         # This handles forks correctly by using upstream if available

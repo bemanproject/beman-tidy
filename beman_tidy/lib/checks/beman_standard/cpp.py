@@ -27,7 +27,8 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             super().__init__(repo_info, beman_standard_check_config, relative_path, name="cpp.namespace")
             self.short_name = ""
 
-        def _get_code_body_indices(self, lines):
+        @staticmethod
+        def _get_code_body_indices(lines):
             """
             Finds the start and end indices of the main code body, excluding headers and footers.
             """

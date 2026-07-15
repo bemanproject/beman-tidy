@@ -18,7 +18,7 @@ def is_snake_case(name):
 
 def is_beman_snake_case(name):
     """
-    Has prefix "beman." and continues with snake_case.
+    Has the prefix "beman." and continues with snake_case.
     It must NOT end with a C++ target standard version - e.g. 17, 20, 23, 26, 32, etc.
     """
 

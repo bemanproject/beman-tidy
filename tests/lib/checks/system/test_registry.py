@@ -22,7 +22,7 @@ def test__get_registered_beman_standard_checks__valid(
     """
     all_registered_checks = get_registered_beman_standard_checks()
     for check_name, check_class in all_registered_checks.items():
-        # Convert check name to test function pattern.
+        # Convert the check name to a test function pattern.
         # e.g., "readme.title" -> "readme_title"
         check_pattern = check_name.replace(".", "_")
 
@@ -82,7 +82,7 @@ def test__get_registered_beman_standard_checks__valid(
                     expected_function_name == actual_function_name
                     for expected_function_name in expected_function_names
                 ), (
-                    f"[{check_name}] Test function name should match the expected pattern: {actual_function_name} != {expected_function_name}"
+                    f"[{check_name}] Test function name should match one of the expected patterns: {actual_function_name} not in {expected_function_names}"
                 )
 
 

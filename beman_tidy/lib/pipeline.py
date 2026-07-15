@@ -119,7 +119,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
             "Requirement": 0,
             "Recommendation": 0,
         }
-        # All implemented checks that were skipped (e.g., dummy implementation
+        # All implemented checks that were skipped (e.g., dummy implementation,
         # or it cannot be implemented).
         cnt_skipped_checks = {
             "Requirement": 0,
@@ -311,7 +311,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
 
 def calculate_coverage_color(coverage, no_color=False):
     """
-    Returns the colour for the coverage print based on severity
+    Returns the color for the coverage print based on severity
     Green for 100%
     Red for 0%
     Yellow for anything else

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import importlib
+import importlib.util
 import inspect
 from pathlib import Path
 import re
@@ -38,6 +38,10 @@ def find_pytest_test_functions_for_check(check_pattern):
                     spec = importlib.util.spec_from_file_location(
                         module_name, test_file
                     )
+                    if spec is None or spec.loader is None:
+                        logging.error(f"Error creating module spec for {test_file}")
+                        continue
+
                     module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(module)
 
@@ -85,7 +89,6 @@ def find_filename_for_check(check_name):
         assert False, (
             f"Beman Standard library directory does not exist: {beman_standard_lib_dir}"
         )
-        return None
 
     # Find @register_beman_standard_check("{check_name}") inside the file
     for file in beman_standard_lib_dir.glob("*.py"):
@@ -98,4 +101,3 @@ def find_filename_for_check(check_name):
 
     # If no file is found, return None.
     assert False, f"No file found for {check_name} in {beman_standard_lib_dir}"
-    return None

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from abc import ABC
 
 from ..base.base_check import BaseCheck
 from ..base.file_base_check import FileBaseCheck
@@ -17,7 +18,7 @@ from beman_tidy.lib.utils.string import (
 # Note: LicenseBaseCheck is not a registered check!
 
 
-class LicenseBaseCheck(FileBaseCheck):
+class LicenseBaseCheck(FileBaseCheck, ABC):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config, "LICENSE")
 

@@ -36,7 +36,7 @@ def test__release_notes__is_always_skipped(repo_info, beman_standard_check_confi
 
 def test__release_godbolt_trunk_version__valid(repo_info, beman_standard_check_config):
     """
-    Test that repositories with present Godbolt trunk version pass the check.
+    Test that repositories with the present Godbolt trunk version pass the check.
     """
     valid_godbolt_trunk_version_paths = [
         # exemplar/ repo with root README.md containing valid Godbolt trunk version.
@@ -56,7 +56,7 @@ def test__release_godbolt_trunk_version__invalid(
     repo_info, beman_standard_check_config
 ):
     """
-    Test that repositories with missing Godbolt trunk version fail the check.
+    Test that repositories with a missing Godbolt trunk version fail the check.
     """
     invalid_godbolt_trunk_version_paths = [
         # exemplar/ repo root README.md without Godbolt trunk version.

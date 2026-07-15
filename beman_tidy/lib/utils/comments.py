@@ -83,7 +83,7 @@ def iterate_comment_lines(lines, start_index, comment_type):
 
 def find_in_comment(lines, start_index, comment_type, texts, ignore_case=False):
     """
-    Searches for any of the text in texts list within the comment block.
+    Searches for any of the text in the texts list within the comment block.
     Returns (line_index, found_text) or (None, None).
     """
     for i, line in iterate_comment_lines(lines, start_index, comment_type):
@@ -101,7 +101,7 @@ def find_in_comment(lines, start_index, comment_type, texts, ignore_case=False):
 
 def find_in_line(line, texts, ignore_case=False):
     """
-    Checks if line contains any of the texts.
+    Checks if a line contains any of the texts.
     Optionally ignores case.
     Returns the found text or None.
     """

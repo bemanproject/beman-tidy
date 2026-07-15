@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import re
+from abc import ABC
 
 from ..base.file_base_check import FileBaseCheck, BaseCheck
 from ..system.registry import register_beman_standard_check
@@ -16,7 +17,7 @@ from beman_tidy.lib.utils.string import (
 # All checks in this file extend the ReadmeBaseCheck class.
 #
 # Note: ReadmeBaseCheck is not a registered check!
-class ReadmeBaseCheck(FileBaseCheck):
+class ReadmeBaseCheck(FileBaseCheck, ABC):
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config, "README.md")
 
@@ -29,7 +30,7 @@ class ReadmePurposeCheck(BaseCheck):
     def should_skip(self):
         # Cannot actually implement readme.purpose, thus skip it.
         self.log(
-            "beman-tidy cannot actually check readme.purpose. Please add a one line summary describing the library's purpose."
+            "beman-tidy cannot actually check readme.purpose. Please add a one line summary describing the library's purpose. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#readmepurpose."
         )
         return True

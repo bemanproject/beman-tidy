@@ -3,10 +3,12 @@ import sys
 
 # an object that always redirects to the stdout stream
 class DynamicStdoutStream:
-    def write(self, data):
+    @staticmethod
+    def write(data):
         sys.stdout.write(data)
     
-    def flush(self):
+    @staticmethod
+    def flush():
         sys.stdout.flush()
 
 def setup_logging():
