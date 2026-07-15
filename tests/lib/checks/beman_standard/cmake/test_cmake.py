@@ -14,6 +14,7 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeLibraryNameCheck,
     CMakeLibraryAliasCheck,
     CMakeTargetNamesCheck,
+    CMakePassiveProjectsCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -215,3 +216,52 @@ def test__cmake_target_names__fix_inplace(repo_info, beman_standard_check_config
     Note: Skipping this test as it is not implemented.
     """
     pass
+
+
+def test__cmake_passive_projects__valid(repo_info, beman_standard_check_config):
+    """
+    Test that CMake files without forbidden project-level flags pass.
+    Fixtures under infra/ are excluded from this check.
+    """
+    valid_cmake_paths = [
+        Path(f"{valid_prefix}/passive_projects-v1"),
+        Path(f"{valid_prefix}/passive_projects-v2"),
+        Path(f"{valid_prefix}/passive_projects-v3"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakePassiveProjectsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_passive_projects__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that CMake files setting project-level compilation flags fail.
+    """
+    invalid_cmake_paths = [
+        Path(f"{invalid_prefix}/invalid-passive_projects-v1"),
+        Path(f"{invalid_prefix}/invalid-passive_projects-v2"),
+        Path(f"{invalid_prefix}/invalid-passive_projects-v3"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakePassiveProjectsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_passive_projects__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that fix() is not auto-applicable for passive_projects violations.
+    """
+    repo_info["top_level"] = Path(f"{invalid_prefix}/invalid-passive_projects-v1")
+    check = CMakePassiveProjectsCheck(repo_info, beman_standard_check_config)
+    assert check.check() is False
+    assert check.fix() is False
