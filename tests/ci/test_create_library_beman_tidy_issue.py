@@ -37,4 +37,4 @@ def test__build_body__mentions_assignees():
     assert "require-all" in body
     assert "@steve-downey" in body
     assert "@neatudarius" in body
-    assert "Până acum toate check-urile" in body
+    assert "previously passed beman-tidy checks" in body

@@ -93,7 +93,7 @@ def build_body(
 
     return f"""## beman-tidy check failure
 
-Până acum toate check-urile treceau în modul **`{mode}`** (conform configurației pre-commit din acest repo). Acum nu mai trec după ultima rulare `beman-tidy` din workflow-ul [Run on all Beman libraries]({run_url}).
+This repository previously passed beman-tidy checks in **`{mode}`** mode (per its pre-commit configuration). The latest [Run on all Beman libraries]({run_url}) workflow run now reports failures.
 
 | Field | Value |
 |-------|-------|
