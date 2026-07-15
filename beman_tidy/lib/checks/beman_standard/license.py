@@ -5,7 +5,7 @@
 from ..base.base_check import BaseCheck
 from ..base.file_base_check import FileBaseCheck
 from ..system.registry import register_beman_standard_check
-from beman_tidy.lib.utils.git import get_beman_recommendated_license_path
+from beman_tidy.lib.utils.git import get_beman_recommended_license_path
 from beman_tidy.lib.utils.string import (
     match_apache_license_v2_with_llvm_exceptions,
     match_boost_software_license_v1_0
@@ -65,7 +65,7 @@ class LicenseApacheLLVMCheck(LicenseBaseCheck):
     def check(self):
         # Compare LICENSE file stored at self.path with the reference one.
         target_content = self.read().splitlines()
-        ref_content = get_beman_recommendated_license_path().read_text(encoding="utf-8").splitlines()
+        ref_content = get_beman_recommended_license_path().read_text(encoding="utf-8").splitlines()
 
         if target_content != ref_content:
             self.log(
@@ -92,7 +92,9 @@ class LicenseCriteriaCheck(BaseCheck):
         # Cannot actually implement license.criteria, so skip it.
         # No need to run pre_check() and check() as well, as they are not implemented.
         self.log(
-            "beman-tidy cannot actually check license.criteria. Please ignore this message if license.approved has passed. "
-            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#licensecriteria for more information."
+            "Skipping license.criteria: beman-tidy cannot reliably automate this policy-level review. "
+            "Please manually verify that your project license and usage satisfy the license.criteria requirements; "
+            "note that license.approved only checks for an approved LICENSE text and does not prove full criteria compliance. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#licensecriteria for guidance."
         )
         return True

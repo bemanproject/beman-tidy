@@ -77,7 +77,7 @@ def test__cmake_library_name__valid(repo_info, beman_standard_check_config):
     valid_cmake_paths = [
         # CMakeLists.txt from beman.exemplar
         Path(f"{valid_prefix}/CMakeLists-v1.txt"),
-	]
+    ]
 
     run_check_for_each_path(
         True,

@@ -66,7 +66,7 @@ def test__readme_title__invalid(repo_info, beman_standard_check_config):
         Path(f"{invalid_prefix}/invalid-title-v1.md"),
         # Title: Missing : after beman.exemplar
         Path(f"{invalid_prefix}/invalid-title-v2.md"),
-        # Title: Wromg name beman.exemaplar vs beman.optional
+        # Title: Wrong name beman.exemplar vs beman.optional
         Path(f"{invalid_prefix}/invalid-title-v3.md"),
     ]
 
@@ -84,6 +84,7 @@ def test__readme_title__fix_inplace(repo_info, beman_standard_check_config):
     Test that the fix method corrects an invalid README.md title.
     """
     invalid_readme_paths = [
+        Path(f"{invalid_prefix}/invalid.md"),
         Path(f"{invalid_prefix}/invalid-title-v1.md"),
         Path(f"{invalid_prefix}/invalid-title-v2.md"),
         Path(f"{invalid_prefix}/invalid-title-v3.md"),
@@ -172,6 +173,7 @@ def test__readme_implements__valid(repo_info, beman_standard_check_config):
         Path(f"{valid_prefix}/README-v3.md"),
         Path(f"{valid_prefix}/README-v4.md"),
         Path(f"{valid_prefix}/README-v5.md"),
+        Path(f"{valid_prefix}/README-v6.md"),
     ]
 
     run_check_for_each_path(
@@ -193,6 +195,7 @@ def test__readme_implements__invalid(repo_info, beman_standard_check_config):
         Path(f"{invalid_prefix}/invalid-implements-v2.md"),
         Path(f"{invalid_prefix}/invalid-implements-v3.md"),
         Path(f"{invalid_prefix}/invalid-implements-v4.md"),
+        Path(f"{invalid_prefix}/invalid-implements-v5.md"),
     ]
 
     run_check_for_each_path(
