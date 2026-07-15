@@ -2,6 +2,9 @@
 
 name: Run on all Beman libraries
 
+permissions:
+  contents: read
+
 on:
   schedule:
     - cron: '0 6 * * 0' # Weekly on Sunday 09:00 EEST
