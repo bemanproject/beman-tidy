@@ -5,7 +5,9 @@ import re
 from beman_tidy.lib.checks.base.base_check import BaseCheck
 from beman_tidy.lib.checks.base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from beman_tidy.lib.checks.system.registry import register_beman_standard_check
-from beman_tidy.lib.utils.file import get_beman_include_headers
+from beman_tidy.lib.utils.comments import determine_comment_type
+from beman_tidy.lib.utils.file import get_beman_include_headers, get_non_test_cpp_files
+from beman_tidy.lib.utils.string import normalize_path_for_display
 
 @register_beman_standard_check("cpp.namespace")
 class CppNamespaceCheck(BatchFileBaseCheck):
@@ -102,7 +104,71 @@ class CppNamespaceCheck(BatchFileBaseCheck):
             return True
 
 
-# TODO cpp.no_flag_forking
+@register_beman_standard_check("cpp.no_flag_forking")
+class CppNoFlagForkingCheck(BatchFileBaseCheck):
+    """
+    [cpp.no_flag_forking]
+    Requirement: C++ preprocessing must produce identical output regardless of compiler flags.
+    Feature test macros such as __cpp_* must not be used directly in #if/#elif.
+    """
+
+    _FLAG_FORKING_PATTERNS = (
+        re.compile(r"defined\s*\(\s*__cpp_"),
+        re.compile(r"#\s*if\s+__cpp_"),
+        re.compile(r"#\s*elif\s+defined\s*\(\s*__cpp_"),
+        re.compile(r"#\s*elif\s+__cpp_"),
+    )
+
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+        self.file_check_class = self.CppNoFlagForkingCheckImpl
+        self.file_path_generator = get_non_test_cpp_files
+
+    class CppNoFlagForkingCheckImpl(FileBaseCheck):
+        """
+        Implementation of the "cpp.no_flag_forking" check for a single file.
+        """
+
+        def __init__(self, repo_info, beman_standard_check_config, relative_path):
+            super().__init__(
+                repo_info, beman_standard_check_config, relative_path, name="cpp.no_flag_forking"
+            )
+
+        def _is_in_comment(self, lines, line_index):
+            return determine_comment_type(lines, line_index) is not None
+
+        _PREPROCESSOR_LINE_RE = re.compile(r"^\s*#")
+
+        def check(self):
+            lines = self.read_lines()
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+
+            for line_index, line in enumerate(lines):
+                if self._is_in_comment(lines, line_index):
+                    continue
+                if not self._PREPROCESSOR_LINE_RE.match(line):
+                    continue
+
+                for pattern in CppNoFlagForkingCheck._FLAG_FORKING_PATTERNS:
+                    if pattern.search(line):
+                        self.log(
+                            f"Direct use of compiler feature-test macro in {display_path} at line {line_index + 1}. "
+                            f"Use CMake-detected config.hpp macros instead of __cpp_* in #if/#elif. "
+                            f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppno_flag_forking"
+                        )
+                        return False
+
+            return True
+
+        def fix(self):
+            display_path = normalize_path_for_display(self.path, self.repo_path)
+            self.log(
+                f"Please manually replace __cpp_* feature-test macros in {display_path} with "
+                f"CMake-detected config.hpp macros. "
+                f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppno_flag_forking"
+            )
+            return False
+
 
 @register_beman_standard_check("cpp.extension_identifiers")
 class CppExtensionIdentifiersCheck(BaseCheck):
