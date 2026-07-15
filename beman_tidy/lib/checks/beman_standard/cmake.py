@@ -4,6 +4,9 @@
 from abc import ABC
 from collections.abc import Iterable
 
+from ..base.base_check import BaseCheck
+from ...utils.string import normalize_path_for_display
+
 import cmake_parser
 from cmake_parser.ast import AstNode, Command
 
@@ -123,9 +126,6 @@ class CMakeBaseCheck(FileBaseCheck, ABC):
 
 
 # TODO cmake.default
-
-
-# TODO cmake.use_find_package
 
 
 @register_beman_standard_check("cmake.project_name")
@@ -281,6 +281,95 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
         )
         return False
 
+
+_USE_FIND_PACKAGE_DOC = (
+    "https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md"
+    "#cmakeuse_find_package"
+)
+
+
+def _has_fetch_content_declare(content):
+    ast = cmake_parser.parser.parse_raw(content, skip_comments=True)
+    return any(
+        hasattr(item, "identifier")
+        and item.identifier.lower() == "fetchcontent_declare"
+        for item in ast
+    )
+
+@register_beman_standard_check("cmake.use_find_package")
+class CMakeUseFindPackageCheck(BaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def _gitmodules_has_content(self):
+        gitmodules_path = self.repo_path / ".gitmodules"
+        if not gitmodules_path.is_file():
+            return False
+        try:
+            return len(gitmodules_path.read_text(encoding="utf-8", errors="ignore").strip()) > 0
+        except OSError:
+            self.log(
+                "Unable to read .gitmodules. "
+                f"See {_USE_FIND_PACKAGE_DOC} for more information."
+            )
+            return True
+
+    def _cmake_files_to_check(self):
+        cmake_files = []
+
+        root_cmake = self.repo_path / "CMakeLists.txt"
+        if root_cmake.is_file():
+            cmake_files.append(root_cmake)
+
+        for cmake_file in self.repo_path.glob("*.cmake"):
+            cmake_files.append(cmake_file)
+
+        for subdir in ("tests", "examples"):
+            subdir_path = self.repo_path / subdir
+            if not subdir_path.is_dir():
+                continue
+            for cmake_file in subdir_path.rglob("*"):
+                if not cmake_file.is_file():
+                    continue
+                if "infra" in cmake_file.relative_to(self.repo_path).parts:
+                    continue
+                if cmake_file.name == "CMakeLists.txt" or cmake_file.suffix == ".cmake":
+                    cmake_files.append(cmake_file)
+
+        return sorted(set(cmake_files))
+
+    def check(self):
+        if self._gitmodules_has_content():
+            self.log(
+                "The repository should fetch dependencies via find_package, not git submodules. "
+                "Please remove .gitmodules and use find_package instead. "
+                f"See {_USE_FIND_PACKAGE_DOC} for more information."
+            )
+            return False
+
+        for cmake_file in self._cmake_files_to_check():
+            try:
+                content = cmake_file.read_text()
+            except OSError:
+                continue
+
+            if _has_fetch_content_declare(content):
+                display_path = normalize_path_for_display(cmake_file, self.repo_path)
+                self.log(
+                    f"The file '{display_path}' uses FetchContent_Declare to fetch dependencies. "
+                    "Dependencies should be fetched via find_package instead. "
+                    f"See {_USE_FIND_PACKAGE_DOC} for more information."
+                )
+                return False
+
+        return True
+
+    def fix(self):
+        self.log(
+            "Please fetch dependencies via find_package instead of git submodules or FetchContent. "
+            f"See {_USE_FIND_PACKAGE_DOC} for more information."
+        )
+        return False
 
 # TODO cmake.passive_targets
 
