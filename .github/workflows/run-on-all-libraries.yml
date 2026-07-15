@@ -80,12 +80,23 @@ jobs:
 
       - name: Run beman-tidy on beman.${{ matrix.repo }}
         run: |
-          beman-tidy --verbose ${{ matrix.repo }}/
+          MODE=$(python3 .github/scripts/detect_beman_tidy_mode.py "${{ matrix.repo }}")
+          echo "Using beman-tidy mode: ${MODE} for beman.${{ matrix.repo }}"
+
+          ARGS=(--verbose)
+          if [ "${MODE}" = "require-all" ]; then
+            ARGS+=(--require-all)
+          fi
+
+          set +e
+          beman-tidy "${ARGS[@]}" "${{ matrix.repo }}/"
           exit_code=$?
+          set -e
+
           # Exit code 0: all checks passed
           # Exit code 1: violations found (acceptable - libraries may have open violations)
           # Exit code 2: beman-tidy crashed (bug in beman-tidy) -> fail
-          if [ $exit_code -eq 2 ]; then
+          if [ "${exit_code}" -eq 2 ]; then
             echo "::error::beman-tidy crashed on beman.${{ matrix.repo }} (exit code 2)"
             exit 1
           fi
