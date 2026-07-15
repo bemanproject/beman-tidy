@@ -80,6 +80,47 @@ class CMakeBaseCheck(FileBaseCheck, ABC):
 
         return cmake_project_name
 
+    def get_cmake_library_alias(self):
+        ast = self.get_cmake_parse_raw()
+        cmake_library_alias = None
+
+        for item in ast:
+            if item.identifier == "add_library":
+                args = [arg.value for arg in item.args]
+
+                # Check that there are 3 args [library_alias, 'ALIAS', library_name]
+                if len(args) != 3:
+                    continue
+
+                # Check that the 2nd arg is 'ALIAS'
+                if args[1].upper() != "ALIAS":
+                    continue
+
+                # Ensure the alias's final component matches the library target's final component.
+                # E.g., "beman::foo" -> "foo"
+                alias_last = args[0].split("::")[-1]
+                target_last = args[2].split(".")[-1]
+                if alias_last != target_last:
+                    continue
+
+                # If the alias matches the expected alias, return it.
+                if args[0] == self.library_alias:
+                    cmake_library_alias = args[0]
+                    break
+
+        return cmake_library_alias
+
+    def get_cmake_target_names(self):
+        ast = self.get_cmake_parse_raw()
+        cmake_target_names = []
+
+        for item in ast:
+            if item.identifier == "add_library" or item.identifier == "add_executable":
+                if item.args:
+                    cmake_target_names.append(item.args[0].value)
+
+        return cmake_target_names
+
 
 # TODO cmake.default
 
@@ -200,7 +241,45 @@ class CMakeLibraryAliasCheck(CMakeBaseCheck):
         return False
 
 
-# TODO cmake.target_names
+# Note: this check currently parses only the top-level CMakeLists.txt,
+# so it will not see targets defined in add_subdirectory() files.
+# TODO: extend check to recurse into subdirectories for full coverage
+@register_beman_standard_check("cmake.target_names")
+class CMakeTargetNamesCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def check(self):
+        wrong_prefix = False
+
+        cmake_target_names = self.get_cmake_target_names()
+
+        for target_name in cmake_target_names:
+            # skip the library name and library alias targets
+            if target_name == self.library_name or target_name == self.library_alias:
+                continue
+
+            # all other targets must begin with '<library_name>.'
+            if not target_name.startswith(f"{self.library_name}."):
+                wrong_prefix = True
+                self.log(f"Invalid CMake target name - got: '{target_name}', expected prefix: '{self.library_name}.'")
+
+        if wrong_prefix:
+            self.log(
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmaketarget_names for more information."
+            )
+
+            return False
+
+        return True
+
+    def fix(self):
+        self.log(
+            "Please update the CMakeLists.txt file so that all targets, aside from the library target, begin with the '<library_name>.' prefix. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmaketarget_names for more information."
+        )
+        return False
 
 
 # TODO cmake.passive_targets
