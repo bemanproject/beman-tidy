@@ -12,6 +12,9 @@ on:
   schedule:
     - cron: '0 6 * * *' # 09:00AM EEST
 
+permissions:
+  contents: read
+
 jobs:
   run_linter:
     name: Run Linter
@@ -74,4 +77,5 @@ jobs:
   create-issue-when-fault:
     needs: [run_linter, run_tests, build_and_install]
     if: failure() && (github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    permissions: {}
     uses: bemanproject/infra-workflows/.github/workflows/reusable-beman-create-issue-when-fault.yml@1.1.0
