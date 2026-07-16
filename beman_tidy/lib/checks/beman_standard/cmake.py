@@ -337,7 +337,53 @@ class CMakeSkipTestsCheck(CMakeBaseCheck):
         )
         return False
 
-# TODO cmake.skip_examples
+
+@register_beman_standard_check("cmake.skip_examples")
+class CMakeSkipExamplesCheck(CMakeBaseCheck):
+    _SUBDIR_NAME = "examples"
+    _STANDARD_ANCHOR = "cmakeskip_examples"
+
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def _build_option_name(self):
+        return f"BEMAN_{self.short_name.upper()}_BUILD_EXAMPLES"
+
+    def check(self):
+        content = self.read()
+        option_name = self._build_option_name()
+
+        if not cmake_build_skip_subdir_option_pattern(option_name).search(content):
+            self.log(
+                f"Missing or invalid CMake option '{option_name}' with default "
+                f"'${{PROJECT_IS_TOP_LEVEL}}'. "
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#{self._STANDARD_ANCHOR} for more information."
+            )
+            return False
+
+        ast_tree = list(self.get_cmake_parse_tree())
+        if cmake_has_unguarded_subdirectory(ast_tree, self._SUBDIR_NAME, option_name):
+            self.log(
+                f"Examples are not guarded by 'if({option_name})' before "
+                "'add_subdirectory(examples...)'. "
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#{self._STANDARD_ANCHOR} for more information."
+            )
+            return False
+
+        return True
+
+    def fix(self):
+        option_name = self._build_option_name()
+        self.log(
+            "Please update the CMakeLists.txt file so that examples are controlled by "
+            f"'option({option_name} ... ${{PROJECT_IS_TOP_LEVEL}})' "
+            f"and guarded by 'if({option_name})' before "
+            "'add_subdirectory(examples...)'. "
+            f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#{self._STANDARD_ANCHOR} for more information."
+        )
+        return False
 
 
 # TODO cmake.avoid_passthroughs
