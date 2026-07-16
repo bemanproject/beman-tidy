@@ -5,7 +5,7 @@ from abc import ABC
 from collections.abc import Iterable
 
 import cmake_parser
-from cmake_parser.ast import AstNode, Command
+from cmake_parser.ast import AstNode, Command, If, Option
 
 from ..system.registry import register_beman_standard_check
 from ..base.file_base_check import FileBaseCheck
@@ -122,7 +122,90 @@ class CMakeBaseCheck(FileBaseCheck, ABC):
         return cmake_target_names
 
 
-# TODO cmake.default
+@register_beman_standard_check("cmake.default")
+class CMakeDefaultCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def _is_library_add_library_command(self, command):
+        if command.identifier != "add_library":
+            return False
+        if not command.args:
+            return False
+        if command.args[0].value != self.library_name:
+            return False
+        if len(command.args) >= 2 and command.args[1].value == "ALIAS":
+            return False
+        return True
+
+    def _has_unconditional_library_target(self, ast_tree):
+        for item in ast_tree:
+            if isinstance(item, Command) and self._is_library_add_library_command(item):
+                return True
+        return False
+
+    def _get_option_defaults(self, ast_tree):
+        options = {}
+        for item in ast_tree:
+            if isinstance(item, Option) and item.args:
+                args = [arg.value for arg in item.args]
+                if args:
+                    options[args[0]] = args[2] if len(args) >= 3 else None
+        return options
+
+    def _library_if_conditions(self, ast_tree):
+        conditions = []
+        for item in ast_tree:
+            if isinstance(item, If) and item.args:
+                condition = item.args[0].value
+                for sub in item.if_true or []:
+                    if isinstance(sub, Command) and self._is_library_add_library_command(sub):
+                        conditions.append(condition)
+        return conditions
+
+    def check(self):
+        ast_raw = self.get_cmake_parse_raw()
+        ast_tree = self.get_cmake_parse_tree()
+
+        has_library_in_raw = any(
+            self._is_library_add_library_command(item)
+            for item in ast_raw
+            if isinstance(item, Command)
+        )
+
+        if not has_library_in_raw:
+            self.log("CMake library target is not built by default. "
+                     f"Expected unconditional add_library('{self.library_name}') in the root CMakeLists.txt. "
+                     "Please update the CMakeLists.txt file according to the Beman Standard. "
+                     "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakedefault for more information.")
+            return False
+
+        if self._has_unconditional_library_target(ast_tree):
+            return True
+
+        option_defaults = self._get_option_defaults(ast_tree)
+        if_conditions = self._library_if_conditions(ast_tree)
+
+        for condition in if_conditions:
+            if condition in option_defaults and option_defaults[condition] == "OFF":
+                self.log("CMake library target is guarded by an option defaulting to OFF. "
+                         f"The library target '{self.library_name}' must be built unconditionally. "
+                         "Please update the CMakeLists.txt file according to the Beman Standard. "
+                         "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakedefault for more information.")
+                return False
+
+        self.log("CMake library target is only built conditionally. "
+                 f"Expected unconditional add_library('{self.library_name}') in the root CMakeLists.txt. "
+                 "Please update the CMakeLists.txt file according to the Beman Standard. "
+                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakedefault for more information.")
+        return False
+
+    def fix(self):
+        self.log(
+            "Please update the root CMakeLists.txt so that the main library target is built unconditionally by default. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakedefault for more information."
+        )
+        return False
 
 
 # TODO cmake.use_find_package
