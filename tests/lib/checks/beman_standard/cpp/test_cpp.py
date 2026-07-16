@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import pytest
 import shutil
 from pathlib import Path
 
-from beman_tidy.lib.checks.beman_standard.cpp import CppNamespaceCheck, CppExtensionIdentifiersCheck
+from beman_tidy.lib.checks.beman_standard.cpp import (
+    CppNamespaceCheck,
+    CppNoFlagForkingCheck,
+    CppExtensionIdentifiersCheck,
+)
 
 test_data_prefix = Path("tests/lib/checks/beman_standard/cpp/namespace")
 valid_prefix = test_data_prefix / "valid"
@@ -37,6 +42,30 @@ def test__cpp_namespace__fix_inplace(repo_info, beman_standard_check_config, tmp
     assert check.fix() is True
     
     assert check.check() is True
+
+
+no_flag_forking_prefix = Path("tests/lib/checks/beman_standard/cpp/no_flag_forking")
+no_flag_forking_valid_prefix = no_flag_forking_prefix / "valid"
+no_flag_forking_invalid_prefix = no_flag_forking_prefix / "invalid"
+
+
+def test__cpp_no_flag_forking__valid(repo_info, beman_standard_check_config):
+    repo_info["top_level"] = no_flag_forking_valid_prefix
+
+    check = CppNoFlagForkingCheck(repo_info, beman_standard_check_config)
+    assert check.check() is True
+
+
+def test__cpp_no_flag_forking__invalid(repo_info, beman_standard_check_config):
+    repo_info["top_level"] = no_flag_forking_invalid_prefix
+
+    check = CppNoFlagForkingCheck(repo_info, beman_standard_check_config)
+    assert check.check() is False
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cpp_no_flag_forking__fix_inplace(repo_info, beman_standard_check_config):
+    pass
 
 
 def test__cpp_extension_identifiers__is_always_skipped(repo_info, beman_standard_check_config):
