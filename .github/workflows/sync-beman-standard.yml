@@ -1,0 +1,132 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Sync Beman Standard
+
+on:
+  schedule:
+    - cron: '0 6 * * 0' # Weekly on Sunday 09:00 EEST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-standard-drift:
+    name: Check beman-standard.yaml drift
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout beman-tidy
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Fetch upstream Beman Standard
+        run: |
+          curl -fsSL \
+            https://raw.githubusercontent.com/bemanproject/beman/main/docs/beman_standard.md \
+            -o beman_standard.md
+
+      - name: Check for drift
+        id: drift
+        run: |
+          uv run python - << 'EOF'
+          import json
+          import os
+          from pathlib import Path
+
+          from beman_tidy.lib.utils.standard_drift import check_standard_drift
+
+          report = check_standard_drift(
+              "beman_standard.md",
+              "beman_tidy/.beman-standard.yaml",
+          )
+
+          output_path = Path(os.environ["GITHUB_OUTPUT"])
+          with output_path.open("a") as f:
+              f.write(f"has_drift={'true' if report.has_drift else 'false'}\n")
+              f.write(
+                  "report_json="
+                  + json.dumps(
+                      {
+                          "added": report.added,
+                          "removed": report.removed,
+                          "type_changed": {
+                              k: list(v) for k, v in report.type_changed.items()
+                          },
+                      }
+                  )
+                  + "\n"
+              )
+
+          if report.has_drift:
+              body_path = Path("drift-report.md")
+              body_path.write_text(
+                  report.format_markdown(
+                      "https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md"
+                  ),
+                  encoding="utf-8",
+              )
+          EOF
+
+      - name: Open or update drift issue
+        if: steps.drift.outputs.has_drift == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="[standard-sync] beman-standard.yaml out of sync with beman_standard.md"
+          MARKER="<!-- beman-standard-drift -->"
+
+          {
+            echo "${MARKER}"
+            cat drift-report.md
+          } > issue-body.md
+
+          EXISTING=$(gh issue list \
+            --repo "${{ github.repository }}" \
+            --search "in:title ${TITLE}" \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "${EXISTING}" ]; then
+            gh issue edit "${EXISTING}" \
+              --repo "${{ github.repository }}" \
+              --body-file issue-body.md
+            gh issue comment "${EXISTING}" \
+              --repo "${{ github.repository }}" \
+              --body "Drift still present after scheduled check on $(date -u +%Y-%m-%d)."
+          else
+            gh issue create \
+              --repo "${{ github.repository }}" \
+              --title "${TITLE}" \
+              --label "standard-sync" \
+              --body-file issue-body.md || \
+            gh issue create \
+              --repo "${{ github.repository }}" \
+              --title "${TITLE}" \
+              --body-file issue-body.md
+          fi
+
+      - name: Close drift issue when in sync
+        if: steps.drift.outputs.has_drift != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="[standard-sync] beman-standard.yaml out of sync with beman_standard.md"
+
+          EXISTING=$(gh issue list \
+            --repo "${{ github.repository }}" \
+            --search "in:title ${TITLE}" \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "${EXISTING}" ]; then
+            gh issue close "${EXISTING}" \
+              --repo "${{ github.repository }}" \
+              --comment "beman-standard.yaml is back in sync with the upstream standard."
+          fi

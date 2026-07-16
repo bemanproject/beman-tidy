@@ -31,6 +31,8 @@ repository.disallow_git_submodules:
 # RELEASE
 release.github:
     - type: Requirement
+release.version:
+    - type: Recommendation
 release.notes:
     - type: Recommendation
 release.godbolt_trunk_version:
@@ -140,4 +142,6 @@ cpp.namespace:
 cpp.no_flag_forking:
     - type: Requirement
 cpp.extension_identifiers:
+    - type: Recommendation
+cpp.min_std_version:
     - type: Recommendation
