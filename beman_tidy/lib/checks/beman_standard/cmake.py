@@ -4,6 +4,8 @@
 from abc import ABC
 from collections.abc import Iterable
 
+import re
+
 import cmake_parser
 from cmake_parser.ast import AstNode, Command
 
@@ -281,6 +283,35 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
         )
         return False
 
+
+@register_beman_standard_check("cmake.config")
+class CMakeConfigCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def check(self):
+        content = self.read()
+        escaped_library_name = re.escape(self.library_name)
+
+        if re.search(
+            rf"beman_install_library\s*\(\s*{escaped_library_name}\b", content
+        ):
+            return True
+
+        self.log(
+            "Missing beman_install_library() call in root CMakeLists.txt. "
+            f"Expected a call referencing library name '{self.library_name}'. "
+            "Please update the CMakeLists.txt file according to the Beman Standard. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeconfig for more information."
+        )
+        return False
+
+    def fix(self):
+        self.log(
+            "Please update the CMakeLists.txt file so that it calls beman_install_library() with the library name. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeconfig for more information."
+        )
+        return False
 
 # TODO cmake.passive_targets
 
