@@ -14,6 +14,7 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeLibraryNameCheck,
     CMakeLibraryAliasCheck,
     CMakeTargetNamesCheck,
+    CMakeNoSingleUseVarsCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -210,6 +211,50 @@ def test__cmake_target_names__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_target_names__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_no_single_use_vars__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.no_single_use_vars check.
+    """
+    valid_cmake_paths = [
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeNoSingleUseVarsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_no_single_use_vars__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.no_single_use_vars check.
+    """
+    invalid_cmake_paths = [
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v1.txt"),
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v2.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeNoSingleUseVarsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_no_single_use_vars__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.

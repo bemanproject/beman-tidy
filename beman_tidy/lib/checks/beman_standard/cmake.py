@@ -4,6 +4,8 @@
 from abc import ABC
 from collections.abc import Iterable
 
+import re
+
 import cmake_parser
 from cmake_parser.ast import AstNode, Command
 
@@ -288,7 +290,48 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
 # TODO cmake.skip_tests
 
 
-# TODO cmake.skip_examples
+@register_beman_standard_check("cmake.no_single_use_vars")
+class CMakeNoSingleUseVarsCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def check(self):
+        content = self.read()
+        single_use_vars = []
+
+        for item in self.get_cmake_parse_raw():
+            if not isinstance(item, Command) or item.identifier != "set":
+                continue
+
+            args = [arg.value for arg in item.args]
+            if len(args) < 2:
+                continue
+            upper_args = {arg.upper() for arg in args}
+            if "CACHE" in upper_args or "PARENT_SCOPE" in upper_args:
+                continue
+
+            var_name = args[0]
+            references = len(re.findall(r"\$\{" + re.escape(var_name) + r"\}", content))
+            if references == 1:
+                single_use_vars.append(var_name)
+
+        if single_use_vars:
+            self.log(
+                "Avoid using set() for variables that are referenced only once. "
+                f"Single-use variables: {', '.join(single_use_vars)}. "
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeno_single_use_vars for more information."
+            )
+            return False
+
+        return True
+
+    def fix(self):
+        self.log(
+            "Please inline single-use set() variables directly where they are referenced. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeno_single_use_vars for more information."
+        )
+        return False
 
 
 # TODO cmake.avoid_passthroughs
