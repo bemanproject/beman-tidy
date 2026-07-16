@@ -4,6 +4,8 @@
 from abc import ABC
 from collections.abc import Iterable
 
+import re
+
 import cmake_parser
 from cmake_parser.ast import AstNode, Command
 
@@ -288,7 +290,55 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
 # TODO cmake.skip_tests
 
 
-# TODO cmake.skip_examples
+@register_beman_standard_check("cmake.implicit_defaults")
+class CMakeImplicitDefaultsCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    @staticmethod
+    def _extract_balanced_parentheses_block(content, open_paren_index):
+        depth = 0
+        for index in range(open_paren_index, len(content)):
+            char = content[index]
+            if char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+                if depth == 0:
+                    return content[open_paren_index : index + 1]
+        return None
+
+    def _has_install_targets_with_explicit_destination(self, content):
+        for match in re.finditer(r"\binstall\s*\(", content, flags=re.IGNORECASE):
+            open_paren_index = match.end() - 1
+            header = content[match.end() : match.end() + 64]
+            if not re.match(r"\s*TARGETS\b", header, flags=re.IGNORECASE):
+                continue
+            block = self._extract_balanced_parentheses_block(content, open_paren_index)
+            if block and re.search(r"\bDESTINATION\b", block, flags=re.IGNORECASE):
+                return True
+        return False
+
+    def check(self):
+        content = self.read()
+        if self._has_install_targets_with_explicit_destination(content):
+            self.log(
+                "install(TARGETS ...) should rely on implicit CMake defaults instead of "
+                "enumerating DESTINATION parameters. "
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeimplicit_defaults for more information."
+            )
+            return False
+
+        return True
+
+    def fix(self):
+        self.log(
+            "Please remove explicit DESTINATION parameters from install(TARGETS ...) where "
+            "CMake defaults are sufficient. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeimplicit_defaults for more information."
+        )
+        return False
 
 
 # TODO cmake.avoid_passthroughs
