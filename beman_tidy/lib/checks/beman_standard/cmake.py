@@ -285,10 +285,92 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
 # TODO cmake.passive_targets
 
 
+_PASSTHROUGH_ALLOWED_COMMANDS = frozenset({
+    "cmake_minimum_required",
+    "project",
+    "add_subdirectory",
+    "include",
+})
+
+_PASSTHROUGH_FORBIDDEN_COMMANDS = frozenset({
+    "add_library",
+    "beman_install_library",
+})
+
+
+@register_beman_standard_check("cmake.avoid_passthroughs")
+class CMakeAvoidPassthroughsCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def _has_shallow_root_add_subdirectory(self, ast):
+        for item in ast:
+            if not hasattr(item, "identifier") or item.identifier != "add_subdirectory":
+                continue
+            if not item.args:
+                continue
+            arg = item.args[0].value.strip('"')
+            if arg in ("src", "beman"):
+                return True
+        return False
+
+    def _is_passthrough_only(self, ast):
+        add_subdirectory_count = 0
+        has_shallow_add_subdirectory = False
+
+        for item in ast:
+            if not hasattr(item, "identifier"):
+                continue
+
+            identifier = item.identifier
+            if identifier in _PASSTHROUGH_FORBIDDEN_COMMANDS:
+                return False
+            if identifier not in _PASSTHROUGH_ALLOWED_COMMANDS:
+                return False
+            if identifier != "add_subdirectory":
+                continue
+
+            add_subdirectory_count += 1
+            if item.args and "/" not in item.args[0].value:
+                has_shallow_add_subdirectory = True
+
+        return add_subdirectory_count == 1 and has_shallow_add_subdirectory
+
+    def check(self):
+        ast = list(self.get_cmake_parse_raw())
+
+        if self._has_shallow_root_add_subdirectory(ast):
+            self.log(
+                "Root CMakeLists.txt uses a shallow add_subdirectory passthrough "
+                "(e.g. add_subdirectory(src) or add_subdirectory(beman)). "
+                "Prefer add_subdirectory(include/beman/<short_name>) or "
+                "add_subdirectory(src/beman/<short_name>) directly. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeavoid_passthroughs "
+                "for more information."
+            )
+            return False
+
+        if self._is_passthrough_only(ast):
+            self.log(
+                "CMakeLists.txt consists only of boilerplate commands and a single "
+                "shallow add_subdirectory passthrough. "
+                "Prefer add_subdirectory(include/beman/<short_name>) or "
+                "add_subdirectory(src/beman/<short_name>) directly. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeavoid_passthroughs "
+                "for more information."
+            )
+            return False
+
+        return True
+
+    def fix(self):
+        self.log(
+            "Please replace shallow add_subdirectory passthroughs with direct paths "
+            "such as add_subdirectory(include/beman/<short_name>) or "
+            "add_subdirectory(src/beman/<short_name>). "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeavoid_passthroughs "
+            "for more information."
+        )
+        return False
+
 # TODO cmake.skip_tests
-
-
-# TODO cmake.skip_examples
-
-
-# TODO cmake.avoid_passthroughs

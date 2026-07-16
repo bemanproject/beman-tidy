@@ -14,6 +14,7 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeLibraryNameCheck,
     CMakeLibraryAliasCheck,
     CMakeTargetNamesCheck,
+    CMakeAvoidPassthroughsCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -210,6 +211,55 @@ def test__cmake_target_names__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_target_names__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_avoid_passthroughs__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.avoid_passthroughs check.
+    """
+    valid_cmake_paths = [
+        # CMakeLists.txt from beman.exemplar
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeAvoidPassthroughsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_avoid_passthroughs__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.avoid_passthroughs check.
+    """
+    invalid_cmake_paths = [
+        # Root CMakeLists.txt with add_subdirectory(src)
+        Path(f"{invalid_prefix}/invalid-avoid_passthroughs-v1.txt"),
+        # Root CMakeLists.txt with add_subdirectory(beman)
+        Path(f"{invalid_prefix}/invalid-avoid_passthroughs-v2.txt"),
+        # Passthrough-only CMakeLists.txt with shallow add_subdirectory
+        Path(f"{invalid_prefix}/invalid-avoid_passthroughs-v3.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeAvoidPassthroughsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_avoid_passthroughs__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.
