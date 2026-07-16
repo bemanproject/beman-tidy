@@ -13,7 +13,6 @@ from beman_tidy.lib.checks.beman_standard.release import (
     ReleaseGithubCheck,
     ReleaseGodboltTrunkVersionCheck,
     ReleaseNotesCheck,
-    ReleaseVersionCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/release/data"
@@ -33,13 +32,6 @@ def test__release_notes__is_always_skipped(repo_info, beman_standard_check_confi
     Test that release.notes is always skipped, as it cannot be implemented.
     """
     assert ReleaseNotesCheck(repo_info, beman_standard_check_config).should_skip()
-
-
-def test__release_version__is_always_skipped(repo_info, beman_standard_check_config):
-    """
-    Test that release.version is always skipped, as it cannot be implemented offline.
-    """
-    assert ReleaseVersionCheck(repo_info, beman_standard_check_config).should_skip()
 
 
 def test__release_godbolt_trunk_version__valid(repo_info, beman_standard_check_config):
