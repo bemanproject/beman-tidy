@@ -3,12 +3,18 @@
 
 from abc import ABC
 from collections.abc import Iterable
+import re
+from pathlib import Path
 
 import cmake_parser
 from cmake_parser.ast import AstNode, Command
 
+from ..base.base_check import BaseCheck
 from ..system.registry import register_beman_standard_check
 from ..base.file_base_check import FileBaseCheck
+from ...utils.config import get_ignores
+from ...utils.file import get_cmake_files
+from ...utils.string import normalize_path_for_display
 
 # [cmake.*] checks category.
 # All checks in this file extend the CMakeBaseCheck class.
@@ -282,7 +288,92 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
         return False
 
 
-# TODO cmake.passive_targets
+@register_beman_standard_check("cmake.passive_targets")
+class CMakePassiveTargetsCheck(BaseCheck):
+    """
+    [cmake.passive_targets]
+    Requirement: External targets must not modify compilation flags of dependents.
+    """
+
+    _TARGET_COMPILE_FEATURES_RE = re.compile(r"target_compile_features\s*\(")
+    _TARGET_COMPILE_DEFINITIONS_RE = re.compile(
+        r"target_compile_definitions\s*\([^)]*\b(PUBLIC|INTERFACE)\b"
+    )
+    _COMMENT_RE = re.compile(r"#[^\n]*")
+
+    def _read_cmake_files(self):
+        path_override = getattr(self, "path", None)
+        if path_override is not None:
+            path = Path(path_override)
+            if not path.is_absolute():
+                path = self.repo_path / path
+            if path.is_file():
+                try:
+                    content = path.read_text(encoding="utf-8", errors="ignore")
+                    rel_path = path
+                    try:
+                        rel_path = path.relative_to(self.repo_path)
+                    except ValueError:
+                        pass
+                    return {rel_path: self._COMMENT_RE.sub("", content)}
+                except OSError as exc:
+                    self.log(f"Unable to read CMake file '{path}': {exc}")
+                    return None
+
+        ignores = get_ignores(self.repo_info)
+        result = {}
+        for rel_path in get_cmake_files(self.repo_path, ignores=ignores):
+            abs_path = self.repo_path / rel_path
+            try:
+                content = abs_path.read_text(encoding="utf-8", errors="ignore")
+                result[rel_path] = self._COMMENT_RE.sub("", content)
+            except OSError as exc:
+                self.log(f"Unable to read CMake file '{rel_path}': {exc}")
+                return None
+        return result
+
+    def check(self):
+        cmake_files = self._read_cmake_files()
+        if cmake_files is None:
+            return False
+        all_passed = True
+
+        for rel_path, content in cmake_files.items():
+            display_path = normalize_path_for_display(
+                self.repo_path / rel_path, self.repo_path
+            )
+
+            if self._TARGET_COMPILE_FEATURES_RE.search(content):
+                self.log(
+                    f"{display_path}: target_compile_features must not be used because it "
+                    "modifies the compilation environment of dependent targets. "
+                    "Please update the CMake file according to the Beman Standard. "
+                    "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakepassive_targets "
+                    "for more information."
+                )
+                all_passed = False
+
+            if self._TARGET_COMPILE_DEFINITIONS_RE.search(content):
+                self.log(
+                    f"{display_path}: target_compile_definitions with PUBLIC or INTERFACE "
+                    "visibility must not be used because definitions are propagated to "
+                    "dependent targets. "
+                    "Please update the CMake file according to the Beman Standard. "
+                    "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakepassive_targets "
+                    "for more information."
+                )
+                all_passed = False
+
+        return all_passed
+
+    def fix(self):
+        self.log(
+            "Please remove target_compile_features and target_compile_definitions with "
+            "PUBLIC or INTERFACE visibility from CMake files. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakepassive_targets "
+            "for more information."
+        )
+        return False
 
 
 # TODO cmake.skip_tests
