@@ -4,6 +4,11 @@
 from abc import ABC
 from collections.abc import Iterable
 
+import re
+from ..base.base_check import BaseCheck
+from ...utils.config import get_ignores
+from ...utils.file import get_cmake_files
+
 import cmake_parser
 from cmake_parser.ast import AstNode, Command
 
@@ -160,9 +165,6 @@ class CMakeProjectNameCheck(CMakeBaseCheck):
         return False
 
 
-# TODO cmake.passive_projects
-
-
 @register_beman_standard_check("cmake.library_name")
 class CMakeLibraryNameCheck(CMakeBaseCheck):
     def __init__(self, repo_info, beman_standard_check_config):
@@ -281,6 +283,68 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
         )
         return False
 
+
+@register_beman_standard_check("cmake.passive_projects")
+class CMakePassiveProjectsCheck(BaseCheck):
+    """
+    [cmake.passive_projects]
+    Requirement: CMake projects must not adjust user-specified compilation flags.
+    """
+
+    _COMMENT_RE = re.compile(r"#[^\n]*")
+    _FORBIDDEN_SET_PATTERNS = (
+        (re.compile(r"set\s*\(\s*CMAKE_CXX_FLAGS\b", re.IGNORECASE), "CMAKE_CXX_FLAGS"),
+        (re.compile(r"set\s*\(\s*CMAKE_CXX_STANDARD\b", re.IGNORECASE), "CMAKE_CXX_STANDARD"),
+        (
+            re.compile(r"set\s*\(\s*CMAKE_CXX_STANDARD_REQUIRED\b", re.IGNORECASE),
+            "CMAKE_CXX_STANDARD_REQUIRED",
+        ),
+    )
+
+    def _get_cmake_ignores(self):
+        ignores = list(get_ignores(self.repo_info))
+        if "infra/" not in ignores:
+            ignores.append("infra/")
+        return ignores
+
+    def _read_cmake_files(self):
+        ignores = self._get_cmake_ignores()
+        result = {}
+        for rel_path in get_cmake_files(self.repo_path, ignores=ignores):
+            abs_path = self.repo_path / rel_path
+            try:
+                content = abs_path.read_text(encoding="utf-8", errors="ignore")
+                result[rel_path] = self._COMMENT_RE.sub("", content)
+            except OSError:
+                pass
+        return result
+
+    def check(self):
+        cmake_files = self._read_cmake_files()
+        all_passed = True
+
+        for rel_path, content in cmake_files.items():
+            for pattern, variable_name in self._FORBIDDEN_SET_PATTERNS:
+                if pattern.search(content):
+                    self.log(
+                        f"{rel_path}: CMake must not set {variable_name}; "
+                        "this overrides user compilation flags. "
+                        "Please update CMake files according to the Beman Standard. "
+                        "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakepassive_projects "
+                        "for more information."
+                    )
+                    all_passed = False
+
+        return all_passed
+
+    def fix(self):
+        self.log(
+            "Please remove set(CMAKE_CXX_FLAGS), set(CMAKE_CXX_STANDARD), and "
+            "set(CMAKE_CXX_STANDARD_REQUIRED) from CMake files. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakepassive_projects "
+            "for more information."
+        )
+        return False
 
 # TODO cmake.passive_targets
 
