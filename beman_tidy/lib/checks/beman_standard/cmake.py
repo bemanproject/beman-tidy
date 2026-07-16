@@ -7,6 +7,11 @@ from collections.abc import Iterable
 import cmake_parser
 from cmake_parser.ast import AstNode, Command
 
+from beman_tidy.lib.utils.cmake import (
+    cmake_build_skip_subdir_option_pattern,
+    cmake_has_unguarded_subdirectory,
+)
+
 from ..system.registry import register_beman_standard_check
 from ..base.file_base_check import FileBaseCheck
 
@@ -285,8 +290,52 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
 # TODO cmake.passive_targets
 
 
-# TODO cmake.skip_tests
+@register_beman_standard_check("cmake.skip_tests")
+class CMakeSkipTestsCheck(CMakeBaseCheck):
+    _SUBDIR_NAME = "tests"
+    _STANDARD_ANCHOR = "cmakeskip_tests"
 
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    def _build_option_name(self):
+        return f"BEMAN_{self.short_name.upper()}_BUILD_TESTS"
+
+    def check(self):
+        content = self.read()
+        option_name = self._build_option_name()
+
+        if not cmake_build_skip_subdir_option_pattern(option_name).search(content):
+            self.log(
+                f"Missing or invalid CMake option '{option_name}' with default "
+                f"'${{PROJECT_IS_TOP_LEVEL}}'. "
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#{self._STANDARD_ANCHOR} for more information."
+            )
+            return False
+
+        ast_tree = list(self.get_cmake_parse_tree())
+        if cmake_has_unguarded_subdirectory(ast_tree, self._SUBDIR_NAME, option_name):
+            self.log(
+                f"Tests are not guarded by 'if({option_name})' before "
+                "'add_subdirectory(tests...)'. "
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#{self._STANDARD_ANCHOR} for more information."
+            )
+            return False
+
+        return True
+
+    def fix(self):
+        option_name = self._build_option_name()
+        self.log(
+            "Please update the CMakeLists.txt file so that tests are controlled by "
+            f"'option({option_name} ... ${{PROJECT_IS_TOP_LEVEL}})' "
+            f"and guarded by 'if({option_name})' before "
+            "'add_subdirectory(tests...)'. "
+            f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#{self._STANDARD_ANCHOR} for more information."
+        )
+        return False
 
 # TODO cmake.skip_examples
 
