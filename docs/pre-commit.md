@@ -15,7 +15,7 @@ Notes:
 - Use the same `beman-tidy` stable version from [beman-tidy/releases](https://github.com/bemanproject/beman-tidy/releases) (e.g., `v0.3.1` attach example).
 - Check/test/decide if you want to
   - Enable all checks (`requirements` + `recommendations`) -> `args: [".", "--verbose", "--require-all"]`
-  -  Or use default set of checks (only `requirements`) -> skip `args` from config.
+  -  Or use a default set of checks (only `requirements`) -> skip `args` from config.
 
 Example:
 ```shell

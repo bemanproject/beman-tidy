@@ -119,7 +119,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
             "Requirement": 0,
             "Recommendation": 0,
         }
-        # All implemented checks that were skipped (e.g., dummy implementation
+        # All implemented checks that were skipped (e.g., dummy implementation,
         # or it cannot be implemented).
         cnt_skipped_checks = {
             "Requirement": 0,
@@ -301,8 +301,6 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
         f"({total_passed}/{total_implemented} checks passed){disabled_total_coverage_suffix}.{no_color}"
     )
 
-    # else:
-    #     logging.info("Note: RECOMMENDATIONs are not included (--require-all NOT set).")
     total_cnt_failed = cnt_failed_checks["Requirement"] + (
         cnt_failed_checks["Recommendation"] if args.require_all else 0
     )
@@ -313,7 +311,7 @@ def run_checks_pipeline(checks_to_run, args, beman_standard_check_config):
 
 def calculate_coverage_color(coverage, no_color=False):
     """
-    Returns the colour for the coverage print based on severity
+    Returns the color for the coverage print based on severity
     Green for 100%
     Red for 0%
     Yellow for anything else

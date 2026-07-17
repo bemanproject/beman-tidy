@@ -130,7 +130,7 @@ def test__file_license_id__fix_inplace(repo_info, beman_standard_check_config, t
         if not f.is_file():
             continue
         lines = f.read_text().splitlines()
-        spdx_line = next(i for i, l in enumerate(lines) if "SPDX-License-Identifier:" in l)
+        spdx_line = next(i for i, line in enumerate(lines) if "SPDX-License-Identifier:" in line)
         assert spdx_line < FileLicenseIdCheck.SPDX_MAX_LINE, (
             f"SPDX not within first {FileLicenseIdCheck.SPDX_MAX_LINE} lines in {f.name}"
         )

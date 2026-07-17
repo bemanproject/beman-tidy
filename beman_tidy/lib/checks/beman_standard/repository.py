@@ -22,8 +22,8 @@ class RepositoryNameCheck(BaseCheck):
 
     def check(self):
         repo_name = self.repo_info["name"]
-        # Accept directory name that matches canonical library name (short_name from upstream)
-        # or legacy "beman." + short_name (e.g. beman.optional when library is optional)
+        # Accept a directory name that matches the canonical library name (short_name from upstream)
+        # or legacy "beman." + short_name (e.g. beman.optional when a library is optional)
         if repo_name == self.short_name or repo_name == f"beman.{self.short_name}":
             return True
         if not is_beman_snake_case(repo_name):

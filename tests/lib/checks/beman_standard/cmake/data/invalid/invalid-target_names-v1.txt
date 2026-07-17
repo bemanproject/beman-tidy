@@ -1,0 +1,2 @@
+# wrong 'add_library' target name
+add_library(beman.foobar)

@@ -62,11 +62,11 @@ def test__readme_title__invalid(repo_info, beman_standard_check_config):
     invalid_readme_paths = [
         # Title: Wrong Title Format
         Path(f"{invalid_prefix}/invalid.md"),
-        # Title: Missing . in beman.exemplar
+        # Title: Missing dot(.) in beman.exemplar
         Path(f"{invalid_prefix}/invalid-title-v1.md"),
         # Title: Missing : after beman.exemplar
         Path(f"{invalid_prefix}/invalid-title-v2.md"),
-        # Title: Wromg name beman.exemaplar vs beman.optional
+        # Title: Wrong name beman.exemplar vs. beman.optional
         Path(f"{invalid_prefix}/invalid-title-v3.md"),
     ]
 

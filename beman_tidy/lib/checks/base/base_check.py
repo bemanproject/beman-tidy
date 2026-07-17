@@ -18,8 +18,8 @@ from ...utils.string import (
 class BaseCheck(ABC):
     """
     Base class for checks.
-    This class is not meant to be used directly, it's meant to be subclassed.
-    e.g., check for repository name, check for changelog, check for license, etc.
+    This class is not meant to be used directly, it is meant to be subclassed.
+    E.g., check for repository name, check for changelog, check for license, etc.
 
 
     Notes: If should_skip() is True, check()/fix() are not called,
@@ -31,7 +31,7 @@ class BaseCheck(ABC):
         Create a new check instance.
         """
 
-        # check name -  e.g. "readme.title"
+        # check name - e.g. "readme.title"
         self.name = (
             name
             if name is not None
@@ -48,7 +48,7 @@ class BaseCheck(ABC):
             else None
         )
 
-        # set type - e.g. "Requirement" or "Recommendation"
+        # set a type - e.g. "Requirement" or "Recommendation"
         self.type = (
             beman_standard_check_config[self.name]["type"]
             if "internal." not in self.name
@@ -58,7 +58,7 @@ class BaseCheck(ABC):
             f"Invalid check type: {self.type} for check = {self.name}."
         )
 
-        # set full text body - e.g. "The README.md should begin ..."
+        # set the full-text body - e.g. "The README.md should begin ..."
         self.full_text_body = (
             beman_standard_check_config[self.name]["full_text_body"]
             if "internal." not in self.name
@@ -70,13 +70,15 @@ class BaseCheck(ABC):
         self.repo_info = repo_info
         assert "name" in repo_info
         self.repo_name = repo_info["name"]
-        # short_name = repo name from remote URL (upstream/origin); use for library name and paths
+        # short_name = repo name from remote URL (upstream/origin); use it for library name and paths
         self.short_name = repo_info.get("short_name", repo_info["name"])
         assert "top_level" in repo_info
         self.repo_path = Path(repo_info["top_level"])
         assert self.repo_path is not None
         self.library_name = f"beman.{self.short_name}"
         assert self.library_name is not None
+        self.library_alias = f"beman::{self.short_name}"
+        assert self.library_alias is not None
 
         # set beman library maturity model
         beman_library_maturity_model = beman_standard_check_config[
@@ -141,8 +143,8 @@ class BaseCheck(ABC):
     def check(self):
         """
         Checks if the Beman Standard check is already applied.
-        - If it's applied, this method should return True.
-        - Otherwise, it returns False and self.fix() must be able to fix the issue.
+        - If it is applied, this method should return True.
+        - Otherwise, it returns False, and self.fix() must be able to fix the issue.
 
         Note: This method must be implemented in the derived class only if should_skip() is False.
         """
@@ -153,12 +155,12 @@ class BaseCheck(ABC):
     def fix(self):
         """
         Fixes the issue if the Beman Standard is not applied.
-        - If check already applied, this method is a no-op and should return True.
+        - If the check is already applied, this method is a no-op and should return True.
         - Otherwise, it will try to apply the check inplace. Returns the status of the fix attempt.
 
         Note: This method must be implemented in the derived class only if should_skip() is False.
         The subclasses might not implement more than a stub if the fix method
-        is too difficult to implement or does not make sense.
+        is too challenging to implement or does not make sense.
         """
         assert False, (
             "This method must be implemented in the derived class if should_skip() is False."
@@ -177,14 +179,14 @@ class BaseCheck(ABC):
     def log(self, message, enabled=True, log_level=None):
         """
         Logs a message with the check's log level.
-        e.g. [WARN][repository.name]: The name "${name}" should be snake_case.'
-        e.g. [error][toplevel.cmake]: Missing top level CMakeLists.txt.'
+        E.g., [warning][file.names]: File name "${name}" does not follow the snake_case naming convention.
+        E.g., [error][toplevel.cmake]: The file 'CMakeLists.txt' does not exist.
         """
 
         if self.log_enabled and enabled:
             if log_level:
                 level = log_level
-            elif self._is_resolving_log_level: # if it hasn't been initialized yet
+            elif self._is_resolving_log_level:  # if it hasn't been initialized yet
                 level = "info"
             else:
                 level = self.log_level

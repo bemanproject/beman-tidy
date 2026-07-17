@@ -82,7 +82,7 @@ def test__repository_name__fix_inplace(repo_info, beman_standard_check_config):
 
 def test__repository_default_branch__valid(repo_info, beman_standard_check_config):
     """
-    Test that repositories with valid default branch pass the check.
+    Test that repositories with a valid default branch pass the check.
     """
     # Create mock repo info with valid default branch
     valid_repo_infos = [
@@ -99,7 +99,7 @@ def test__repository_default_branch__valid(repo_info, beman_standard_check_confi
 
 def test__repository_default_branch__invalid(repo_info, beman_standard_check_config):
     """
-    Test that repositories with invalid default branch fail the check.
+    Test that repositories with an invalid default branch fail the check.
     """
     # Test various invalid branch names
     invalid_repo_infos = [
@@ -203,7 +203,7 @@ def test__repository_disallow_git_submodules__valid(
     Test that repositories with valid git submodules pass the check.
     """
     valid_submodules_paths = [
-        # Repo with no .gitsubmodules file
+        # Repo with no '.gitmodules' file
         Path(f"{valid_prefix}/repo-exemplar-v1/"),
         # Repo with wg21 git submodule
         Path(f"{valid_prefix}/repo-exemplar-v2/"),
