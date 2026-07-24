@@ -14,6 +14,8 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeLibraryNameCheck,
     CMakeLibraryAliasCheck,
     CMakeTargetNamesCheck,
+    CMakeSkipTestsCheck,
+    CMakeSkipExamplesCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -210,6 +212,103 @@ def test__cmake_target_names__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_target_names__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_skip_tests__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.skip_tests check.
+    """
+    valid_cmake_paths = [
+        # CMakeLists.txt from beman.exemplar
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeSkipTestsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_skip_tests__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.skip_tests check.
+    """
+    invalid_cmake_paths = [
+        # CMakeLists.txt missing BEMAN_EXEMPLAR_BUILD_TESTS option
+        Path(f"{invalid_prefix}/invalid-skip_tests-v1.txt"),
+        # CMakeLists.txt with wrong option default
+        Path(f"{invalid_prefix}/invalid-skip_tests-v2.txt"),
+        # CMakeLists.txt without if(BEMAN_EXEMPLAR_BUILD_TESTS) guard
+        Path(f"{invalid_prefix}/invalid-skip_tests-v3.txt"),
+        # CMakeLists.txt with guarded and unguarded add_subdirectory(tests...)
+        Path(f"{invalid_prefix}/invalid-skip_tests-v4.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeSkipTestsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_skip_tests__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_skip_examples__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.skip_examples check.
+    """
+    valid_cmake_paths = [
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeSkipExamplesCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_skip_examples__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.skip_examples check.
+    """
+    invalid_cmake_paths = [
+        Path(f"{invalid_prefix}/invalid-skip_examples-v1.txt"),
+        Path(f"{invalid_prefix}/invalid-skip_examples-v2.txt"),
+        Path(f"{invalid_prefix}/invalid-skip_examples-v3.txt"),
+        Path(f"{invalid_prefix}/invalid-skip_examples-v4.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeSkipExamplesCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_skip_examples__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.
