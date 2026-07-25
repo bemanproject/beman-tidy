@@ -8,7 +8,7 @@ from pathlib import Path
 
 from beman_tidy.lib.utils.string import normalize_path_for_display
 from .base_check import BaseCheck
-from ...utils.config import is_ignored, get_ignores
+from ...utils.config import is_ignored, get_ignore_matcher
 
 
 class FileBaseCheck(BaseCheck):
@@ -189,7 +189,7 @@ class BatchFileBaseCheck(BaseCheck):
         self._validate()
         assert self.file_path_generator is not None
 
-        ignores = get_ignores(self.repo_info)
+        ignores = get_ignore_matcher(self.repo_info)
 
         all_files = self.file_path_generator(self.repo_path, ignores=ignores)
         all_successful = True

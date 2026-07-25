@@ -7,10 +7,13 @@ import yaml
 import logging
 
 from pathlib import Path
-from beman_tidy.lib.utils.file import get_repo_ignorable_subdirectories
+from beman_tidy.lib.utils import ignore
 from beman_tidy.lib.utils.logger_config import setup_logging
 
 setup_logging()
+
+# .gitignore is honored unless the repository configuration opts out.
+DEFAULT_USE_GITIGNORE = True
 
 def validate_config(config):
     """
@@ -45,6 +48,25 @@ def validate_config(config):
             return False
              
     if not _validate_disabled_rules(config):
+        return False
+
+    if not _validate_use_gitignore(config):
+        return False
+
+    return True
+
+
+def _validate_use_gitignore(config):
+    """
+    Validate the 'use_gitignore' configuration.
+    Returns True if valid, False otherwise.
+    """
+    use_gitignore = config.get("use_gitignore")
+    if use_gitignore is None:
+        return True
+
+    if not isinstance(use_gitignore, bool):
+        logging.error(f"Error: 'use_gitignore' in .beman-tidy.yaml must be a boolean, but got {type(use_gitignore).__name__}.")
         return False
 
     return True
@@ -160,31 +182,26 @@ def load_repo_config(repo_path, config_path=None):
     return merged_config
 
 
-def get_ignores(repo_info):
+def get_ignore_matcher(repo_info):
     """
-    Returns a combined list of default system ignores and user-configured ignores.
+    Returns the IgnoreMatcher for the repository, combining the built-in ignores,
+    the configured 'ignored_paths' and - unless 'use_gitignore' is false - the
+    .gitignore files of the repository.
     """
+    config = repo_info.get("config", {})
+    return ignore.get_ignore_matcher(
+        repo_info.get("top_level", "."),
+        config.get("ignored_paths") or [],
+        config.get("use_gitignore", DEFAULT_USE_GITIGNORE),
+    )
 
-    default_ignores = get_repo_ignorable_subdirectories()
-    user_ignores = repo_info.get("config", {}).get("ignored_paths") or []
-    return list(default_ignores) + user_ignores
 
-
-def is_ignored(repo_info, relative_path):
+def is_ignored(repo_info, relative_path, is_dir=None):
     """
     Check if a given path is ignored by the configuration.
     A path can be a file or a directory.
     If a directory is ignored, all its children are also ignored.
+
+    @param is_dir: Whether the path is a directory. Determined from disk when None.
     """
-    ignores = get_ignores(repo_info)
-    rel_path_str = relative_path.as_posix()
-    for ignore in ignores:
-        ignore_str = str(ignore).rstrip('/')
-
-        if rel_path_str == ignore_str:
-            return True
-        
-        if rel_path_str.startswith(ignore_str + '/'):
-            return True
-
-    return False
+    return get_ignore_matcher(repo_info).is_ignored(relative_path, is_dir=is_dir)
