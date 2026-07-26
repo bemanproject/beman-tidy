@@ -157,7 +157,8 @@ class CMakeDefaultCheck(CMakeBaseCheck):
             if isinstance(item, Option) and item.args:
                 args = [arg.value for arg in item.args]
                 if args:
-                    options[args[0]] = args[2] if len(args) >= 3 else None
+                    # option(<variable> "<help_text>" [value]): default is at index 2
+                    options[args[0]] = args[2] if len(args) > 2 else None
         return options
 
     def _library_if_conditions(self, ast_tree):
