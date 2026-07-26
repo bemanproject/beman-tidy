@@ -62,11 +62,12 @@ def test__cmake_default__invalid(repo_info, beman_standard_check_config):
     )
 
 
-@pytest.mark.skip(reason="not implemented")
+@pytest.mark.skip(reason="fix-inplace not yet implemented: cmake.default is check-only")
 def test__cmake_default__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
-    Note: Skipping this test as it is not implemented.
+    Note: Skipping this test as fix-inplace is not implemented for cmake.default.
+    The check is currently check-only; fix() logs guidance and returns False.
     """
     pass
 
