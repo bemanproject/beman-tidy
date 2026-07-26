@@ -67,6 +67,17 @@ def test_validate_config_root_ignored(capsys):
     captured = capsys.readouterr()
     assert "Error: Cannot ignore root directory" in captured.out
 
+def test_validate_config_use_gitignore(capsys):
+    """Test that 'use_gitignore' must be a boolean."""
+    assert validate_config({"use_gitignore": True}) is True
+    assert validate_config({"use_gitignore": False}) is True
+    # Omitting it is valid: .gitignore is honored by default.
+    assert validate_config({}) is True
+
+    assert validate_config({"use_gitignore": "yes"}) is False
+    captured = capsys.readouterr()
+    assert "Error: 'use_gitignore' in .beman-tidy.yaml must be a boolean" in captured.out
+
 def test_load_repo_config_default(tmp_path):
     """Test loading the default configuration file and merging with user config."""
     default_config_path = get_default_config_path()

@@ -184,9 +184,11 @@ tests, build/install, and running `beman-tidy` on `bemanproject/exemplar`.
 
 The following configuration options may be used in a `.beman-tidy.yaml` file:
 
-- `ignored_paths` - A list of paths to be excluded from all checks.
+- `ignored_paths` - A list of patterns for paths to be excluded from all checks.
+  - Entries use [`.gitignore` pattern syntax](https://git-scm.com/docs/gitignore#_pattern_format): wildcards (`*`, `?`, `[abc]`), `**` for spanning directories, a leading `/` to anchor a pattern to the repository root, a trailing `/` to match directories only, and a leading `!` to re-include a path.
   - To ignore a specific file, provide its full path relative to the repository root.
   - To ignore a directory, provide the path to that directory. This will ignore the directory itself and all files and subdirectories within it. A trailing slash (`/`) is optional.
+  - A pattern without a `/` matches at any depth, so `detail` ignores every `detail` entry in the repository, while `/detail` only ignores the one in the root.
 
 - Example:
   ```yaml
@@ -196,7 +198,28 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
 
     # Ignores a directory and everything inside it
     - include/beman/optional/another_dir
+
+    # Ignores every generated header, wherever it is
+    - "**/generated/*.hpp"
+
+    # Checks one file anyway, even though the pattern above covers it
+    - "!include/beman/optional/generated/api.hpp"
   ```
+
+- `use_gitignore` - Whether the `.gitignore` files of the repository are honored. Defaults to `true`.
+  - Every `.gitignore` in the repository is applied, each relative to its own directory, exactly as git applies them. A `.gitignore` inside an ignored directory is not read.
+  - `README.md` and `LICENSE` are mandatory and are checked even if a `.gitignore` matches them. A warning is printed when that happens.
+  - As in git, a path below an ignored *directory* cannot be re-included: if a `.gitignore` has `generated/`, no `!generated/api.hpp` entry brings `api.hpp` back. The repository has to ignore `generated/*` instead.
+  - Set it to `false` to check paths that the repository does not track:
+
+  ```yaml
+  use_gitignore: false
+  ```
+
+- Ignore sources are consulted in this order, and the first pattern that matches decides:
+  1. `ignored_paths` from `.beman-tidy.yaml`
+  2. the `.gitignore` files of the repository, deepest directory first
+  3. beman-tidy's built-in ignores (`build/`, `.git/`, `__pycache__/`, IDE directories, ...)
 
 - `disabled_rules` - A list of rule names (or patterns) to be completely skipped during checks.
   - To disable a specific rule, provide its exact name (e.g., `readme.title`).
@@ -229,7 +252,9 @@ The following configuration options may be used in a `.beman-tidy.yaml` file:
 - Why do I see "not implemented" in the summary?
   - The check exists in the Beman Standard snapshot but does not yet have an implemented checker.
 - How do I ignore files/directories?
-  - Use `ignored_paths` in `.beman-tidy.yaml`.
+  - Use `ignored_paths` in `.beman-tidy.yaml`. Entries use `.gitignore` pattern syntax.
+- Why is a file in my repository not being checked at all?
+  - It is probably matched by your `.gitignore`, which beman-tidy honors by default. Set `use_gitignore: false` in `.beman-tidy.yaml` to check ignored files too, or re-include a single path with a `!` entry in `ignored_paths`.
 - How do I disable specific rules?
   - Use `disabled_rules` in `.beman-tidy.yaml`. You can specify exact rule names or glob patterns like `readme.*`.
 - How do I get more detail?

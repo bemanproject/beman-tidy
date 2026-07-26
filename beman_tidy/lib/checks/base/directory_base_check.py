@@ -52,7 +52,7 @@ class DirectoryBaseCheck(BaseCheck):
         """
         if super().should_skip():
             return True
-        return is_ignored(self.repo_info, self.relative_path)
+        return is_ignored(self.repo_info, self.relative_path, is_dir=True)
 
     @abstractmethod
     def check(self):

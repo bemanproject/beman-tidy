@@ -4,26 +4,14 @@
 import os
 from pathlib import Path
 from .comments import determine_comment_type
+from .ignore import DEFAULT_IGNORE_PATTERNS, IgnoreMatcher, get_ignore_matcher
 
 
 def get_repo_ignorable_subdirectories():
     """
     Returns a set of common build and IDE directories to ignore.
     """
-    return {
-        ".git/",
-        "build/",
-        "cmake-build-debug/",
-        "cmake-build-release/",
-        ".idea/",
-        ".vscode/",
-        "__pycache__/",
-        ".pytest_cache/",
-        ".ruff_cache/",
-        "node_modules/",
-        "venv/",
-        "env/",
-    }
+    return set(DEFAULT_IGNORE_PATTERNS)
 
 
 def get_cpp_header_extensions():
@@ -47,14 +35,22 @@ def get_cpp_extensions():
     return get_cpp_header_extensions() | get_cpp_source_extensions()
 
 
-def _is_ignored(path, ignores):
-    path_str = path.as_posix()
+def _as_matcher(ignores, repo_path):
+    """
+    Accept either an IgnoreMatcher or a plain iterable of ignore patterns.
+    """
+    if isinstance(ignores, IgnoreMatcher):
+        return ignores
 
-    for pattern in ignores:
-        clean_pattern = pattern.rstrip("/") # trailing slash is optional
-        if path_str == clean_pattern or path_str.startswith(clean_pattern + "/"):
-            return True
-    return False
+    if ignores is None:
+        ignores = get_repo_ignorable_subdirectories()
+
+    # Pattern order decides which one wins, so only unordered input is sorted.
+    if isinstance(ignores, (set, frozenset)):
+        ignores = sorted(ignores)
+
+    # An explicit list of patterns is the whole story: .gitignore is not added.
+    return get_ignore_matcher(repo_path, ignores, use_gitignore=False)
 
 
 def get_matched_paths(repo_path, extensions, ignores=None):
@@ -62,24 +58,23 @@ def get_matched_paths(repo_path, extensions, ignores=None):
     Get all files in the repository matching the given extensions.
     Ignores paths specified in 'ignores'.
     """
-    if ignores is None:
-        ignores = get_repo_ignorable_subdirectories()
+    repo_path = Path(repo_path)
+    matcher = _as_matcher(ignores, repo_path)
 
     matched_files = []
-    repo_path = Path(repo_path)
 
     for root, dirs, files in os.walk(repo_path):
         rel_root = Path(root).relative_to(repo_path)
 
         for d in list(dirs):
             d_path = rel_root / d
-            if _is_ignored(d_path, ignores):
+            if matcher.is_ignored(d_path, is_dir=True):
                 dirs.remove(d)
 
         for f in files:
             f_path = rel_root / f
             if f_path.suffix in extensions:
-                if not _is_ignored(f_path, ignores):
+                if not matcher.is_ignored(f_path, is_dir=False):
                     matched_files.append(f_path)
 
     return sorted(list(set(matched_files)))
@@ -149,24 +144,23 @@ def get_commentable_files(repo_path, ignores=None):
     Get all files that can contain a comment (and thus should have an SPDX identifier).
     Covers C++, CMake, Python, shell scripts, and YAML files.
     """
-    if ignores is None:
-        ignores = get_repo_ignorable_subdirectories()
+    repo_path = Path(repo_path)
+    matcher = _as_matcher(ignores, repo_path)
 
     matched_files = []
-    repo_path = Path(repo_path)
 
     for root, dirs, files in os.walk(repo_path):
         rel_root = Path(root).relative_to(repo_path)
 
         for d in list(dirs):
             d_path = rel_root / d
-            if _is_ignored(d_path, ignores):
+            if matcher.is_ignored(d_path, is_dir=True):
                 dirs.remove(d)
 
         for f in files:
             f_path = rel_root / f
             if f_path.suffix in COMMENTABLE_EXTENSIONS or f_path.name in COMMENTABLE_FILENAMES:
-                if not _is_ignored(f_path, ignores):
+                if not matcher.is_ignored(f_path, is_dir=False):
                     matched_files.append(f_path)
 
     return sorted(list(set(matched_files)))
