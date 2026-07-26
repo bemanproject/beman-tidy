@@ -229,21 +229,35 @@ class CMakeDefaultCheck(CMakeBaseCheck):
 
         condition = library_if.args[0].value
 
-        # Extract all add_library commands from the if() block to move outside
+        # Separate library add_library commands from other commands in the if() block
         library_cmds = [
             sub for sub in library_if.if_true or []
             if isinstance(sub, Command) and sub.identifier == "add_library"
         ]
+        other_cmds = [
+            sub for sub in library_if.if_true or []
+            if not (isinstance(sub, Command) and sub.identifier == "add_library")
+        ]
+
+        if other_cmds:
+            # The if() block contains non-library commands beyond add_library; automatic
+            # restructuring is not safe as it would silently discard those commands.
+            self.log(
+                "The if() block guarding the library target also contains other commands. "
+                "Please manually move the library target outside the if() block. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakedefault for more information."
+            )
+            return False
 
         # Build the replacement text for the library commands (without indentation)
-        extracted_text = "\n".join(content[cmd.span] for cmd in library_cmds)
+        extracted_text = "\n".join(
+            content[cmd.span.start:cmd.span.stop] for cmd in library_cmds
+        )
 
         # Build modifications list to apply in reverse order (end to start)
         modifications = []
 
-        # Replace the entire if() block with the extracted library commands;
-        # any non-library commands inside the block are discarded since this
-        # scenario represents an unconventional structure that requires manual review.
+        # Replace the entire if() block with the unconditional library commands
         modifications.append((library_if.span.start, library_if.span.stop, extracted_text))
 
         # Remove the option() that guards the library, if any
@@ -263,7 +277,8 @@ class CMakeDefaultCheck(CMakeBaseCheck):
         for start, stop, replacement in modifications:
             result = result[:start] + replacement + result[stop:]
 
-        # Clean up consecutive blank lines left by removed blocks
+        # Collapse sequences of 3+ newlines into 2 to clean up blank lines
+        # introduced by the removed option()/if() blocks.
         result = re.sub(r'\n{3,}', '\n\n', result)
 
         self.write(result)
