@@ -85,8 +85,8 @@ def get_repo_info(path: str, config_path: str | None = None):
         if short_name.startswith("beman."):
             short_name = short_name[6:]
 
-        # Get the current branch
-        current_branch = repo.active_branch.name
+        # A detached HEAD does not have an active branch.
+        current_branch = None if repo.head.is_detached else repo.active_branch.name
 
         # Get the default branch
         # Note: shallow clones (e.g. GitHub Actions) may not have refs/remotes/origin/HEAD set.
