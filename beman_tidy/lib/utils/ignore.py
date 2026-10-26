@@ -163,7 +163,7 @@ def _relative_to(candidate, base):
     if not candidate.startswith(prefix):
         return None
 
-    scoped_path = candidate[len(prefix):]
+    scoped_path = candidate[len(prefix) :]
     # The .gitignore of a directory cannot ignore that directory itself.
     return scoped_path or None
 

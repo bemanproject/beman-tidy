@@ -45,8 +45,17 @@ def _as_matcher(ignores, repo_path):
     if ignores is None:
         ignores = get_repo_ignorable_subdirectories()
 
-    # Pattern order decides which one wins, so only unordered input is sorted.
+    # In gitignore syntax the later of two matching patterns wins, so order is
+    # part of the meaning. A set has none: sorting it is fine for plain
+    # patterns, but it would put every "!" negation first (it sorts before
+    # letters) and silently defeat them. Unordered input may not hold any.
     if isinstance(ignores, (set, frozenset)):
+        negations = sorted(p for p in ignores if str(p).startswith("!"))
+        if negations:
+            raise ValueError(
+                "ignore patterns with '!' negations must be passed in order "
+                f"(a list or tuple), not as a set: {negations}"
+            )
         ignores = sorted(ignores)
 
     # An explicit list of patterns is the whole story: .gitignore is not added.

@@ -245,3 +245,20 @@ def test_generators_keep_pattern_list_order(tmp_path):
     found = get_matched_paths(root, {".cpp"}, ignores=["gen/*", "!gen/keep.cpp"])
 
     assert found == [Path("gen/keep.cpp")]
+
+
+def test_generators_reject_negations_in_unordered_patterns(tmp_path):
+    """Test that a set of patterns may not contain a '!' entry, whose effect depends on order."""
+    root = make_repo(tmp_path, {"gen/a.cpp": "", "gen/keep.cpp": ""})
+
+    with pytest.raises(ValueError, match="!gen/keep.cpp"):
+        get_matched_paths(root, {".cpp"}, ignores={"gen/*", "!gen/keep.cpp"})
+
+
+def test_generators_accept_unordered_plain_patterns(tmp_path):
+    """Test that a set of plain patterns is accepted and applied."""
+    root = make_repo(tmp_path, {"src/main.cpp": "", "gen/a.cpp": "", "build/b.cpp": ""})
+
+    found = get_matched_paths(root, {".cpp"}, ignores={"gen/", "build/"})
+
+    assert found == [Path("src/main.cpp")]
