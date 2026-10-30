@@ -19,6 +19,6 @@ repos:
     rev: v0.13.2
     hooks:
       - id: ruff-check
-        files: beman-tidy/
+        files: ^beman_tidy/
       - id: ruff-format
-        files: beman-tidy/
+        files: ^beman_tidy/
