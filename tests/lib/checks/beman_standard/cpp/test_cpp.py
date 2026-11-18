@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import pytest
 import shutil
 from pathlib import Path
 
-from beman_tidy.lib.checks.beman_standard.cpp import CppNamespaceCheck, CppExtensionIdentifiersCheck
+from beman_tidy.lib.checks.beman_standard.cpp import (
+    CppNamespaceCheck,
+    CppExtensionIdentifiersCheck,
+    CppMinStdVersionCheck,
+)
 
 test_data_prefix = Path("tests/lib/checks/beman_standard/cpp/namespace")
 valid_prefix = test_data_prefix / "valid"
@@ -44,3 +49,34 @@ def test__cpp_extension_identifiers__is_always_skipped(repo_info, beman_standard
     Test that cpp.extension_identifiers is always skipped.
     """
     assert CppExtensionIdentifiersCheck(repo_info, beman_standard_check_config).should_skip()
+
+
+min_std_version_prefix = Path("tests/lib/checks/beman_standard/cpp/min_std_version")
+min_std_version_valid_prefix = min_std_version_prefix / "valid"
+min_std_version_invalid_prefix = min_std_version_prefix / "invalid"
+
+
+def test__cpp_min_std_version__valid(repo_info, beman_standard_check_config):
+    for repo_path in (
+        min_std_version_valid_prefix / "repo-v1",
+        min_std_version_valid_prefix / "repo-cpp29",
+    ):
+        repo_info["top_level"] = repo_path
+        check = CppMinStdVersionCheck(repo_info, beman_standard_check_config)
+        assert check.check() is True
+
+
+def test__cpp_min_std_version__invalid(repo_info, beman_standard_check_config):
+    repo_info["top_level"] = min_std_version_invalid_prefix / "repo-v1"
+
+    check = CppMinStdVersionCheck(repo_info, beman_standard_check_config)
+    assert check.check() is False
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cpp_min_std_version__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid README.md minimum C++ standard.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
