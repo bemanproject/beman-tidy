@@ -17,6 +17,7 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeTargetNamesCheck,
     CMakeSkipTestsCheck,
     CMakeSkipExamplesCheck,
+    CMakePassiveTargetsCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -357,6 +358,64 @@ def test__cmake_skip_examples__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_skip_examples__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_passive_targets__valid(repo_info, beman_standard_check_config):
+    """
+    Test that valid CMake files pass the cmake.passive_targets check.
+    """
+    valid_cmake_paths = [
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+        Path(f"{valid_prefix}/passive_targets-v1.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakePassiveTargetsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_passive_targets__invalid(
+    repo_info, beman_standard_check_config, tmp_path
+):
+    """
+    Test that invalid CMake files fail the cmake.passive_targets check.
+    """
+    invalid_cmake_paths = [
+        Path(f"{invalid_prefix}/invalid-passive_targets-v1.txt"),
+        Path(f"{invalid_prefix}/invalid-passive_targets-v2.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakePassiveTargetsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+    # A missing file must fail the check instead of silently falling back to a
+    # repository-wide scan (an empty repository would pass that scan).
+    empty_repo_info = dict(repo_info, top_level=tmp_path)
+    check_instance = CMakePassiveTargetsCheck(
+        empty_repo_info, beman_standard_check_config
+    )
+    check_instance.path = tmp_path / "CMakeLists.txt"
+    check_instance.log_level = True
+    assert check_instance.check() is False
+
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_passive_targets__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.
