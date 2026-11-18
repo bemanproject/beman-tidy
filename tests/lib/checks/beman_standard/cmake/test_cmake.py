@@ -372,6 +372,12 @@ def test__cmake_config__valid(repo_info, beman_standard_check_config):
     valid_cmake_paths = [
         # CMakeLists.txt from beman.exemplar
         Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+        # beman_install_library(${PROJECT_NAME} ...)
+        Path(f"{valid_prefix}/valid-config-v1.txt"),
+        # beman_install_library() with a variable set from ${PROJECT_NAME}
+        Path(f"{valid_prefix}/valid-config-v2.txt"),
+        # Hand-written config package: install(EXPORT ... NAMESPACE beman::) + config file
+        Path(f"{valid_prefix}/valid-config-v3.txt"),
     ]
 
     run_check_for_each_path(
@@ -392,6 +398,10 @@ def test__cmake_config__invalid(repo_info, beman_standard_check_config):
         Path(f"{invalid_prefix}/invalid-config-v1.txt"),
         # CMakeLists.txt with beman_install_library referencing wrong library name
         Path(f"{invalid_prefix}/invalid-config-v2.txt"),
+        # beman_install_library() for a name that only starts with the library name
+        Path(f"{invalid_prefix}/invalid-config-v3.txt"),
+        # install(EXPORT ... NAMESPACE beman::) without installing the config file
+        Path(f"{invalid_prefix}/invalid-config-v4.txt"),
     ]
 
     run_check_for_each_path(
