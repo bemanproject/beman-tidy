@@ -7,12 +7,15 @@ on:
     - cron: '0 6 * * 0' # Weekly on Sunday 09:00 EEST
   workflow_call:
   workflow_dispatch:
+  pull_request:
+    types: [labeled, synchronize]
 
 permissions: {}
 
 jobs:
   parse-libraries:
     name: Parse Beman library list
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-on-all-libraries')
     runs-on: ubuntu-latest
     outputs:
       libraries: ${{ steps.parse.outputs.libraries }}

@@ -4,6 +4,7 @@
 import re
 from beman_tidy.lib.checks.base.base_check import BaseCheck
 from beman_tidy.lib.checks.base.file_base_check import FileBaseCheck, BatchFileBaseCheck
+from beman_tidy.lib.checks.beman_standard.readme import ReadmeBaseCheck
 from beman_tidy.lib.checks.system.registry import register_beman_standard_check
 from beman_tidy.lib.utils.comments import determine_comment_type
 from beman_tidy.lib.utils.file import get_beman_include_headers, get_non_test_cpp_files
@@ -168,6 +169,39 @@ class CppNoFlagForkingCheck(BatchFileBaseCheck):
                 f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppno_flag_forking"
             )
             return False
+
+
+@register_beman_standard_check("cpp.min_std_version")
+class CppMinStdVersionCheck(ReadmeBaseCheck):
+    """
+    [cpp.min_std_version]
+    Recommendation: README.md should prominently display the minimum supported C++ standard.
+    """
+
+    _MIN_STD_VERSION_RE = re.compile(
+        r"C\+\+(?:1[789]|2\d)\s+standard",
+        re.IGNORECASE,
+    )
+
+    def check(self):
+        content = self.read()
+        if self._MIN_STD_VERSION_RE.search(content):
+            return True
+
+        display_path = normalize_path_for_display(self.path, self.repo_path)
+        self.log(
+            f"The file '{display_path}' does not prominently display the minimum supported "
+            "C++ standard (e.g. 'C++20 standard'). "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppmin_std_version."
+        )
+        return False
+
+    def fix(self):
+        self.log(
+            "beman-tidy cannot fix this issue. Add the minimum supported C++ standard to README.md. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppmin_std_version."
+        )
+        return False
 
 
 @register_beman_standard_check("cpp.extension_identifiers")
