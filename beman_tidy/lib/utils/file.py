@@ -99,28 +99,27 @@ def get_cpp_files(repo_path, ignores=None):
 def get_cmake_files(repo_path, ignores=None):
     """
     Get all CMake files (CMakeLists.txt and *.cmake) in the repository.
+    Ignores paths specified in 'ignores' (an IgnoreMatcher or patterns).
     """
-    if ignores is None:
-        ignores = get_repo_ignorable_subdirectories()
+    repo_path = Path(repo_path)
+    matcher = _as_matcher(ignores, repo_path)
 
     matched_files = []
-    repo_path = Path(repo_path)
 
     for root, dirs, files in os.walk(repo_path):
         rel_root = Path(root).relative_to(repo_path)
 
         for d in list(dirs):
-            d_path = rel_root / d
-            if _is_ignored(d_path, ignores):
+            if matcher.is_ignored(rel_root / d, is_dir=True):
                 dirs.remove(d)
 
         for f in files:
             f_path = rel_root / f
             if f_path.suffix == ".cmake" or f_path.name == "CMakeLists.txt":
-                if not _is_ignored(f_path, ignores):
+                if not matcher.is_ignored(f_path, is_dir=False):
                     matched_files.append(f_path)
 
-    return sorted(list(set(matched_files)))
+    return sorted(set(matched_files))
 
 
 def get_non_test_cpp_files(repo_path, ignores=None):

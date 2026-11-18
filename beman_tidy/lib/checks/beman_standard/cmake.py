@@ -17,7 +17,7 @@ from beman_tidy.lib.utils.cmake import (
 from ..base.base_check import BaseCheck
 from ..system.registry import register_beman_standard_check
 from ..base.file_base_check import FileBaseCheck
-from ...utils.config import get_ignores
+from ...utils.config import get_ignore_matcher
 from ...utils.file import get_cmake_files
 from ...utils.string import normalize_path_for_display
 
@@ -407,7 +407,7 @@ class CMakePassiveTargetsCheck(BaseCheck):
                     self.log(f"Unable to read CMake file '{path}': {exc}")
                     return None
 
-        ignores = get_ignores(self.repo_info)
+        ignores = get_ignore_matcher(self.repo_info)
         result = {}
         for rel_path in get_cmake_files(self.repo_path, ignores=ignores):
             abs_path = self.repo_path / rel_path
