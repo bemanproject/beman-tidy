@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+cmake_minimum_required(VERSION 3.30...4.3)
+
+project(
+    beman.exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 0.1.0
+)
+
+add_library(beman.exemplar INTERFACE)
+add_library(beman::exemplar ALIAS beman.exemplar)
+
+set(EXAMPLE_DIR examples)
+add_subdirectory(${EXAMPLE_DIR})

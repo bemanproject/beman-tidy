@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+cmake_minimum_required(VERSION 3.30...4.3)
+
+project(
+    beman.exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 0.1.0
+)
+
+add_library(beman.exemplar INTERFACE)
+add_library(beman::exemplar ALIAS beman.exemplar)
+
+# Variable used once as an expansion and once as a bare name in if().
+set(USE_MODULES ON)
+message(STATUS "modules: ${USE_MODULES}")
+if(USE_MODULES)
+    target_compile_definitions(beman.exemplar INTERFACE BEMAN_EXEMPLAR_USE_MODULES)
+endif()

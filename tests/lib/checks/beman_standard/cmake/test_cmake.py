@@ -17,6 +17,7 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeTargetNamesCheck,
     CMakeSkipTestsCheck,
     CMakeSkipExamplesCheck,
+    CMakeNoSingleUseVarsCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -357,6 +358,63 @@ def test__cmake_skip_examples__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_skip_examples__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_no_single_use_vars__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.no_single_use_vars check.
+    """
+    valid_cmake_paths = [
+        # CMakeLists.txt from beman.exemplar
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+        # Variable also used as a bare name in if()
+        Path(f"{valid_prefix}/valid-no_single_use_vars-v1.txt"),
+        # CMake built-in variables (CMAKE_*, BUILD_SHARED_LIBS)
+        Path(f"{valid_prefix}/valid-no_single_use_vars-v2.txt"),
+        # Variable assigned on several branches
+        Path(f"{valid_prefix}/valid-no_single_use_vars-v3.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeNoSingleUseVarsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_no_single_use_vars__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.no_single_use_vars check.
+    """
+    invalid_cmake_paths = [
+        # Single-use list variable
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v1.txt"),
+        # Single-use scalar variable
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v2.txt"),
+        # Upper-case SET()
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v3.txt"),
+        # Second reference only inside a comment
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v4.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeNoSingleUseVarsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_no_single_use_vars__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.

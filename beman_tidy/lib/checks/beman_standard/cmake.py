@@ -4,6 +4,8 @@
 from abc import ABC
 from collections.abc import Iterable
 
+import re
+
 import cmake_parser
 from cmake_parser.ast import AstNode, Command, If, Option
 
@@ -464,6 +466,79 @@ class CMakeSkipExamplesCheck(CMakeBaseCheck):
             f"and guarded by 'if({option_name})' before "
             "'add_subdirectory(examples...)'. "
             f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#{self._STANDARD_ANCHOR} for more information."
+        )
+        return False
+
+
+@register_beman_standard_check("cmake.no_single_use_vars")
+class CMakeNoSingleUseVarsCheck(CMakeBaseCheck):
+    # Variables that CMake itself reads, so setting them has an effect even
+    # when the CMakeLists.txt references them once or never.
+    _IMPLICITLY_CONSUMED_VARS = {"BUILD_SHARED_LIBS", "BUILD_TESTING"}
+
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    @classmethod
+    def _is_implicitly_consumed(cls, var_name):
+        return var_name.startswith("CMAKE_") or var_name in cls._IMPLICITLY_CONSUMED_VARS
+
+    @staticmethod
+    def _count_references(commands, var_name):
+        """
+        Count the uses of var_name: '${var_name}' expansions and bare names
+        (e.g. 'if(var_name)', 'foreach(x IN LISTS var_name)'). The name being
+        defined by set() / unset() is not a use. Comments are not counted.
+        """
+        expansion = re.compile(r"\$\{" + re.escape(var_name) + r"\}")
+        references = 0
+        for command in commands:
+            defines = command.identifier.lower() in ("set", "unset")
+            for index, arg in enumerate(command.args):
+                references += len(expansion.findall(arg.value))
+                if arg.value == var_name and not (defines and index == 0):
+                    references += 1
+        return references
+
+    def check(self):
+        commands = [
+            item for item in self.get_cmake_parse_raw() if isinstance(item, Command)
+        ]
+
+        set_counts = {}
+        for command in commands:
+            if command.identifier.lower() != "set" or len(command.args) < 2:
+                continue
+            upper_args = {arg.value.upper() for arg in command.args}
+            if "CACHE" in upper_args or "PARENT_SCOPE" in upper_args:
+                continue
+            var_name = command.args[0].value
+            set_counts[var_name] = set_counts.get(var_name, 0) + 1
+
+        single_use_vars = [
+            var_name
+            for var_name, count in set_counts.items()
+            # A variable set more than once is not a simple named constant.
+            if count == 1
+            and not self._is_implicitly_consumed(var_name)
+            and self._count_references(commands, var_name) == 1
+        ]
+
+        if single_use_vars:
+            self.log(
+                "Avoid using set() for variables that are referenced only once. "
+                f"Single-use variables: {', '.join(single_use_vars)}. "
+                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeno_single_use_vars for more information."
+            )
+            return False
+
+        return True
+
+    def fix(self):
+        self.log(
+            "Please inline single-use set() variables directly where they are referenced. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeno_single_use_vars for more information."
         )
         return False
 
