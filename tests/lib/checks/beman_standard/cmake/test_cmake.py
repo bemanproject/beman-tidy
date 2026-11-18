@@ -372,6 +372,8 @@ def test__cmake_implicit_defaults__valid(repo_info, beman_standard_check_config)
     valid_cmake_paths = [
         Path(f"{valid_prefix}/CMakeLists-v1.txt"),
         Path(f"{valid_prefix}/valid-implicit_defaults-v1.txt"),
+        # C++ modules install and non-default destinations
+        Path(f"{valid_prefix}/valid-implicit_defaults-v2.txt"),
     ]
 
     run_check_for_each_path(
@@ -390,6 +392,8 @@ def test__cmake_implicit_defaults__invalid(repo_info, beman_standard_check_confi
     invalid_cmake_paths = [
         Path(f"{invalid_prefix}/invalid-implicit_defaults-v1.txt"),
         Path(f"{invalid_prefix}/invalid-implicit_defaults-v2.txt"),
+        # Default destinations written as literal paths, inside if()
+        Path(f"{invalid_prefix}/invalid-implicit_defaults-v3.txt"),
     ]
 
     run_check_for_each_path(

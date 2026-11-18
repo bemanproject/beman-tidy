@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import re
 from abc import ABC
 from collections.abc import Iterable
 
@@ -474,40 +473,93 @@ class CMakeSkipExamplesCheck(CMakeBaseCheck):
 
 @register_beman_standard_check("cmake.implicit_defaults")
 class CMakeImplicitDefaultsCheck(CMakeBaseCheck):
+    """
+    Flags install(TARGETS ...) DESTINATION arguments that only restate CMake's
+    built-in default for that artifact kind (see the install() documentation).
+    Artifact kinds without a default destination (e.g. FILE_SET CXX_MODULES,
+    CXX_MODULES_BMI, INCLUDES) and non-default destinations are left alone.
+    """
+
+    _BINDIR = frozenset({"${CMAKE_INSTALL_BINDIR}", "bin"})
+    _LIBDIR = frozenset({"${CMAKE_INSTALL_LIBDIR}", "lib"})
+    _INCLUDEDIR = frozenset({"${CMAKE_INSTALL_INCLUDEDIR}", "include"})
+
+    # Destinations CMake uses when DESTINATION is omitted, per artifact kind.
+    _DEFAULT_DESTINATIONS = {
+        "RUNTIME": _BINDIR,
+        "LIBRARY": _LIBDIR,
+        "ARCHIVE": _LIBDIR,
+        "PUBLIC_HEADER": _INCLUDEDIR,
+        "PRIVATE_HEADER": _INCLUDEDIR,
+        "FILE_SET HEADERS": _INCLUDEDIR,
+        # A DESTINATION given before any artifact kind applies to all of them.
+        None: _BINDIR | _LIBDIR | _INCLUDEDIR,
+    }
+
+    # Keywords that start a new artifact kind section in install(TARGETS ...).
+    _ARTIFACT_KINDS = frozenset(
+        {
+            "RUNTIME",
+            "LIBRARY",
+            "ARCHIVE",
+            "OBJECTS",
+            "FRAMEWORK",
+            "BUNDLE",
+            "PUBLIC_HEADER",
+            "PRIVATE_HEADER",
+            "RESOURCE",
+            "FILE_SET",
+            "CXX_MODULES_BMI",
+            "INCLUDES",
+        }
+    )
+
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config)
 
     @staticmethod
-    def _extract_balanced_parentheses_block(content, open_paren_index):
-        depth = 0
-        for index in range(open_paren_index, len(content)):
-            char = content[index]
-            if char == "(":
-                depth += 1
-            elif char == ")":
-                depth -= 1
-                if depth == 0:
-                    return content[open_paren_index : index + 1]
-        return None
+    def _normalize_destination(destination):
+        return destination.strip().strip('"').rstrip("/")
 
-    def _has_install_targets_with_explicit_destination(self, content):
-        for match in re.finditer(r"\binstall\s*\(", content, flags=re.IGNORECASE):
-            open_paren_index = match.end() - 1
-            header = content[match.end() : match.end() + 64]
-            if not re.match(r"\s*TARGETS\b", header, flags=re.IGNORECASE):
-                continue
-            block = self._extract_balanced_parentheses_block(content, open_paren_index)
-            if block and re.search(r"\bDESTINATION\b", block, flags=re.IGNORECASE):
-                return True
-        return False
+    def _find_default_destinations(self, args):
+        """
+        Returns (artifact kind, destination) pairs from one install(TARGETS ...)
+        argument list where the destination equals CMake's default.
+        """
+        found = []
+        kind = None
+        index = 0
+        while index < len(args):
+            arg = args[index]
+            if arg in self._ARTIFACT_KINDS:
+                kind = arg
+                if arg == "FILE_SET" and index + 1 < len(args):
+                    # Only the conventional HEADERS set has a known type here.
+                    index += 1
+                    kind = f"FILE_SET {args[index]}"
+            elif arg == "DESTINATION" and index + 1 < len(args):
+                index += 1
+                destination = self._normalize_destination(args[index])
+                if destination in self._DEFAULT_DESTINATIONS.get(kind, ()):
+                    found.append((kind or "TARGETS", destination))
+            index += 1
+        return found
 
     def check(self):
-        content = self.read()
-        if self._has_install_targets_with_explicit_destination(content):
+        found = []
+        for command in self.get_cmake_parse_raw():
+            if getattr(command, "identifier", "").lower() != "install":
+                continue
+            args = [arg.value for arg in command.args]
+            if not args or args[0] != "TARGETS":
+                continue
+            found.extend(self._find_default_destinations(args))
+
+        if found:
+            details = ", ".join(f"{kind} DESTINATION {dest}" for kind, dest in found)
             self.log(
-                "install(TARGETS ...) should rely on implicit CMake defaults instead of "
-                "enumerating DESTINATION parameters. "
-                "Please update the CMakeLists.txt file according to the Beman Standard. "
+                f"install(TARGETS ...) restates CMake's default destination ({details}). "
+                "Please omit DESTINATION where the CMake default is intended. "
                 "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeimplicit_defaults for more information."
             )
             return False
@@ -516,8 +568,8 @@ class CMakeImplicitDefaultsCheck(CMakeBaseCheck):
 
     def fix(self):
         self.log(
-            "Please remove explicit DESTINATION parameters from install(TARGETS ...) where "
-            "CMake defaults are sufficient. "
+            "Please remove DESTINATION arguments from install(TARGETS ...) that restate "
+            "CMake's default destination. "
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeimplicit_defaults for more information."
         )
         return False

@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+cmake_minimum_required(VERSION 3.30...4.3)
+
+project(
+    beman.exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 0.1.0
+)
+
+add_library(beman.exemplar STATIC)
+add_library(beman::exemplar ALIAS beman.exemplar)
+
+include(GNUInstallDirs)
+
+# C++ module file sets and BMIs have no CMake default destination.
+install(
+    TARGETS beman.exemplar
+    EXPORT beman.exemplar-targets
+    FILE_SET CXX_MODULES
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    CXX_MODULES_BMI
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/beman.exemplar/bmi
+    FILE_SET HEADERS
+)
+
+# Destinations that differ from the CMake defaults are intentional.
+install(
+    TARGETS beman.exemplar
+    EXPORT beman.exemplar-targets
+    FILE_SET HEADERS
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/beman
+    INCLUDES
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
