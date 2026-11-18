@@ -1,0 +1,3 @@
+[submodule "dependency"]
+	path = deps/dependency
+	url = https://github.com/example/dependency.git

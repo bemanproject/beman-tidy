@@ -1,0 +1,6 @@
+[submodule "papers/wg21"]
+	path = papers/P0000/wg21
+	url = https://github.com/mpark/wg21.git
+[submodule "dependency"]
+	path = deps/dependency
+	url = https://github.com/example/dependency.git
