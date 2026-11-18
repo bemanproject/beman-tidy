@@ -51,14 +51,35 @@ no_flag_forking_invalid_prefix = no_flag_forking_prefix / "invalid"
 
 
 def test__cpp_no_flag_forking__valid(repo_info, beman_standard_check_config):
+    """
+    Test that headers using config.hpp macros pass, that __cpp_* in comments, strings, tests/
+    and in the library's own include/beman/<library>/config.hpp fallback is not flagged.
+    """
     repo_info["top_level"] = no_flag_forking_valid_prefix
 
     check = CppNoFlagForkingCheck(repo_info, beman_standard_check_config)
     assert check.check() is True
 
 
-def test__cpp_no_flag_forking__invalid(repo_info, beman_standard_check_config):
-    repo_info["top_level"] = no_flag_forking_invalid_prefix
+@pytest.mark.parametrize(
+    "case",
+    [
+        "defined",  # #if defined(__cpp_...) / #elif defined(__cpp_...)
+        "elif_bare",  # #elif __cpp_...
+        "ifdef",  # #ifdef __cpp_...
+        "ifndef",  # #ifndef __cpp_...
+        "compound",  # #if __cplusplus >= ... && __cpp_... // comment
+        "continuation",  # __cpp_... on a continuation line
+        "indented",  # indented directive with space after '#'
+        "detail_config",  # nested config.hpp is not exempt
+        "example",  # examples/ are not exempt
+    ],
+)
+def test__cpp_no_flag_forking__invalid(repo_info, beman_standard_check_config, case):
+    """
+    Test that each way of using a __cpp_* feature test macro in a preprocessor conditional fails.
+    """
+    repo_info["top_level"] = no_flag_forking_invalid_prefix / case
 
     check = CppNoFlagForkingCheck(repo_info, beman_standard_check_config)
     assert check.check() is False

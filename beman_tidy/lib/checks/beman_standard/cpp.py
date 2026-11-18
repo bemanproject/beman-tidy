@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 import re
+from pathlib import Path
 from beman_tidy.lib.checks.base.base_check import BaseCheck
 from beman_tidy.lib.checks.base.file_base_check import FileBaseCheck, BatchFileBaseCheck
 from beman_tidy.lib.checks.beman_standard.readme import ReadmeBaseCheck
@@ -110,15 +111,18 @@ class CppNoFlagForkingCheck(BatchFileBaseCheck):
     """
     [cpp.no_flag_forking]
     Requirement: C++ preprocessing must produce identical output regardless of compiler flags.
-    Feature test macros such as __cpp_* must not be used directly in #if/#elif.
+    Feature test macros such as __cpp_* must not be used directly in preprocessor conditionals.
+
+    The library's own include/beman/<short_name>/config.hpp is exempt: the Beman Standard
+    designates it as the place that wraps config_generated.hpp and provides fallback
+    defaults for users who vendor the include/ directory.
     """
 
-    _FLAG_FORKING_PATTERNS = (
-        re.compile(r"defined\s*\(\s*__cpp_"),
-        re.compile(r"#\s*if\s+__cpp_"),
-        re.compile(r"#\s*elif\s+defined\s*\(\s*__cpp_"),
-        re.compile(r"#\s*elif\s+__cpp_"),
-    )
+    # #if, #elif, #ifdef, #ifndef, #elifdef, #elifndef (C++23)
+    _CONDITIONAL_DIRECTIVE_RE = re.compile(r"^\s*#\s*(?:if|elif|ifdef|ifndef|elifdef|elifndef)\b")
+    _FEATURE_TEST_MACRO_RE = re.compile(r"\b__cpp_\w+")
+    _BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/")
+    _LINE_COMMENT_RE = re.compile(r"//.*$")
 
     def __init__(self, repo_info, beman_standard_check_config):
         super().__init__(repo_info, beman_standard_check_config)
@@ -135,31 +139,51 @@ class CppNoFlagForkingCheck(BatchFileBaseCheck):
                 repo_info, beman_standard_check_config, relative_path, name="cpp.no_flag_forking"
             )
 
-        def _is_in_comment(self, lines, line_index):
-            return determine_comment_type(lines, line_index) is not None
+        def _is_config_header(self):
+            return self.relative_path == Path("include") / "beman" / self.short_name / "config.hpp"
 
-        _PREPROCESSOR_LINE_RE = re.compile(r"^\s*#")
+        def _find_violations(self):
+            """
+            Returns a list of (line_number, macro) for each conditional directive that uses a
+            __cpp_* feature test macro. Continuation lines are joined and comments are ignored.
+            """
+            outer = CppNoFlagForkingCheck
+            lines = self.read_lines()
+            violations = []
+            line_index = 0
+            while line_index < len(lines):
+                start_index = line_index
+                directive = lines[line_index].rstrip("\n")
+                while directive.rstrip().endswith("\\") and line_index + 1 < len(lines):
+                    line_index += 1
+                    directive = directive.rstrip()[:-1] + " " + lines[line_index].rstrip("\n")
+                line_index += 1
+
+                if not outer._CONDITIONAL_DIRECTIVE_RE.match(directive):
+                    continue
+                if determine_comment_type(lines, start_index) is not None:
+                    continue
+
+                directive = outer._BLOCK_COMMENT_RE.sub(" ", directive)
+                directive = outer._LINE_COMMENT_RE.sub("", directive)
+                match = outer._FEATURE_TEST_MACRO_RE.search(directive)
+                if match:
+                    violations.append((start_index + 1, match.group(0)))
+            return violations
 
         def check(self):
-            lines = self.read_lines()
+            if self._is_config_header():
+                return True
+
             display_path = normalize_path_for_display(self.path, self.repo_path)
-
-            for line_index, line in enumerate(lines):
-                if self._is_in_comment(lines, line_index):
-                    continue
-                if not self._PREPROCESSOR_LINE_RE.match(line):
-                    continue
-
-                for pattern in CppNoFlagForkingCheck._FLAG_FORKING_PATTERNS:
-                    if pattern.search(line):
-                        self.log(
-                            f"Direct use of compiler feature-test macro in {display_path} at line {line_index + 1}. "
-                            f"Use CMake-detected config.hpp macros instead of __cpp_* in #if/#elif. "
-                            f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppno_flag_forking"
-                        )
-                        return False
-
-            return True
+            violations = self._find_violations()
+            for line_number, macro in violations:
+                self.log(
+                    f"Direct use of compiler feature-test macro {macro} in {display_path} at line {line_number}. "
+                    f"Use CMake-detected config.hpp macros instead of __cpp_* in preprocessor conditionals. "
+                    f"See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cppno_flag_forking"
+                )
+            return not violations
 
         def fix(self):
             display_path = normalize_path_for_display(self.path, self.repo_path)
