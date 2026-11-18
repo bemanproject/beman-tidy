@@ -4,11 +4,15 @@
 from pathlib import Path
 from beman_tidy.lib.utils.config import is_ignored
 
+# These tests cover the 'ignored_paths' patterns alone, so .gitignore is off:
+# see test_config_gitignore.py for how the two sources combine.
+
 def test_is_ignored_exact_file():
     """Test that an exact file path is correctly identified as ignored."""
     repo_info = {
         "config": {
-            "ignored_paths": ["include/beman/optional/config.hpp"]
+            "ignored_paths": ["include/beman/optional/config.hpp"],
+            "use_gitignore": False,
         }
     }
     # Path is ignored
@@ -20,7 +24,8 @@ def test_is_ignored_directory():
     """Test that ignoring a directory also ignores all its contents."""
     repo_info = {
         "config": {
-            "ignored_paths": ["build/"]
+            "ignored_paths": ["build/"],
+            "use_gitignore": False,
         }
     }
     # Exact directory match
@@ -36,7 +41,8 @@ def test_is_ignored_multiple_paths():
     """Test that multiple ignored paths are all respected."""
     repo_info = {
         "config": {
-            "ignored_paths": ["build/", "temp.txt", "docs/internal/"]
+            "ignored_paths": ["build/", "temp.txt", "docs/internal/"],
+            "use_gitignore": False,
         }
     }
     assert is_ignored(repo_info, Path("build/file.txt")) is True
@@ -46,14 +52,15 @@ def test_is_ignored_multiple_paths():
 
 def test_is_ignored_no_config():
     """Test behavior when no ignored_paths are configured."""
-    repo_info = {"config": {}}
+    repo_info = {"config": {"use_gitignore": False}}
     assert is_ignored(repo_info, Path("src/main.cpp")) is False
 
 def test_is_ignored_slash_handling():
     """Test that trailing slashes in config don't affect matching consistency."""
     repo_info = {
         "config": {
-            "ignored_paths": ["build", "docs/"]
+            "ignored_paths": ["build", "docs/"],
+            "use_gitignore": False,
         }
     }
     # Both should work whether or not they have a trailing slash in config
