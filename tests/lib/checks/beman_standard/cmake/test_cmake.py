@@ -367,14 +367,16 @@ def test__cmake_skip_examples__fix_inplace(repo_info, beman_standard_check_confi
 
 def test__cmake_use_find_package__valid(repo_info, beman_standard_check_config):
     """
-    Test that repositories without .gitmodules or FetchContent pass the check.
-    FetchContent under infra/ is excluded from this check.
+    Test that repositories without git submodules (other than the wg21 exception)
+    and without FetchContent outside infra/ pass the check.
     """
     valid_repo_paths = [
         # Repo with find_package dependencies and no .gitmodules
         Path(f"{valid_prefix}/repo-exemplar-v1/"),
         # Repo with FetchContent only under infra/ (excluded from the check)
         Path(f"{valid_prefix}/repo-exemplar-v2/"),
+        # Repo whose .gitmodules only contains the allowed mpark/wg21 submodule
+        Path(f"{valid_prefix}/repo-exemplar-v3/"),
     ]
 
     run_check_for_each_path(
@@ -399,6 +401,8 @@ def test__cmake_use_find_package__invalid(repo_info, beman_standard_check_config
         Path(f"{invalid_prefix}/repo-exemplar-v3/"),
         # examples/ CMakeLists.txt uses FetchContent_Declare
         Path(f"{invalid_prefix}/repo-exemplar-v4/"),
+        # .gitmodules contains wg21 plus another submodule
+        Path(f"{invalid_prefix}/repo-exemplar-v5/"),
     ]
 
     run_check_for_each_path(
