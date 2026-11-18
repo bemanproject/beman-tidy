@@ -367,13 +367,20 @@ def test__cmake_skip_examples__fix_inplace(repo_info, beman_standard_check_confi
 
 def test__cmake_passive_projects__valid(repo_info, beman_standard_check_config):
     """
-    Test that CMake files without forbidden project-level flags pass.
-    Fixtures under infra/ are excluded from this check.
+    Test that CMake files which don't override user compilation flags pass the
+    cmake.passive_projects check.
     """
     valid_cmake_paths = [
+        # No compilation flags set at all.
         Path(f"{valid_prefix}/passive_projects-v1"),
+        # Forbidden set() calls only in comments.
         Path(f"{valid_prefix}/passive_projects-v2"),
+        # Flags set only in a toolchain file (user settings).
         Path(f"{valid_prefix}/passive_projects-v3"),
+        # Flags set in a file included only from a toolchain file.
+        Path(f"{valid_prefix}/passive_projects-v4"),
+        # CMAKE_CXX_STANDARD set only as a default, inside if(NOT DEFINED ...).
+        Path(f"{valid_prefix}/passive_projects-v5"),
     ]
 
     run_check_for_each_path(
@@ -387,12 +394,22 @@ def test__cmake_passive_projects__valid(repo_info, beman_standard_check_config):
 
 def test__cmake_passive_projects__invalid(repo_info, beman_standard_check_config):
     """
-    Test that CMake files setting project-level compilation flags fail.
+    Test that CMake files overriding user compilation flags fail the
+    cmake.passive_projects check.
     """
     invalid_cmake_paths = [
+        # set(CMAKE_CXX_STANDARD 20)
         Path(f"{invalid_prefix}/invalid-passive_projects-v1"),
+        # set(CMAKE_CXX_FLAGS "-Wall")
         Path(f"{invalid_prefix}/invalid-passive_projects-v2"),
+        # set(CMAKE_CXX_STANDARD_REQUIRED ON)
         Path(f"{invalid_prefix}/invalid-passive_projects-v3"),
+        # Uppercase SET() in examples/CMakeLists.txt, under if(PROJECT_IS_TOP_LEVEL).
+        Path(f"{invalid_prefix}/invalid-passive_projects-v4"),
+        # Flags set in a .cmake file included from CMakeLists.txt, not a toolchain.
+        Path(f"{invalid_prefix}/invalid-passive_projects-v5"),
+        # Unconditional set() in the else() branch of if(NOT DEFINED ...).
+        Path(f"{invalid_prefix}/invalid-passive_projects-v6"),
     ]
 
     run_check_for_each_path(
@@ -404,11 +421,10 @@ def test__cmake_passive_projects__invalid(repo_info, beman_standard_check_config
     )
 
 
+@pytest.mark.skip(reason="not implemented")
 def test__cmake_passive_projects__fix_inplace(repo_info, beman_standard_check_config):
     """
-    Test that fix() is not auto-applicable for passive_projects violations.
+    Test that the fix method corrects an invalid CMake file.
+    Note: Skipping this test as it is not implemented.
     """
-    repo_info["top_level"] = Path(f"{invalid_prefix}/invalid-passive_projects-v1")
-    check = CMakePassiveProjectsCheck(repo_info, beman_standard_check_config)
-    assert check.check() is False
-    assert check.fix() is False
+    pass

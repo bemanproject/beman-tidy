@@ -96,6 +96,32 @@ def get_cpp_files(repo_path, ignores=None):
     return get_matched_paths(repo_path, get_cpp_extensions(), ignores=ignores)
 
 
+def get_cmake_files(repo_path, ignores=None):
+    """
+    Get all CMake files (CMakeLists.txt and *.cmake) in the repository.
+    Ignores paths specified in 'ignores' (an IgnoreMatcher or patterns).
+    """
+    repo_path = Path(repo_path)
+    matcher = _as_matcher(ignores, repo_path)
+
+    matched_files = []
+
+    for root, dirs, files in os.walk(repo_path):
+        rel_root = Path(root).relative_to(repo_path)
+
+        for d in list(dirs):
+            if matcher.is_ignored(rel_root / d, is_dir=True):
+                dirs.remove(d)
+
+        for f in files:
+            f_path = rel_root / f
+            if f_path.suffix == ".cmake" or f_path.name == "CMakeLists.txt":
+                if not matcher.is_ignored(f_path, is_dir=False):
+                    matched_files.append(f_path)
+
+    return sorted(set(matched_files))
+
+
 def get_non_test_cpp_files(repo_path, ignores=None):
     """
     Get all C++ source and header files NOT under a tests/ directory.
@@ -108,33 +134,6 @@ def get_non_test_cpp_files(repo_path, ignores=None):
             non_test_files.append(path)
 
     return non_test_files
-
-
-def get_cmake_files(repo_path, ignores=None):
-    """
-    Get all CMake files (CMakeLists.txt and *.cmake) in the repository.
-    Ignores paths specified in 'ignores'.
-    """
-    repo_path = Path(repo_path)
-    matcher = _as_matcher(ignores, repo_path)
-
-    matched_files = []
-
-    for root, dirs, files in os.walk(repo_path):
-        rel_root = Path(root).relative_to(repo_path)
-
-        for d in list(dirs):
-            d_path = rel_root / d
-            if matcher.is_ignored(d_path, is_dir=True):
-                dirs.remove(d)
-
-        for f in files:
-            f_path = rel_root / f
-            if f_path.suffix == ".cmake" or f_path.name == "CMakeLists.txt":
-                if not matcher.is_ignored(f_path, is_dir=False):
-                    matched_files.append(f_path)
-
-    return sorted(set(matched_files))
 
 
 def get_beman_include_headers(repo_path, ignores=None):

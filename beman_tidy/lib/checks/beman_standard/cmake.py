@@ -4,13 +4,15 @@
 from abc import ABC
 from collections.abc import Iterable
 
+import os
 import re
+from pathlib import Path
 from ..base.base_check import BaseCheck
 from ...utils.config import get_ignore_matcher
 from ...utils.file import get_cmake_files
 
 import cmake_parser
-from cmake_parser.ast import AstNode, Command, If, Option
+from cmake_parser.ast import AstNode, Command, If, Include, Option, Set
 
 from beman_tidy.lib.utils.cmake import (
     cmake_build_skip_subdir_option_pattern,
@@ -376,47 +378,123 @@ class CMakePassiveProjectsCheck(BaseCheck):
     """
     [cmake.passive_projects]
     Requirement: CMake projects must not adjust user-specified compilation flags.
+
+    Flags set() in toolchain files (and in the files they include) are user
+    settings, so they are not reported. Neither is a default set only when the
+    user did not provide one, i.e. inside if(NOT DEFINED <variable>).
     """
 
-    _COMMENT_RE = re.compile(r"#[^\n]*")
-    _FORBIDDEN_SET_PATTERNS = (
-        (re.compile(r"set\s*\(\s*CMAKE_CXX_FLAGS\b", re.IGNORECASE), "CMAKE_CXX_FLAGS"),
-        (re.compile(r"set\s*\(\s*CMAKE_CXX_STANDARD\b", re.IGNORECASE), "CMAKE_CXX_STANDARD"),
-        (
-            re.compile(r"set\s*\(\s*CMAKE_CXX_STANDARD_REQUIRED\b", re.IGNORECASE),
-            "CMAKE_CXX_STANDARD_REQUIRED",
-        ),
+    _FORBIDDEN_VARIABLES = (
+        "CMAKE_CXX_FLAGS",
+        "CMAKE_CXX_STANDARD",
+        "CMAKE_CXX_STANDARD_REQUIRED",
     )
+    _TOOLCHAIN_NAME_RE = re.compile(r"toolchain", re.IGNORECASE)
+    _CURRENT_LIST_DIR_RE = re.compile(r"\$\{CMAKE_CURRENT_LIST_DIR\}/?")
 
-    def _read_cmake_files(self):
+    def _get_cmake_files(self):
         ignores = get_ignore_matcher(self.repo_info)
-        result = {}
-        for rel_path in get_cmake_files(self.repo_path, ignores=ignores):
-            if rel_path.parts and rel_path.parts[0] == "infra":
-                continue
-            abs_path = self.repo_path / rel_path
-            try:
-                content = abs_path.read_text(encoding="utf-8", errors="ignore")
-                result[rel_path] = self._COMMENT_RE.sub("", content)
-            except OSError:
-                pass
-        return result
+        return get_cmake_files(self.repo_path, ignores=ignores)
+
+    def _parse(self, rel_path):
+        """
+        Returns the parse tree of a CMake file, or None if it cannot be read or parsed.
+        """
+        try:
+            content = (self.repo_path / rel_path).read_text(
+                encoding="utf-8", errors="ignore"
+            )
+            return list(cmake_parser.parser.parse_tree(content, skip_comments=True))
+        except Exception as e:
+            self.log(f"{rel_path}: cannot parse CMake file, skipping it ({e}).")
+            return None
+
+    @classmethod
+    def _walk(cls, nodes):
+        for node in nodes or []:
+            yield node
+            if isinstance(node, If):
+                yield from cls._walk(node.if_true)
+                yield from cls._walk(node.if_false)
+            else:
+                yield from cls._walk(getattr(node, "body", None))
+
+    def _get_toolchain_files(self, cmake_files, trees):
+        """
+        Returns the toolchain files: files named like a toolchain and the CMake
+        files they include, transitively.
+        """
+        known = set(cmake_files)
+        toolchains = {p for p in cmake_files if self._TOOLCHAIN_NAME_RE.search(p.name)}
+        pending = list(toolchains)
+        while pending:
+            current = pending.pop()
+            for node in self._walk(trees.get(current)):
+                if not isinstance(node, Include) or not node.args:
+                    continue
+                target = self._CURRENT_LIST_DIR_RE.sub("", node.args[0].value)
+                if "${" in target:
+                    continue
+                included = Path(os.path.normpath(current.parent / target))
+                if included in known and included not in toolchains:
+                    toolchains.add(included)
+                    pending.append(included)
+        return toolchains
+
+    @staticmethod
+    def _is_default_guard(if_args, variable):
+        """
+        True for if(NOT DEFINED <variable>), which only sets a default.
+        """
+        values = [arg.value.upper() for arg in if_args or []]
+        return values == ["NOT", "DEFINED", variable]
+
+    @classmethod
+    def _find_forbidden_sets(cls, nodes, defaulted=frozenset()):
+        """
+        Yields (line, variable) for each set() of a forbidden variable that
+        overrides the user's value.
+        """
+        for node in nodes or []:
+            is_set = isinstance(node, Set) or (
+                isinstance(node, Command) and node.identifier.lower() == "set"
+            )
+            if is_set:
+                if node.args:
+                    variable = node.args[0].value
+                    if variable in cls._FORBIDDEN_VARIABLES and variable not in defaulted:
+                        yield node.line, variable
+            elif isinstance(node, If):
+                guarded = {
+                    v for v in cls._FORBIDDEN_VARIABLES if cls._is_default_guard(node.args, v)
+                }
+                yield from cls._find_forbidden_sets(node.if_true, defaulted | guarded)
+                yield from cls._find_forbidden_sets(node.if_false, defaulted)
+            else:
+                yield from cls._find_forbidden_sets(getattr(node, "body", None), defaulted)
 
     def check(self):
-        cmake_files = self._read_cmake_files()
-        all_passed = True
+        cmake_files = self._get_cmake_files()
+        trees = {}
+        for rel_path in cmake_files:
+            tree = self._parse(rel_path)
+            if tree is not None:
+                trees[rel_path] = tree
+        toolchains = self._get_toolchain_files(cmake_files, trees)
 
-        for rel_path, content in cmake_files.items():
-            for pattern, variable_name in self._FORBIDDEN_SET_PATTERNS:
-                if pattern.search(content):
-                    self.log(
-                        f"{rel_path}: CMake must not set {variable_name}; "
-                        "this overrides user compilation flags. "
-                        "Please update CMake files according to the Beman Standard. "
-                        "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakepassive_projects "
-                        "for more information."
-                    )
-                    all_passed = False
+        all_passed = True
+        for rel_path, tree in trees.items():
+            if rel_path in toolchains:
+                continue
+            for line, variable in self._find_forbidden_sets(tree):
+                self.log(
+                    f"{rel_path}:{line}: CMake must not set {variable}; "
+                    "this overrides user compilation flags. "
+                    "Please update CMake files according to the Beman Standard. "
+                    "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakepassive_projects "
+                    "for more information."
+                )
+                all_passed = False
 
         return all_passed
 
@@ -428,6 +506,7 @@ class CMakePassiveProjectsCheck(BaseCheck):
             "for more information."
         )
         return False
+
 
 # TODO cmake.passive_targets
 
