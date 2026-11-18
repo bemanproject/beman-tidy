@@ -11,6 +11,10 @@ from git import Repo, InvalidGitRepositoryError
 from .config import load_repo_config
 
 
+class BareRepositoryError(Exception):
+    """A bare repository that cannot be resolved to a single worktree."""
+
+
 def parse_repo_name_from_remote_url(remote_url: str) -> str | None:
     """
     Parse the repository name from a Git remote URL.
@@ -48,6 +52,54 @@ def parse_repo_name_from_remote_url(remote_url: str) -> str | None:
     return None
 
 
+def list_checked_out_worktrees(repo: Repo) -> list[Path]:
+    """
+    List the worktrees of a repository that have files on disk.
+    Skips the bare entry and worktrees whose directory no longer exists.
+    """
+    worktrees = []
+    for block in repo.git.worktree("list", "--porcelain", "-z").split("\0\0"):
+        fields = block.split("\0")
+        if not fields or not fields[0].startswith("worktree "):
+            continue
+        attributes = {field.split(" ", 1)[0] for field in fields[1:]}
+        if "bare" in attributes or "prunable" in attributes:
+            continue
+        worktree = Path(fields[0].removeprefix("worktree "))
+        if worktree.is_dir():
+            worktrees.append(worktree)
+    return worktrees
+
+
+def open_worktree_repo(path: Path) -> Repo:
+    """
+    Open the repository that contains path.
+    A bare repository has no files to check, so it is resolved to its only worktree.
+    Raises BareRepositoryError when there is no single worktree to pick.
+    """
+    repo = Repo(path.absolute(), search_parent_directories=True)
+    if not repo.bare:
+        return repo
+
+    worktrees = list_checked_out_worktrees(repo)
+    if len(worktrees) == 1:
+        logging.warning(
+            f"'{path}' is a bare repository. Checking its worktree '{worktrees[0]}'."
+        )
+        return Repo(worktrees[0])
+
+    if not worktrees:
+        raise BareRepositoryError(
+            f"'{path}' is a bare repository with no worktrees. "
+            "Run beman-tidy on a worktree."
+        )
+    listed = "\n".join(f"  - {worktree}" for worktree in worktrees)
+    raise BareRepositoryError(
+        f"'{path}' is a bare repository with several worktrees. "
+        f"Run beman-tidy on one of them:\n{listed}"
+    )
+
+
 def get_repo_info(path: str, config_path: str | None = None):
     """
     Get information about the repository at the given path.
@@ -57,7 +109,7 @@ def get_repo_info(path: str, config_path: str | None = None):
     path: Path = Path(path)
     try:
         # Initialize the repository object
-        repo = Repo(path.absolute(), search_parent_directories=True)
+        repo = open_worktree_repo(path)
 
         # Get the top-level directory of the repository
         top_level_dir = Path(repo.git.rev_parse("--show-toplevel"))
@@ -120,6 +172,9 @@ def get_repo_info(path: str, config_path: str | None = None):
             "unstaged_changes": unstaged_changes,
             "config": config,
         }
+    except BareRepositoryError as e:
+        logging.error(str(e))
+        sys.exit(1)
     except InvalidGitRepositoryError:
         logging.error(f"The path '{path}' is not inside a valid Git repository.")
         sys.exit(1)
