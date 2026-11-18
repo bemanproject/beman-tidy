@@ -370,7 +370,14 @@ def test__cmake_no_single_use_vars__valid(repo_info, beman_standard_check_config
     Test that a valid CMakeLists.txt file passes the cmake.no_single_use_vars check.
     """
     valid_cmake_paths = [
+        # CMakeLists.txt from beman.exemplar
         Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+        # Variable also used as a bare name in if()
+        Path(f"{valid_prefix}/valid-no_single_use_vars-v1.txt"),
+        # CMake built-in variables (CMAKE_*, BUILD_SHARED_LIBS)
+        Path(f"{valid_prefix}/valid-no_single_use_vars-v2.txt"),
+        # Variable assigned on several branches
+        Path(f"{valid_prefix}/valid-no_single_use_vars-v3.txt"),
     ]
 
     run_check_for_each_path(
@@ -387,8 +394,14 @@ def test__cmake_no_single_use_vars__invalid(repo_info, beman_standard_check_conf
     Test that an invalid CMakeLists.txt file fails the cmake.no_single_use_vars check.
     """
     invalid_cmake_paths = [
+        # Single-use list variable
         Path(f"{invalid_prefix}/invalid-no_single_use_vars-v1.txt"),
+        # Single-use scalar variable
         Path(f"{invalid_prefix}/invalid-no_single_use_vars-v2.txt"),
+        # Upper-case SET()
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v3.txt"),
+        # Second reference only inside a comment
+        Path(f"{invalid_prefix}/invalid-no_single_use_vars-v4.txt"),
     ]
 
     run_check_for_each_path(
