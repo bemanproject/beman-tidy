@@ -8,6 +8,39 @@ import logging
 
 from beman_tidy.lib.utils.git import get_repo_info, load_beman_standard_config
 from beman_tidy.lib.pipeline import run_checks_pipeline
+from beman_tidy.lib.checks.system.registry import get_registered_beman_standard_checks
+
+
+def list_checks(beman_standard_check_config):
+    """
+    Print all implemented beman-tidy checks.
+    """
+    implemented_checks = get_registered_beman_standard_checks()
+
+    for check_name in sorted(implemented_checks):
+        check_type = beman_standard_check_config.get(check_name, {}).get("type", "Unknown")
+        print(f"[{check_type}]".ljust(16), check_name)
+
+
+class ListChecksAction(argparse.Action):
+    """
+    Argparse action that lists implemented checks and exits.
+    """
+    def __init__(self, option_strings, dest, **kwargs):
+        super().__init__(
+            option_strings=option_strings,
+            dest=dest,
+            nargs=0,
+            **kwargs,
+        )
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        beman_standard_check_config = load_beman_standard_config()
+        if not beman_standard_check_config or len(beman_standard_check_config) == 0:
+            parser.exit(status=1, message="Failed to load the Beman Standard configuration.\n")
+
+        list_checks(beman_standard_check_config)
+        parser.exit()
 
 
 def parse_args():
@@ -21,7 +54,11 @@ def parse_args():
         action="version",
         version=f"beman-tidy {_pkg_version('beman-tidy')}",
     )
-    parser.add_argument("repo_path", help="path to the repository to check", type=str)
+    parser.add_argument(
+        "repo_path",
+        help="path to the repository to check; required unless --list-checks is used",
+        type=str
+    )
     parser.add_argument(
         "--fix-inplace",
         help="try to automatically fix found issues",
@@ -41,7 +78,15 @@ def parse_args():
         default=False,
     )
     parser.add_argument(
-        "--checks", help="array of checks to run", type=str, default=None
+        "--list-checks",
+        help="list all implemented checks",
+        action=ListChecksAction,
+    )
+    parser.add_argument(
+        "--checks",
+        help="array of checks to run",
+        type=str,
+        default=None,
     )
     parser.add_argument(
         "--config",
