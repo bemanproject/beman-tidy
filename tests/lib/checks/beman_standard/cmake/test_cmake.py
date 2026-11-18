@@ -372,6 +372,8 @@ def test__cmake_avoid_passthroughs__valid(repo_info, beman_standard_check_config
     valid_cmake_paths = [
         # CMakeLists.txt from beman.exemplar
         Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+        # Commented-out shallow add_subdirectory(src) is ignored
+        Path(f"{valid_prefix}/valid-avoid_passthroughs-v1.txt"),
     ]
 
     run_check_for_each_path(
@@ -394,6 +396,8 @@ def test__cmake_avoid_passthroughs__invalid(repo_info, beman_standard_check_conf
         Path(f"{invalid_prefix}/invalid-avoid_passthroughs-v2.txt"),
         # Passthrough-only CMakeLists.txt with shallow add_subdirectory
         Path(f"{invalid_prefix}/invalid-avoid_passthroughs-v3.txt"),
+        # Root CMakeLists.txt with quoted add_subdirectory("src")
+        Path(f"{invalid_prefix}/invalid-avoid_passthroughs-v4.txt"),
     ]
 
     run_check_for_each_path(
