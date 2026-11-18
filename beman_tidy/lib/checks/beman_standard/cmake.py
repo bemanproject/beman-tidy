@@ -394,18 +394,20 @@ class CMakePassiveTargetsCheck(BaseCheck):
             path = Path(path_override)
             if not path.is_absolute():
                 path = self.repo_path / path
-            if path.is_file():
-                try:
-                    content = path.read_text(encoding="utf-8", errors="ignore")
-                    rel_path = path
-                    try:
-                        rel_path = path.relative_to(self.repo_path)
-                    except ValueError:
-                        pass
-                    return {rel_path: self._COMMENT_RE.sub("", content)}
-                except OSError as exc:
-                    self.log(f"Unable to read CMake file '{path}': {exc}")
-                    return None
+            if not path.is_file():
+                self.log(f"CMake file '{path}' does not exist or is not a file.")
+                return None
+            try:
+                content = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError as exc:
+                self.log(f"Unable to read CMake file '{path}': {exc}")
+                return None
+            rel_path = path
+            try:
+                rel_path = path.relative_to(self.repo_path)
+            except ValueError:
+                pass
+            return {rel_path: self._COMMENT_RE.sub("", content)}
 
         ignores = get_ignore_matcher(self.repo_info)
         result = {}

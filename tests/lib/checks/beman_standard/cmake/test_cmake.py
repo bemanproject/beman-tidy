@@ -383,7 +383,9 @@ def test__cmake_passive_targets__valid(repo_info, beman_standard_check_config):
     )
 
 
-def test__cmake_passive_targets__invalid(repo_info, beman_standard_check_config):
+def test__cmake_passive_targets__invalid(
+    repo_info, beman_standard_check_config, tmp_path
+):
     """
     Test that invalid CMake files fail the cmake.passive_targets check.
     """
@@ -399,6 +401,17 @@ def test__cmake_passive_targets__invalid(repo_info, beman_standard_check_config)
         repo_info,
         beman_standard_check_config,
     )
+
+    # A missing file must fail the check instead of silently falling back to a
+    # repository-wide scan (an empty repository would pass that scan).
+    empty_repo_info = dict(repo_info, top_level=tmp_path)
+    check_instance = CMakePassiveTargetsCheck(
+        empty_repo_info, beman_standard_check_config
+    )
+    check_instance.path = tmp_path / "CMakeLists.txt"
+    check_instance.log_level = True
+    assert check_instance.check() is False
+
 
 
 @pytest.mark.skip(reason="not implemented")
