@@ -5,6 +5,8 @@ import pytest
 import os
 from pathlib import Path
 
+from beman_tidy.lib.utils.ignore import reset_ignore_cache
+
 
 def pytest_configure(config):
     """
@@ -28,4 +30,9 @@ def _setup_test_environment():
     if str(root_dir) not in os.environ.get("PYTHONPATH", ""):
         os.environ["PYTHONPATH"] = f"{root_dir}:{os.environ.get('PYTHONPATH', '')}"
 
+    # Ignore matchers are cached per repository root, and tests reuse roots.
+    reset_ignore_cache()
+
     yield
+
+    reset_ignore_cache()
