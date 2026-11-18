@@ -17,6 +17,7 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeTargetNamesCheck,
     CMakeSkipTestsCheck,
     CMakeSkipExamplesCheck,
+    CMakeImplicitDefaultsCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -357,6 +358,55 @@ def test__cmake_skip_examples__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_skip_examples__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_implicit_defaults__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.implicit_defaults check.
+    """
+    valid_cmake_paths = [
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+        Path(f"{valid_prefix}/valid-implicit_defaults-v1.txt"),
+        # C++ modules install and non-default destinations
+        Path(f"{valid_prefix}/valid-implicit_defaults-v2.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeImplicitDefaultsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_implicit_defaults__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.implicit_defaults check.
+    """
+    invalid_cmake_paths = [
+        Path(f"{invalid_prefix}/invalid-implicit_defaults-v1.txt"),
+        Path(f"{invalid_prefix}/invalid-implicit_defaults-v2.txt"),
+        # Default destinations written as literal paths, inside if()
+        Path(f"{invalid_prefix}/invalid-implicit_defaults-v3.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeImplicitDefaultsCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_implicit_defaults__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.
