@@ -4,6 +4,8 @@
 from abc import ABC
 from collections.abc import Iterable
 
+import re
+
 import cmake_parser
 from cmake_parser.ast import AstNode, Command, If, Option
 
@@ -367,6 +369,102 @@ class CMakeTargetNamesCheck(CMakeBaseCheck):
             "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmaketarget_names for more information."
         )
         return False
+
+
+@register_beman_standard_check("cmake.config")
+class CMakeConfigCheck(CMakeBaseCheck):
+    def __init__(self, repo_info, beman_standard_check_config):
+        super().__init__(repo_info, beman_standard_check_config)
+
+    _VARIABLE_REFERENCE = re.compile(r"\$\{([A-Za-z0-9_.+-]+)\}")
+    _MAX_RESOLVE_DEPTH = 10
+
+    def check(self):
+        commands = [
+            item for item in self.get_cmake_parse_raw() if isinstance(item, Command)
+        ]
+        variables = self._collect_variables(commands)
+
+        if self._calls_beman_install_library(commands, variables):
+            return True
+
+        if self._installs_config_package(commands, variables):
+            return True
+
+        self.log(
+            f"Missing install of '{self.library_name}-config.cmake' in root CMakeLists.txt. "
+            f"Expected a beman_install_library() call for '{self.library_name}', or an "
+            f"install(EXPORT ... NAMESPACE beman::) together with an install(FILES ...) of "
+            f"'{self.library_name}-config.cmake'. "
+            "Please update the CMakeLists.txt file according to the Beman Standard. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeconfig for more information."
+        )
+        return False
+
+    def fix(self):
+        self.log(
+            "Please update the CMakeLists.txt file so that it calls beman_install_library() with the library name. "
+            "See https://github.com/bemanproject/beman/blob/main/docs/beman_standard.md#cmakeconfig for more information."
+        )
+        return False
+
+    def _collect_variables(self, commands):
+        """
+        Collect a best-effort map of variables from project() and single-value set()
+        calls, so that arguments such as ${PROJECT_NAME} can be resolved.
+        """
+        variables = {}
+        for command in commands:
+            identifier = command.identifier.lower()
+            if identifier == "project" and command.args:
+                variables["PROJECT_NAME"] = command.args[0].value
+            elif identifier == "set" and len(command.args) == 2:
+                variables[command.args[0].value] = command.args[1].value
+        return variables
+
+    def _resolve(self, value, variables):
+        for _ in range(self._MAX_RESOLVE_DEPTH):
+            resolved = self._VARIABLE_REFERENCE.sub(
+                lambda match: variables.get(match.group(1), match.group(0)), value
+            )
+            if resolved == value:
+                break
+            value = resolved
+        return value
+
+    def _calls_beman_install_library(self, commands, variables):
+        for command in commands:
+            if command.identifier.lower() != "beman_install_library":
+                continue
+            if not command.args:
+                continue
+            if self._resolve(command.args[0].value, variables) == self.library_name:
+                return True
+        return False
+
+    def _installs_config_package(self, commands, variables):
+        """
+        Detect a hand-written config package: install(EXPORT ... NAMESPACE beman::)
+        plus install(FILES ...) of <library_name>-config.cmake.
+        """
+        config_file_name = f"{self.library_name}-config.cmake"
+        exports_beman_namespace = False
+        installs_config_file = False
+
+        for command in commands:
+            if command.identifier.lower() != "install" or not command.args:
+                continue
+            args = [self._resolve(arg.value, variables) for arg in command.args]
+            mode = args[0].upper()
+            if mode == "EXPORT":
+                for keyword, value in zip(args, args[1:]):
+                    if keyword.upper() == "NAMESPACE" and value == "beman::":
+                        exports_beman_namespace = True
+            elif mode == "FILES":
+                if any(arg.split("/")[-1] == config_file_name for arg in args[1:]):
+                    installs_config_file = True
+
+        return exports_beman_namespace and installs_config_file
 
 
 # TODO cmake.passive_targets

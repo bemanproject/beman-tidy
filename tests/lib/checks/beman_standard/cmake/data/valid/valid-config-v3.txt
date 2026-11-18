@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+cmake_minimum_required(VERSION 3.30...4.3)
+
+project(
+    beman.exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 0.1.0
+)
+
+include(infra/cmake/beman-install-library.cmake)
+
+add_library(beman.exemplar INTERFACE)
+add_library(beman::exemplar ALIAS beman.exemplar)
+
+add_subdirectory(include/beman/exemplar)
+
+# Hand-written config package instead of beman_install_library().
+include(GNUInstallDirs)
+
+install(TARGETS beman.exemplar EXPORT beman.exemplar-targets)
+
+option(BEMAN_EXEMPLAR_INSTALL_CONFIG_FILE_PACKAGE "Install the config file package" ON)
+if(BEMAN_EXEMPLAR_INSTALL_CONFIG_FILE_PACKAGE)
+    install(
+        FILES cmake/beman.exemplar-config.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/beman.exemplar
+    )
+
+    install(
+        EXPORT beman.exemplar-targets
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/beman.exemplar
+        NAMESPACE beman::
+    )
+endif()

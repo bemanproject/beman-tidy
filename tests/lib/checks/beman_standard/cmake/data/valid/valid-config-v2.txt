@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+cmake_minimum_required(VERSION 3.30...4.3)
+
+project(
+    beman.exemplar
+    DESCRIPTION "A Beman Library Exemplar"
+    LANGUAGES CXX
+    VERSION 0.1.0
+)
+
+include(infra/cmake/beman-install-library.cmake)
+
+add_library(beman.exemplar INTERFACE)
+add_library(beman::exemplar ALIAS beman.exemplar)
+
+add_subdirectory(include/beman/exemplar)
+
+# Library name passed through a variable that is set from ${PROJECT_NAME}.
+set(BEMAN_EXEMPLAR_TARGET_PREFIX ${PROJECT_NAME})
+beman_install_library(${BEMAN_EXEMPLAR_TARGET_PREFIX} TARGETS beman.exemplar)

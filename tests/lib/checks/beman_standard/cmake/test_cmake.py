@@ -17,6 +17,7 @@ from beman_tidy.lib.checks.beman_standard.cmake import (
     CMakeTargetNamesCheck,
     CMakeSkipTestsCheck,
     CMakeSkipExamplesCheck,
+    CMakeConfigCheck,
 )
 
 test_data_prefix = "tests/lib/checks/beman_standard/cmake/data"
@@ -357,6 +358,63 @@ def test__cmake_skip_examples__invalid(repo_info, beman_standard_check_config):
 
 @pytest.mark.skip(reason="not implemented")
 def test__cmake_skip_examples__fix_inplace(repo_info, beman_standard_check_config):
+    """
+    Test that the fix method corrects an invalid CMakeLists.txt file.
+    Note: Skipping this test as it is not implemented.
+    """
+    pass
+
+
+def test__cmake_config__valid(repo_info, beman_standard_check_config):
+    """
+    Test that a valid CMakeLists.txt file passes the cmake.config check.
+    """
+    valid_cmake_paths = [
+        # CMakeLists.txt from beman.exemplar
+        Path(f"{valid_prefix}/CMakeLists-v1.txt"),
+        # beman_install_library(${PROJECT_NAME} ...)
+        Path(f"{valid_prefix}/valid-config-v1.txt"),
+        # beman_install_library() with a variable set from ${PROJECT_NAME}
+        Path(f"{valid_prefix}/valid-config-v2.txt"),
+        # Hand-written config package: install(EXPORT ... NAMESPACE beman::) + config file
+        Path(f"{valid_prefix}/valid-config-v3.txt"),
+    ]
+
+    run_check_for_each_path(
+        True,
+        valid_cmake_paths,
+        CMakeConfigCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+def test__cmake_config__invalid(repo_info, beman_standard_check_config):
+    """
+    Test that an invalid CMakeLists.txt file fails the cmake.config check.
+    """
+    invalid_cmake_paths = [
+        # CMakeLists.txt missing beman_install_library call
+        Path(f"{invalid_prefix}/invalid-config-v1.txt"),
+        # CMakeLists.txt with beman_install_library referencing wrong library name
+        Path(f"{invalid_prefix}/invalid-config-v2.txt"),
+        # beman_install_library() for a name that only starts with the library name
+        Path(f"{invalid_prefix}/invalid-config-v3.txt"),
+        # install(EXPORT ... NAMESPACE beman::) without installing the config file
+        Path(f"{invalid_prefix}/invalid-config-v4.txt"),
+    ]
+
+    run_check_for_each_path(
+        False,
+        invalid_cmake_paths,
+        CMakeConfigCheck,
+        repo_info,
+        beman_standard_check_config,
+    )
+
+
+@pytest.mark.skip(reason="not implemented")
+def test__cmake_config__fix_inplace(repo_info, beman_standard_check_config):
     """
     Test that the fix method corrects an invalid CMakeLists.txt file.
     Note: Skipping this test as it is not implemented.
